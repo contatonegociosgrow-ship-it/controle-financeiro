@@ -6,21 +6,18 @@ export function getSeedData(): Partial<FinanceState> {
   return {
     categories: [
       { id: crypto.randomUUID(), name: 'Ganhos', limit: null, color: DEFAULT_CATEGORY_COLORS['Ganhos'] },
-      { id: crypto.randomUUID(), name: 'Casa', limit: null, color: DEFAULT_CATEGORY_COLORS['Casa'] },
-      { id: crypto.randomUUID(), name: 'Restaurante', limit: null, color: DEFAULT_CATEGORY_COLORS['Restaurante'] },
-      { id: crypto.randomUUID(), name: 'Carro', limit: null, color: DEFAULT_CATEGORY_COLORS['Carro'] },
+      { id: crypto.randomUUID(), name: 'Moradia', limit: null, color: DEFAULT_CATEGORY_COLORS['Moradia'] },
+      { id: crypto.randomUUID(), name: 'Alimentação', limit: null, color: DEFAULT_CATEGORY_COLORS['Alimentação'] },
+      { id: crypto.randomUUID(), name: 'Transporte', limit: null, color: DEFAULT_CATEGORY_COLORS['Transporte'] },
       { id: crypto.randomUUID(), name: 'Compras', limit: null, color: DEFAULT_CATEGORY_COLORS['Compras'] },
       { id: crypto.randomUUID(), name: 'Educação', limit: null, color: DEFAULT_CATEGORY_COLORS['Educação'] },
       { id: crypto.randomUUID(), name: 'Saúde', limit: null, color: DEFAULT_CATEGORY_COLORS['Saúde'] },
-      { id: crypto.randomUUID(), name: 'Presente', limit: null, color: DEFAULT_CATEGORY_COLORS['Presente'] },
       { id: crypto.randomUUID(), name: 'Lazer', limit: null, color: DEFAULT_CATEGORY_COLORS['Lazer'] },
-      { id: crypto.randomUUID(), name: 'Farmácia', limit: null, color: DEFAULT_CATEGORY_COLORS['Farmácia'] },
-      { id: crypto.randomUUID(), name: 'Seguro', limit: null, color: DEFAULT_CATEGORY_COLORS['Seguro'] },
-      { id: crypto.randomUUID(), name: 'Mercado', limit: null, color: DEFAULT_CATEGORY_COLORS['Mercado'] },
-      { id: crypto.randomUUID(), name: 'Assinatura', limit: null, color: DEFAULT_CATEGORY_COLORS['Assinatura'] },
+      { id: crypto.randomUUID(), name: 'Trabalho', limit: null, color: DEFAULT_CATEGORY_COLORS['Trabalho'] },
+      { id: crypto.randomUUID(), name: 'Outros', limit: null, color: DEFAULT_CATEGORY_COLORS['Outros'] },
     ],
     profile: {
-      name: 'Usuário',
+      name: '',
       currency: 'BRL',
       monthlyIncome: 0,
       wallet: 0,
@@ -34,18 +31,15 @@ export function getSeedData(): Partial<FinanceState> {
 export function ensureDefaultCategories(state: FinanceState): FinanceState {
   const defaultCategories = [
     'Ganhos',
-    'Casa',
-    'Restaurante',
-    'Carro',
+    'Moradia',
+    'Alimentação',
+    'Transporte',
     'Compras',
     'Educação',
     'Saúde',
-    'Presente',
     'Lazer',
-    'Farmácia',
-    'Seguro',
-    'Mercado',
-    'Assinatura',
+    'Trabalho',
+    'Outros',
   ];
 
   const existingNames = new Set(state.categories.map((c) => c.name));
@@ -67,6 +61,18 @@ export function ensureDefaultCategories(state: FinanceState): FinanceState {
 
   return state;
 }
+
+// Mapeamento de categorias antigas para novas
+export const CATEGORY_MIGRATION_MAP: Record<string, string> = {
+  'Casa': 'Moradia',
+  'Restaurante': 'Alimentação',
+  'Mercado': 'Alimentação',
+  'Carro': 'Transporte',
+  'Farmácia': 'Saúde',
+  'Presente': 'Outros',
+  'Assinatura': 'Outros',
+  'Seguro': 'Outros',
+};
 
 // Para usar no console do browser durante desenvolvimento:
 // const seed = getSeedData();

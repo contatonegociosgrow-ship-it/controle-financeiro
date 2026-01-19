@@ -100,44 +100,6 @@ const categoryExamples: Record<string, { description: string; category: string; 
 };
 
 export function CategoryExamples({ type, onExampleClick }: CategoryExamplesProps) {
-  const examples = categoryExamples[type] || [];
-
-  if (examples.length === 0) return null;
-
-  const handleClick = (example: { description: string; category: string; emoji?: string }) => {
-    if (onExampleClick) {
-      const fullDescription = example.emoji 
-        ? `${example.emoji} ${example.description}` 
-        : example.description;
-      onExampleClick(fullDescription, example.category);
-    }
-  };
-
-  return (
-    <div className="mt-1.5 p-2 bg-blue-50/50 border border-blue-100 rounded-lg">
-      <p className="text-xs text-blue-700 font-semibold mb-1.5">💡 Exemplos:</p>
-      <div className="flex flex-wrap gap-1.5">
-        {examples.map((example, idx) => {
-          const fullDescription = example.emoji 
-            ? `${example.emoji} ${example.description}` 
-            : example.description;
-          
-          return (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => handleClick(example)}
-              className="text-xs text-blue-600 leading-tight px-2 py-1 bg-blue-100/70 hover:bg-blue-200 border border-blue-200 rounded-md transition-colors cursor-pointer active:scale-95"
-              title={`Clique para usar: ${fullDescription}`}
-            >
-              <span className="font-medium">
-                {example.emoji && `${example.emoji} `}
-                {example.description}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
+  // Componente desabilitado - exemplos removidos
+  return null;
 }

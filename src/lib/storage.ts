@@ -105,39 +105,128 @@ export function loadState(): FinanceState {
     return defaultState;
   }
 
-  // Migração: garantir compatibilidade com dados antigos
-  // Primeiro, garantir que a categoria "Ganhos" existe
+  // Migração: simplificar categorias
+  const CATEGORY_MIGRATION_MAP: Record<string, string> = {
+    'Casa': 'Moradia',
+    'Restaurante': 'Alimentação',
+    'Mercado': 'Alimentação',
+    'Carro': 'Transporte',
+    'Farmácia': 'Saúde',
+    'Presente': 'Outros',
+    'Assinatura': 'Outros',
+    'Seguro': 'Outros',
+  };
+
+  const DEFAULT_CATEGORIES = [
+    'Ganhos',
+    'Moradia',
+    'Alimentação',
+    'Transporte',
+    'Compras',
+    'Educação',
+    'Saúde',
+    'Lazer',
+    'Trabalho',
+    'Outros',
+  ];
+
   let categories = [...state.categories];
-  let ganhosCategory = categories.find((c) => c.name === 'Ganhos');
   let categoriesChanged = false;
+  let transactionsChanged = false;
+
+  // 1. Criar categorias padrão se não existirem (incluindo "Ganhos")
+  const existingCategoryNames = new Set(categories.map((c) => c.name));
+  const missingCategories = DEFAULT_CATEGORIES.filter((name) => !existingCategoryNames.has(name));
   
-  if (!ganhosCategory) {
-    ganhosCategory = {
-      id: crypto.randomUUID(),
-      name: 'Ganhos',
-      limit: null,
-      color: '#22c55e', // verde
-    };
-    categories.push(ganhosCategory);
-    categoriesChanged = true;
+  if (missingCategories.length > 0) {
+    const { DEFAULT_CATEGORY_COLORS } = require('./categoryColors');
+    missingCategories.forEach((name) => {
+      categories.push({
+        id: crypto.randomUUID(),
+        name,
+        limit: null,
+        color: DEFAULT_CATEGORY_COLORS[name] || '#94a3b8',
+      });
+      categoriesChanged = true;
+    });
   }
 
-  // Migração: corrigir transações de ganho que têm categoria errada
-  let transactionsChanged = false;
+  // 2. Remover apenas categorias antigas que têm migração (mantém "Ganhos")
+  const categoriesToKeep = categories.filter((cat) => {
+    // Remover categorias antigas que têm migração
+    if (CATEGORY_MIGRATION_MAP[cat.name] && CATEGORY_MIGRATION_MAP[cat.name] !== cat.name) {
+      categoriesChanged = true;
+      return false;
+    }
+    return true;
+  });
+
+  categories = categoriesToKeep;
+
+  // 3. Criar mapa de nomes para IDs (após remoção)
+  const categoryNameToId = new Map<string, string>();
+  categories.forEach((cat) => {
+    categoryNameToId.set(cat.name, cat.id);
+  });
+
+  // 4. Migrar transações: atualizar categoryId para novas categorias
   const migratedTransactions = state.transactions.map((t) => {
-    // Se é transação de ganho e não tem categoria "Ganhos", corrigir
+    // Buscar categoria original (antes da remoção)
+    const originalCategory = state.categories.find((c) => c.id === t.categoryId);
+    const currentCategory = categories.find((c) => c.id === t.categoryId);
+    
+    // Se é transação de income e não está usando "Ganhos", migrar para "Ganhos"
     if (t.type === 'income') {
-      const currentCategory = categories.find((c) => c.id === t.categoryId);
-      if (!currentCategory || currentCategory.name !== 'Ganhos') {
-        // Corrigir para usar categoria "Ganhos"
+      const ganhosId = categoryNameToId.get('Ganhos');
+      if (ganhosId && t.categoryId !== ganhosId) {
         transactionsChanged = true;
         return {
           ...t,
-          categoryId: ganhosCategory!.id,
+          categoryId: ganhosId,
           paidInstallments: t.paidInstallments ?? undefined,
         };
       }
     }
+    
+    // Se categoria não existe mais (foi removida)
+    if (!currentCategory) {
+      let targetCategoryId: string | undefined;
+      
+      if (originalCategory) {
+        // Verificar se precisa migrar
+        const newName = CATEGORY_MIGRATION_MAP[originalCategory.name];
+        if (newName) {
+          targetCategoryId = categoryNameToId.get(newName);
+        }
+      }
+      
+      // Se não encontrou, usar "Outros"
+      if (!targetCategoryId) {
+        targetCategoryId = categoryNameToId.get('Outros');
+      }
+      
+      if (targetCategoryId && t.categoryId !== targetCategoryId) {
+        transactionsChanged = true;
+        return {
+          ...t,
+          categoryId: targetCategoryId,
+          paidInstallments: t.paidInstallments ?? undefined,
+        };
+      }
+    } else if (originalCategory && CATEGORY_MIGRATION_MAP[originalCategory.name] && CATEGORY_MIGRATION_MAP[originalCategory.name] !== originalCategory.name) {
+      // Categoria antiga ainda existe: migrar para nova
+      const newName = CATEGORY_MIGRATION_MAP[originalCategory.name];
+      const newCategoryId = categoryNameToId.get(newName);
+      if (newCategoryId && newCategoryId !== t.categoryId) {
+        transactionsChanged = true;
+        return {
+          ...t,
+          categoryId: newCategoryId,
+          paidInstallments: t.paidInstallments ?? undefined,
+        };
+      }
+    }
+
     return {
       ...t,
       paidInstallments: t.paidInstallments ?? undefined,

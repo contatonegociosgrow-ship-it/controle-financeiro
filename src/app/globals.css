@@ -36,34 +36,81 @@ body {
   min-height: 100vh;
 }
 
-/* Scrollbar personalizada */
+/* Scrollbar personalizada - Moderna e Bonita */
+/* Webkit (Chrome, Safari, Edge) */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
 }
 
 .dark ::-webkit-scrollbar-track {
-  background: #1f2937;
+  background: #0f172a;
+  border-color: #1e293b;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+  border-radius: 10px;
+  border: 2px solid #f8fafc;
+  transition: all 0.3s ease;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
+  border-color: #0f172a;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+  border-color: #e2e8f0;
+  transform: scale(1.1);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+  border-color: #1e293b;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #1d4ed8 0%, #1e40af 100%);
+}
+
+.dark ::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3b82f6 #f8fafc;
+}
+
+.dark * {
+  scrollbar-color: #60a5fa #0f172a;
+}
+
+/* Scrollbar para elementos específicos (modais, cards com scroll) */
+.overflow-y-auto::-webkit-scrollbar,
+.overflow-y-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb,
+.overflow-y-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6366f1 0%, #4f46e5 100%);
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+
+.dark .overflow-y-auto::-webkit-scrollbar-thumb,
+.dark .overflow-y-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #818cf8 0%, #6366f1 100%);
 }
 
 /* Inputs e selects */

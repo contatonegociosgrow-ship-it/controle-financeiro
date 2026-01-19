@@ -8,9 +8,11 @@ import { PageHeader } from '@/components/finance/PageHeader';
 import { BalanceModal } from '@/components/finance/BalanceModal';
 import { GoalCard } from '@/components/finance/GoalCard';
 import { DataExportImport } from '@/components/finance/DataExportImport';
+import { AddCategorySheet } from '@/components/finance/AddCategorySheet';
+import { getCategoryColor } from '@/lib/categoryColors';
 
 export default function PerfilPage() {
-  const { state, isInitialized, setProfile, setMonthlyIncome } = useFinanceStore();
+  const { state, isInitialized, setProfile, setMonthlyIncome, removeCategory } = useFinanceStore();
   const [isBalanceOpen, setIsBalanceOpen] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingIncome, setIsEditingIncome] = useState(false);
@@ -18,6 +20,8 @@ export default function PerfilPage() {
   const [nameValue, setNameValue] = useState('');
   const [incomeValue, setIncomeValue] = useState('');
   const [walletValue, setWalletValue] = useState('');
+  const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false);
+  const [editingCategoryId, setEditingCategoryId] = useState<string | undefined>(undefined);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -399,6 +403,100 @@ export default function PerfilPage() {
             </CardUI>
           )}
 
+          {/* Gerenciar Categorias */}
+          <CardUI>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                Categorias
+              </h3>
+              <button
+                onClick={() => {
+                  setEditingCategoryId(undefined);
+                  setIsCategorySheetOpen(true);
+                }}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all text-sm shadow-sm hover:shadow-md"
+              >
+                + Nova Categoria
+              </button>
+            </div>
+
+            {state.categories.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-600 dark:text-gray-400 mb-2">Nenhuma categoria cadastrada</p>
+                <p className="text-sm text-gray-500 dark:text-gray-500">
+                  Crie categorias para organizar suas transações
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {state.categories.map((category) => {
+                  const categoryColor = getCategoryColor(category);
+                  const transactionsCount = state.transactions.filter(
+                    (t) => t.categoryId === category.id
+                  ).length;
+                  
+                  return (
+                    <div
+                      key={category.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div
+                          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
+                          style={{ backgroundColor: categoryColor }}
+                        >
+                          <span className="text-sm">📁</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-gray-900 dark:text-white truncate">
+                            {category.name}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {transactionsCount} {transactionsCount === 1 ? 'transação' : 'transações'}
+                            {category.limit && ` • Limite: ${formatCurrency(category.limit)}`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => {
+                            setEditingCategoryId(category.id);
+                            setIsCategorySheetOpen(true);
+                          }}
+                          className="px-3 py-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-semibold rounded-lg transition-all text-sm"
+                          title="Editar categoria"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (
+                              confirm(
+                                `Tem certeza que deseja excluir a categoria "${category.name}"?\n\n${
+                              transactionsCount > 0
+                                ? `ATENÇÃO: Esta categoria está sendo usada em ${transactionsCount} ${
+                                    transactionsCount === 1 ? 'transação' : 'transações'
+                                  }. As transações serão mantidas, mas ficarão sem categoria.`
+                                : ''
+                            }`
+                              )
+                            ) {
+                              removeCategory(category.id);
+                            }
+                          }}
+                          className="px-3 py-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 font-semibold rounded-lg transition-all text-sm"
+                          title="Excluir categoria"
+                        >
+                          Excluir
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardUI>
+
           {/* Exportar/Importar Dados */}
           <CardUI>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
@@ -410,6 +508,14 @@ export default function PerfilPage() {
       </div>
 
       <BalanceModal isOpen={isBalanceOpen} onClose={() => setIsBalanceOpen(false)} />
+      <AddCategorySheet
+        isOpen={isCategorySheetOpen}
+        onClose={() => {
+          setIsCategorySheetOpen(false);
+          setEditingCategoryId(undefined);
+        }}
+        categoryId={editingCategoryId}
+      />
     </div>
   );
 }

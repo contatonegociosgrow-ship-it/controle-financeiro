@@ -54,6 +54,7 @@ type FinanceContextType = {
   setMonthlyIncome: (value: number) => void;
   addCategory: (name: string, limit?: number | null, color?: string) => string;
   updateCategory: (id: string, updates: Partial<Category>) => void;
+  removeCategory: (id: string) => void;
   addPerson: (name: string) => string;
   addCard: (card: { name: string; limit: number; closingDay: number; dueDay: number }) => string;
   updateCard: (id: string, updates: Partial<Card>) => void;
@@ -160,6 +161,13 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
       categories: prev.categories.map((c) =>
         c.id === id ? { ...c, ...updates } : c
       ),
+    }));
+  }, []);
+
+  const removeCategory = useCallback((id: string) => {
+    setState((prev) => ({
+      ...prev,
+      categories: prev.categories.filter((c) => c.id !== id),
     }));
   }, []);
 
@@ -460,6 +468,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         setMonthlyIncome,
         addCategory,
         updateCategory,
+        removeCategory,
         addPerson,
         addCard,
         updateCard,

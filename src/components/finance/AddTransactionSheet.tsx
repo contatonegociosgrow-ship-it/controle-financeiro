@@ -195,8 +195,8 @@ export function AddTransactionSheet({
       let ganhosCategory = state.categories.find((c) => c.name === 'Ganhos');
       // Se não existir, criar (não deveria acontecer, mas por segurança)
       if (!ganhosCategory) {
-        const ganhosId = addCategory('Ganhos');
-        ganhosCategory = { id: ganhosId, name: 'Ganhos', limit: null };
+        const ganhosId = addCategory('Ganhos', null, '#22c55e');
+        ganhosCategory = { id: ganhosId, name: 'Ganhos', limit: null, color: '#22c55e' };
       }
       transactionData.categoryId = ganhosCategory.id;
       transactionData.personId = finalPersonId || null;
@@ -254,11 +254,11 @@ export function AddTransactionSheet({
   if (type === 'expense_variable') {
     return (
       <div
-        className="fixed inset-0 z-50 flex items-end bg-black/40 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-end md:items-center bg-black/40 backdrop-blur-sm p-0 md:p-4"
         onClick={onClose}
       >
         <div
-          className="w-full max-w-sm mx-auto bg-white rounded-t-2xl p-4 shadow-2xl"
+          className="w-full max-w-sm md:max-w-md mx-auto bg-white dark:bg-gray-800 rounded-t-2xl md:rounded-2xl p-4 md:p-6 shadow-2xl max-h-[90vh] md:max-h-[85vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
@@ -273,14 +273,14 @@ export function AddTransactionSheet({
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">
                 Descrição <span className="text-gray-400 font-normal normal-case">(pode usar emojis)</span>
               </label>
               <input
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 placeholder="Ex: 🍽️ Almoço ou Iphone"
                 required
                 autoFocus
@@ -289,12 +289,12 @@ export function AddTransactionSheet({
             </div>
 
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">Categoria</label>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Categoria</label>
               <div className="relative">
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer transition-all hover:border-gray-300"
+                  className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer transition-all hover:border-gray-300 dark:hover:border-gray-500"
                   required
                 >
                   <option value="">Selecione uma categoria...</option>
@@ -313,14 +313,14 @@ export function AddTransactionSheet({
             </div>
 
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">
                 Cartão de Crédito <span className="text-gray-400 font-normal normal-case">(opcional)</span>
               </label>
               <div className="relative">
                 <select
                   value={cardId}
                   onChange={(e) => setCardId(e.target.value)}
-                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer transition-all hover:border-gray-300"
+                  className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer transition-all hover:border-gray-300 dark:hover:border-gray-500"
                 >
                   <option value="">Sem cartão</option>
                   {state.cards.map((card) => (
@@ -338,7 +338,7 @@ export function AddTransactionSheet({
             </div>
 
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">Data da compra</label>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Data da compra</label>
               <input
                 type="text"
                 value={date}
@@ -350,19 +350,19 @@ export function AddTransactionSheet({
                 }}
                 placeholder="DD/MM/AAAA"
                 maxLength={10}
-                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">Valor</label>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Valor</label>
               <input
                 type="number"
                 step="0.01"
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 placeholder="0,00"
                 required
               />
@@ -404,7 +404,7 @@ export function AddTransactionSheet({
             <button
               type="submit"
               disabled={saved}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition-all disabled:bg-green-600 shadow-sm hover:shadow-md text-sm"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 md:py-3 rounded-lg transition-all disabled:bg-green-600 shadow-sm hover:shadow-md text-sm md:text-base"
             >
               {saved ? '✓ Salvo!' : 'Salvar'}
             </button>
@@ -418,33 +418,33 @@ export function AddTransactionSheet({
   if (type === 'income') {
     return (
       <div
-        className="fixed inset-0 z-50 flex items-end bg-black/40 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-end md:items-center bg-black/40 backdrop-blur-sm p-0 md:p-4"
         onClick={onClose}
       >
         <div
-          className="w-full max-w-sm mx-auto bg-white rounded-t-2xl p-4 shadow-2xl"
+          className="w-full max-w-sm md:max-w-md mx-auto bg-white dark:bg-gray-800 rounded-t-2xl md:rounded-2xl p-4 md:p-6 shadow-2xl max-h-[90vh] md:max-h-[85vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-            <h2 className="text-sm font-bold text-gray-900">Novo Ganho</h2>
+          <div className="flex items-center justify-between mb-4 md:mb-6 pb-3 border-b border-gray-100 dark:border-gray-700">
+            <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white">Novo Ganho</h2>
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl leading-none w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               ×
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">
                 Descrição <span className="text-gray-400 font-normal normal-case">(pode usar emojis)</span>
               </label>
               <input
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 placeholder="Ex: 💰 Salário Pedro"
                 required
                 autoFocus
@@ -453,7 +453,7 @@ export function AddTransactionSheet({
             </div>
 
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">Recebido em</label>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Recebido em</label>
               <input
                 type="text"
                 value={date}
@@ -465,26 +465,26 @@ export function AddTransactionSheet({
                 }}
                 placeholder="DD/MM/AAAA"
                 maxLength={10}
-                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">Valor</label>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Valor</label>
               <input
                 type="number"
                 step="0.01"
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 placeholder="0,00"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">Corresponde</label>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Corresponde</label>
               <input
                 type="text"
                 list="people-list"
@@ -503,7 +503,7 @@ export function AddTransactionSheet({
                 onBlur={() => {
                   // Manter o texto para criar nova pessoa se necessário
                 }}
-                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 placeholder="Digite ou selecione uma pessoa"
               />
               <datalist id="people-list">
@@ -514,11 +514,11 @@ export function AddTransactionSheet({
             </div>
 
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">Anotação</label>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Anotação</label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-white border border-gray-200 rounded-lg px-3.5 py-2.5 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none transition-all"
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3.5 py-2.5 md:px-4 md:py-3 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 resize-none transition-all"
                 rows={3}
                 placeholder="Opcional"
               />
@@ -527,7 +527,7 @@ export function AddTransactionSheet({
             <button
               type="submit"
               disabled={saved}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition-all disabled:bg-green-600 shadow-sm hover:shadow-md text-sm"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 md:py-3 rounded-lg transition-all disabled:bg-green-600 shadow-sm hover:shadow-md text-sm md:text-base"
             >
               {saved ? '✓ Salvo!' : 'Salvar'}
             </button>
@@ -541,33 +541,33 @@ export function AddTransactionSheet({
   if (type === 'debt') {
     return (
       <div
-        className="fixed inset-0 z-50 flex items-end bg-black/40 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-end md:items-center bg-black/40 backdrop-blur-sm p-0 md:p-4"
         onClick={onClose}
       >
         <div
-          className="w-full max-w-sm mx-auto bg-white rounded-t-2xl p-4 shadow-2xl"
+          className="w-full max-w-sm md:max-w-md mx-auto bg-white dark:bg-gray-800 rounded-t-2xl md:rounded-2xl p-4 md:p-6 shadow-2xl max-h-[90vh] md:max-h-[85vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-            <h2 className="text-sm font-bold text-gray-900">Nova Dívida</h2>
+          <div className="flex items-center justify-between mb-4 md:mb-6 pb-3 border-b border-gray-100 dark:border-gray-700">
+            <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white">Nova Dívida</h2>
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl leading-none w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               ×
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">
                 Descrição <span className="text-gray-400 font-normal normal-case">(pode usar emojis)</span>
               </label>
               <input
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 placeholder="Ex: 💳 Cartão de Crédito ou Financiamento"
                 required
                 autoFocus
@@ -575,7 +575,7 @@ export function AddTransactionSheet({
             </div>
 
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">Data do pagamento</label>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Data do pagamento</label>
               <input
                 type="text"
                 value={date}
@@ -587,18 +587,18 @@ export function AddTransactionSheet({
                 }}
                 placeholder="DD/MM/AAAA"
                 maxLength={10}
-                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">Tipo do lançamento</label>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Tipo do lançamento</label>
               <div className="relative">
                 <select
                   value={transactionType}
                   onChange={(e) => setTransactionType(e.target.value)}
-                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer transition-all hover:border-gray-300"
+                  className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer transition-all hover:border-gray-300 dark:hover:border-gray-500"
                 >
                   <option value="Pagamento Mensal">Pagamento Mensal</option>
                   <option value="Pagamento Único">Pagamento Único</option>
@@ -613,13 +613,13 @@ export function AddTransactionSheet({
             </div>
 
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">Valor</label>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Valor</label>
               <input
                 type="number"
                 step="0.01"
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 placeholder="0,00"
                 required
               />
@@ -644,7 +644,7 @@ export function AddTransactionSheet({
                       min="1"
                       value={installments.total}
                       onChange={(e) => setInstallments({ ...installments, total: parseInt(e.target.value) || 1 })}
-                      className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                      className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                       placeholder="Total de parcelas"
                     />
                   </div>
@@ -655,7 +655,7 @@ export function AddTransactionSheet({
             {/* Campo de dia do mês - apenas se tipo for "Pagamento Mensal" */}
             {transactionType === 'Pagamento Mensal' && (
               <div>
-                <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">
+                <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">
                   Dia do mês para pagamento
                 </label>
                 <input
@@ -669,19 +669,19 @@ export function AddTransactionSheet({
                       setMonthlyPaymentDate(val);
                     }
                   }}
-                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                   placeholder="Ex: 15 (dia 15 de cada mês)"
                 />
               </div>
             )}
 
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">Status</label>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Status</label>
               <div className="relative">
                 <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as 'paid' | 'pending')}
-                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer transition-all hover:border-gray-300"
+                  className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer transition-all hover:border-gray-300 dark:hover:border-gray-500"
                 >
                   <option value="pending">A pagar</option>
                   <option value="paid">Pago</option>
@@ -697,7 +697,7 @@ export function AddTransactionSheet({
             <button
               type="submit"
               disabled={saved}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition-all disabled:bg-green-600 shadow-sm hover:shadow-md text-sm"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 md:py-3 rounded-lg transition-all disabled:bg-green-600 shadow-sm hover:shadow-md text-sm md:text-base"
             >
               {saved ? '✓ Salvo!' : 'Salvar'}
             </button>
@@ -711,24 +711,24 @@ export function AddTransactionSheet({
   if (type === 'expense_fixed') {
     return (
       <div
-        className="fixed inset-0 z-50 flex items-end bg-black/40 backdrop-blur-sm"
+        className="fixed inset-0 z-50 flex items-end md:items-center bg-black/40 backdrop-blur-sm p-0 md:p-4"
         onClick={onClose}
       >
         <div
-          className="w-full max-w-sm mx-auto bg-white rounded-t-2xl p-4 shadow-2xl"
+          className="w-full max-w-sm md:max-w-md mx-auto bg-white dark:bg-gray-800 rounded-t-2xl md:rounded-2xl p-4 md:p-6 shadow-2xl max-h-[90vh] md:max-h-[85vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-            <h2 className="text-sm font-bold text-gray-900">Nova Despesa Fixa</h2>
+          <div className="flex items-center justify-between mb-4 md:mb-6 pb-3 border-b border-gray-100 dark:border-gray-700">
+            <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white">Nova Despesa Fixa</h2>
             <button
               onClick={onClose}
-              className="text-gray-500 hover:text-gray-700 text-2xl leading-none"
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl leading-none w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               ×
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3">
+          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
             <div>
               <label className="block text-sm text-gray-700 mb-2 font-medium">
                 Descrição <span className="text-gray-500 text-xs font-normal">(pode usar emojis)</span>
@@ -737,7 +737,7 @@ export function AddTransactionSheet({
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 placeholder="Ex: 🏠 Aluguel"
                 required
                 autoFocus
@@ -746,12 +746,12 @@ export function AddTransactionSheet({
             </div>
 
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">Categoria</label>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Categoria</label>
               <div className="relative">
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer transition-all hover:border-gray-300"
+                  className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer transition-all hover:border-gray-300 dark:hover:border-gray-500"
                   required
                 >
                   <option value="">Selecione uma categoria...</option>
@@ -770,20 +770,20 @@ export function AddTransactionSheet({
             </div>
 
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">Valor</label>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Valor</label>
               <input
                 type="number"
                 step="0.01"
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 placeholder="0,00"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">Vencimento</label>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Vencimento</label>
               <input
                 type="text"
                 value={dueDate}
@@ -795,17 +795,17 @@ export function AddTransactionSheet({
                 }}
                 placeholder="DD/MM/AAAA"
                 maxLength={10}
-                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">Status</label>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Status</label>
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as 'paid' | 'pending')}
-                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
               >
                 <option value="pending">A pagar</option>
                 <option value="paid">Pagou</option>
@@ -815,7 +815,7 @@ export function AddTransactionSheet({
             <button
               type="submit"
               disabled={saved}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition-all disabled:bg-green-600 shadow-sm hover:shadow-md text-sm"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 md:py-3 rounded-lg transition-all disabled:bg-green-600 shadow-sm hover:shadow-md text-sm md:text-base"
             >
               {saved ? '✓ Salvo!' : 'Salvar'}
             </button>
