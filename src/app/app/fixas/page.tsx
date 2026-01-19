@@ -6,11 +6,14 @@ import { CardUI } from '@/components/finance/CardUI';
 import { PageHeader } from '@/components/finance/PageHeader';
 import { TransactionList } from '@/components/finance/TransactionList';
 import { AddTransactionSheet } from '@/components/finance/AddTransactionSheet';
+import { DateFilter } from '@/components/finance/DateFilter';
 
 export default function FixasPage() {
   const { isInitialized } = useFinanceStore();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [filter, setFilter] = useState('');
+  const [dateStart, setDateStart] = useState<string | null>(null);
+  const [dateEnd, setDateEnd] = useState<string | null>(null);
 
   if (!isInitialized) {
     return (
@@ -27,13 +30,24 @@ export default function FixasPage() {
           title="Despesas Fixas"
           icon="📌"
           onFilterChange={setFilter}
-          onAddClick={() => setIsSheetOpen(true)}
         />
+
+        <div className="mb-4">
+          <DateFilter
+            pageKey="fixas"
+            onDateRangeChange={(start, end) => {
+              setDateStart(start);
+              setDateEnd(end);
+            }}
+          />
+        </div>
 
         <CardUI>
           <TransactionList
             type="expense_fixed"
             filter={filter}
+            startDate={dateStart}
+            endDate={dateEnd}
             showCategory={true}
             showStatus={true}
             showDueDate={true}

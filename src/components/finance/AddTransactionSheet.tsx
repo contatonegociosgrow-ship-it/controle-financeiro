@@ -36,6 +36,7 @@ export function AddTransactionSheet({
   const [description, setDescription] = useState('');
   const [value, setValue] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [cardId, setCardId] = useState('');
   
   // Função para converter ISO (YYYY-MM-DD) para brasileiro (DD/MM/YYYY)
   const formatDateToBR = (isoDate: string): string => {
@@ -91,6 +92,7 @@ export function AddTransactionSheet({
   const [personInput, setPersonInput] = useState('');
   const [notes, setNotes] = useState('');
   const [transactionType, setTransactionType] = useState('Pagamento Mensal');
+  const [monthlyPaymentDate, setMonthlyPaymentDate] = useState('');
 
   // Categorias já são garantidas no FinanceProvider
 
@@ -111,14 +113,37 @@ export function AddTransactionSheet({
       setPersonInput('');
       setNotes('');
       setTransactionType('Pagamento Mensal');
+      setMonthlyPaymentDate('');
       setSaved(false);
     }
   }, [isOpen, pathname]);
 
+  const handleExampleClick = (exampleDescription: string, categoryName: string) => {
+    // Preencher descrição
+    setDescription(exampleDescription);
+    
+    // Encontrar e selecionar categoria pelo nome
+    if (type === 'expense_variable' || type === 'expense_fixed') {
+      const foundCategory = state.categories.find(
+        (cat) => cat.name.toLowerCase() === categoryName.toLowerCase()
+      );
+      if (foundCategory) {
+        setCategoryId(foundCategory.id);
+      }
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!value || !description) {
+    // Validações com mensagens claras
+    if (!value || parseFloat(value) <= 0) {
+      alert('Por favor, insira um valor válido maior que zero.');
+      return;
+    }
+
+    if (!description || description.trim() === '') {
+      alert('Por favor, insira uma descrição.');
       return;
     }
 
@@ -130,6 +155,7 @@ export function AddTransactionSheet({
     }
 
     if ((type === 'expense_fixed' || type === 'expense_variable') && !categoryId) {
+      alert('Por favor, selecione uma categoria.');
       return;
     }
 
@@ -165,14 +191,35 @@ export function AddTransactionSheet({
 
     // Campos específicos por tipo
     if (type === 'income') {
-      transactionData.categoryId = state.categories[0]?.id || '';
+      // Buscar categoria "Ganhos" (deve existir no seedData)
+      let ganhosCategory = state.categories.find((c) => c.name === 'Ganhos');
+      // Se não existir, criar (não deveria acontecer, mas por segurança)
+      if (!ganhosCategory) {
+        const ganhosId = addCategory('Ganhos');
+        ganhosCategory = { id: ganhosId, name: 'Ganhos', limit: null };
+      }
+      transactionData.categoryId = ganhosCategory.id;
       transactionData.personId = finalPersonId || null;
       transactionData.notes = notes || description;
     } else if (type === 'debt') {
       transactionData.categoryId = state.categories[0]?.id || '';
       transactionData.dueDate = formatDateToISO(date);
       transactionData.status = status;
-      transactionData.notes = transactionType;
+      transactionData.notes = description || transactionType;
+      
+      // Se for parcelado, adicionar installments
+      if (transactionType === 'Parcela' && hasInstallments) {
+        transactionData.installments = installments;
+        transactionData.paidInstallments = [];
+      }
+      
+      // Se for pagamento mensal, adicionar monthlyPaymentDate
+      if (transactionType === 'Pagamento Mensal' && monthlyPaymentDate) {
+        const day = parseInt(monthlyPaymentDate, 10);
+        if (day >= 1 && day <= 31) {
+          transactionData.monthlyPaymentDate = day;
+        }
+      }
     } else {
       // expense_fixed, expense_variable, savings
       transactionData.categoryId = categoryId;
@@ -185,6 +232,10 @@ export function AddTransactionSheet({
       
       if (type === 'expense_variable') {
         transactionData.installments = hasInstallments ? installments : null;
+        // Se houver cartão selecionado, adicionar cardId
+        if (cardId) {
+          transactionData.cardId = cardId;
+        }
       }
     }
 
@@ -234,7 +285,7 @@ export function AddTransactionSheet({
                 required
                 autoFocus
               />
-              <CategoryExamples type={type} />
+              <CategoryExamples type={type} onExampleClick={handleExampleClick} />
             </div>
 
             <div>
@@ -250,6 +301,31 @@ export function AddTransactionSheet({
                   {state.categories.map((cat) => (
                     <option key={cat.id} value={cat.id}>
                       {cat.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">
+                Cartão de Crédito <span className="text-gray-400 font-normal normal-case">(opcional)</span>
+              </label>
+              <div className="relative">
+                <select
+                  value={cardId}
+                  onChange={(e) => setCardId(e.target.value)}
+                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer transition-all hover:border-gray-300"
+                >
+                  <option value="">Sem cartão</option>
+                  {state.cards.map((card) => (
+                    <option key={card.id} value={card.id}>
+                      {card.name}
                     </option>
                   ))}
                 </select>
@@ -293,32 +369,32 @@ export function AddTransactionSheet({
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">
+              <label className="flex items-center gap-2 text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide cursor-pointer">
                 <input
                   type="checkbox"
                   checked={hasInstallments}
                   onChange={(e) => setHasInstallments(e.target.checked)}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  className="w-5 h-5 rounded-md border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-all duration-200 checked:bg-blue-600 checked:border-blue-600 hover:border-blue-400 shadow-sm"
                 />
                 <span className="normal-case">Parcelado</span>
               </label>
               {hasInstallments && (
-                <div className="flex gap-2">
+                <div className="mt-2 flex flex-wrap gap-2 items-center">
                   <input
                     type="number"
                     min="1"
                     value={installments.current}
                     onChange={(e) => setInstallments({ ...installments, current: parseInt(e.target.value) || 1 })}
-                    className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="flex-1 min-w-[100px] bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                     placeholder="Parcela atual"
                   />
-                  <span className="text-gray-600 self-center">de</span>
+                  <span className="text-gray-600 text-sm whitespace-nowrap">de</span>
                   <input
                     type="number"
                     min="1"
                     value={installments.total}
                     onChange={(e) => setInstallments({ ...installments, total: parseInt(e.target.value) || 1 })}
-                    className="flex-1 bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    className="flex-1 min-w-[100px] bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                     placeholder="Total"
                   />
                 </div>
@@ -373,7 +449,7 @@ export function AddTransactionSheet({
                 required
                 autoFocus
               />
-              <CategoryExamples type={type} />
+              <CategoryExamples type={type} onExampleClick={handleExampleClick} />
             </div>
 
             <div>
@@ -484,6 +560,21 @@ export function AddTransactionSheet({
 
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
+              <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">
+                Descrição <span className="text-gray-400 font-normal normal-case">(pode usar emojis)</span>
+              </label>
+              <input
+                type="text"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                placeholder="Ex: 💳 Cartão de Crédito ou Financiamento"
+                required
+                autoFocus
+              />
+            </div>
+
+            <div>
               <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">Data do pagamento</label>
               <input
                 type="text"
@@ -533,6 +624,56 @@ export function AddTransactionSheet({
                 required
               />
             </div>
+
+            {/* Campo de parcelas - apenas se tipo for "Parcela" */}
+            {transactionType === 'Parcela' && (
+              <div>
+                <label className="flex items-center gap-2 text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={hasInstallments}
+                    onChange={(e) => setHasInstallments(e.target.checked)}
+                    className="w-5 h-5 rounded-md border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-all duration-200 checked:bg-blue-600 checked:border-blue-600 hover:border-blue-400 shadow-sm"
+                  />
+                  <span className="normal-case">Parcelado</span>
+                </label>
+                {hasInstallments && (
+                  <div className="mt-2">
+                    <input
+                      type="number"
+                      min="1"
+                      value={installments.total}
+                      onChange={(e) => setInstallments({ ...installments, total: parseInt(e.target.value) || 1 })}
+                      className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                      placeholder="Total de parcelas"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Campo de dia do mês - apenas se tipo for "Pagamento Mensal" */}
+            {transactionType === 'Pagamento Mensal' && (
+              <div>
+                <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">
+                  Dia do mês para pagamento
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="31"
+                  value={monthlyPaymentDate}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '' || (parseInt(val) >= 1 && parseInt(val) <= 31)) {
+                      setMonthlyPaymentDate(val);
+                    }
+                  }}
+                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  placeholder="Ex: 15 (dia 15 de cada mês)"
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide">Status</label>
@@ -601,7 +742,7 @@ export function AddTransactionSheet({
                 required
                 autoFocus
               />
-              <CategoryExamples type={type} />
+              <CategoryExamples type={type} onExampleClick={handleExampleClick} />
             </div>
 
             <div>

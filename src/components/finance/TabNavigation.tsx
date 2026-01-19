@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
-type TabType = 'gerais' | 'ganhos' | 'fixas' | 'variaveis' | 'dividas' | 'economias';
+type TabType = 'gerais' | 'ganhos' | 'fixas' | 'variaveis' | 'dividas' | 'economias' | 'mensal' | 'manual' | 'perfil';
 
 const tabs: { id: TabType; label: string; path: string }[] = [
   { id: 'gerais', label: 'Gerais', path: '/app/gerais' },
@@ -12,6 +12,9 @@ const tabs: { id: TabType; label: string; path: string }[] = [
   { id: 'variaveis', label: 'Variáveis', path: '/app/variaveis' },
   { id: 'dividas', label: 'Dívidas', path: '/app/dividas' },
   { id: 'economias', label: 'Economias', path: '/app/economias' },
+  { id: 'mensal', label: 'Mensal', path: '/app/mensal' },
+  { id: 'manual', label: 'Manual', path: '/app/manual' },
+  { id: 'perfil', label: 'Perfil', path: '/app/perfil' },
 ];
 
 export function TabNavigation() {

@@ -6,11 +6,14 @@ import { CardUI } from '@/components/finance/CardUI';
 import { PageHeader } from '@/components/finance/PageHeader';
 import { TransactionList } from '@/components/finance/TransactionList';
 import { AddTransactionSheet } from '@/components/finance/AddTransactionSheet';
+import { DateFilter } from '@/components/finance/DateFilter';
 
 export default function GanhosPage() {
   const { isInitialized } = useFinanceStore();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [filter, setFilter] = useState('');
+  const [dateStart, setDateStart] = useState<string | null>(null);
+  const [dateEnd, setDateEnd] = useState<string | null>(null);
 
   if (!isInitialized) {
     return (
@@ -27,13 +30,24 @@ export default function GanhosPage() {
           title="Ganhos"
           icon="💰"
           onFilterChange={setFilter}
-          onAddClick={() => setIsSheetOpen(true)}
         />
+
+        <div className="mb-4">
+          <DateFilter
+            pageKey="ganhos"
+            onDateRangeChange={(start, end) => {
+              setDateStart(start);
+              setDateEnd(end);
+            }}
+          />
+        </div>
 
         <CardUI>
           <TransactionList
             type="income"
             filter={filter}
+            startDate={dateStart}
+            endDate={dateEnd}
             columns={5}
           />
         </CardUI>

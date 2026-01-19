@@ -6,6 +6,8 @@ import { useFinanceStore } from '@/lib/FinanceProvider';
 type TransactionListProps = {
   type?: 'income' | 'expense_fixed' | 'expense_variable' | 'debt' | 'savings' | 'all';
   filter?: string;
+  startDate?: string | null;
+  endDate?: string | null;
   showCategory?: boolean;
   showStatus?: boolean;
   showInstallments?: boolean;
@@ -13,24 +15,27 @@ type TransactionListProps = {
   columns?: number;
 };
 
-const CATEGORY_COLORS: Record<string, string> = {
-  'Compras': 'bg-purple-500/20 text-purple-300',
-  'Educação': 'bg-blue-500/20 text-blue-300',
-  'Saúde': 'bg-yellow-500/20 text-yellow-300',
-  'Carro': 'bg-orange-500/20 text-orange-300',
-  'Restaurante': 'bg-green-500/20 text-green-300',
-  'Casa': 'bg-gray-500/20 text-gray-300',
-  'Lazer': 'bg-pink-500/20 text-pink-300',
-  'Presente': 'bg-purple-400/20 text-purple-200',
-  'Farmácia': 'bg-purple-500/20 text-purple-300',
-  'Seguro': 'bg-blue-500/20 text-blue-300',
-  'Mercado': 'bg-green-500/20 text-green-300',
-  'Assinatura': 'bg-pink-500/20 text-pink-300',
+import { getCategoryColor } from '@/lib/categoryColors';
+
+const getCategoryColorClass = (category: { name: string; color?: string }) => {
+  const hexColor = getCategoryColor(category);
+  // Converter hex para RGB
+  const r = parseInt(hexColor.slice(1, 3), 16);
+  const g = parseInt(hexColor.slice(3, 5), 16);
+  const b = parseInt(hexColor.slice(5, 7), 16);
+  
+  return {
+    backgroundColor: `rgba(${r}, ${g}, ${b}, 0.2)`,
+    color: `rgb(${r}, ${g}, ${b})`,
+  };
 };
+
 
 export function TransactionList({
   type = 'all',
   filter = '',
+  startDate = null,
+  endDate = null,
   showCategory = false,
   showStatus = false,
   showInstallments = false,
@@ -44,17 +49,38 @@ export function TransactionList({
   const filteredTransactions = useMemo(() => {
     let filtered = state.transactions;
 
-    if (type !== 'all') {
+    // Filtrar por tipo - deve ser aplicado primeiro
+    if (type && type !== 'all') {
       filtered = filtered.filter((t) => t.type === type);
     }
 
     if (filter) {
-      const filterLower = filter.toLowerCase();
+      const filterLower = filter.toLowerCase().trim();
       filtered = filtered.filter((t) => {
         const category = state.categories.find((c) => c.id === t.categoryId);
         const categoryName = category?.name.toLowerCase() || '';
         const notes = t.notes?.toLowerCase() || '';
-        return categoryName.includes(filterLower) || notes.includes(filterLower);
+        const valueStr = t.value.toString().replace('.', ',');
+        const person = t.personId ? state.people.find((p) => p.id === t.personId) : null;
+        const personName = person?.name.toLowerCase() || '';
+        
+        return (
+          categoryName.includes(filterLower) ||
+          notes.includes(filterLower) ||
+          valueStr.includes(filterLower) ||
+          personName.includes(filterLower) ||
+          t.date.includes(filterLower)
+        );
+      });
+    }
+
+    // Filtrar por data
+    if (startDate || endDate) {
+      filtered = filtered.filter((t) => {
+        const transactionDate = t.date;
+        if (startDate && transactionDate < startDate) return false;
+        if (endDate && transactionDate > endDate) return false;
+        return true;
       });
     }
 
@@ -63,7 +89,7 @@ export function TransactionList({
       const dateB = new Date(b.date).getTime();
       return dateB - dateA;
     });
-  }, [state.transactions, state.categories, type, filter]);
+  }, [state.transactions, state.categories, state.people, type, filter, startDate, endDate]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -85,12 +111,6 @@ export function TransactionList({
     return state.categories.find((c) => c.id === id)?.name || 'Sem categoria';
   };
 
-  const getCategoryColor = (categoryName: string) => {
-    const baseColor = CATEGORY_COLORS[categoryName] || 'bg-gray-500/20';
-    // Extrair apenas a cor de fundo, forçar texto preto
-    const bgColor = baseColor.split(' ').find(c => c.startsWith('bg-')) || 'bg-gray-500/20';
-    return `${bgColor} text-gray-900`;
-  };
 
   const getStatusColor = (status?: string) => {
     if (status === 'paid') return 'bg-green-100 text-gray-900';
@@ -131,14 +151,6 @@ export function TransactionList({
     }
   }, [state.people, updateTransaction, addPerson]);
 
-  if (filteredTransactions.length === 0) {
-    return (
-      <div className="text-center py-8 text-gray-500 text-sm border border-gray-200 rounded-lg">
-        Nenhum lançamento encontrado
-      </div>
-    );
-  }
-
   // Calcular número real de colunas baseado no tipo
   const getActualColumns = useCallback(() => {
     if (type === 'income') return 5; // Descrição, Recebido em, Valor, Corresponde, Anotação
@@ -149,6 +161,14 @@ export function TransactionList({
   }, [type, columns]);
 
   const actualColumns = getActualColumns();
+
+  if (filteredTransactions.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500 text-sm border border-gray-200 rounded-lg">
+        Nenhum lançamento encontrado
+      </div>
+    );
+  }
 
   // Função para obter os headers baseado no tipo
   const getHeaders = () => {
@@ -170,17 +190,17 @@ export function TransactionList({
   const headers = getHeaders();
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
+    <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
       {/* Header */}
       {headers.length > 0 && (
         <div
-          className="grid py-3 px-4 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-700 uppercase tracking-wider"
+          className="grid py-3 px-4 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
           style={{ gridTemplateColumns: `repeat(${actualColumns}, minmax(0, 1fr))` }}
         >
           {headers.map((header, idx) => (
             <div 
               key={idx} 
-              className={`font-medium px-3 ${idx !== 0 ? 'border-l border-gray-200' : ''}`}
+              className={`font-medium px-3 ${idx !== 0 ? 'border-l border-gray-200 dark:border-gray-700' : ''}`}
             >
               {header}
             </div>
@@ -190,13 +210,14 @@ export function TransactionList({
       
       {/* Rows */}
       {filteredTransactions.map((transaction, index) => {
-        const categoryName = getCategoryName(transaction.categoryId);
+        const category = state.categories.find((c) => c.id === transaction.categoryId);
+        const categoryName = category?.name || 'Sem categoria';
         const isIncome = transaction.type === 'income';
 
         return (
           <div
             key={transaction.id}
-            className={`grid py-3 px-4 hover:bg-gray-50 text-sm items-center border-b border-gray-200 ${
+            className={`grid py-3 px-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-sm items-center border-b border-gray-200 dark:border-gray-700 ${
               index === filteredTransactions.length - 1 ? 'border-b-0' : ''
             }`}
             style={{ gridTemplateColumns: `repeat(${actualColumns}, minmax(0, 1fr))` }}
@@ -259,7 +280,18 @@ export function TransactionList({
                 <div className="text-gray-900 font-medium px-3 border-l border-gray-200">Pagamento Mensal</div>
                 <div className="text-gray-900 font-semibold text-base px-3 border-l border-gray-200">{formatCurrency(transaction.value)}</div>
                 {showStatus && transaction.status && (
-                  <div className={`px-3 py-3 border-l border-gray-200 flex items-center ${getStatusColor(transaction.status)}`}>
+                  <div className={`px-3 py-3 border-l border-gray-200 flex items-center gap-2 ${getStatusColor(transaction.status)}`}>
+                    <input
+                      type="checkbox"
+                      checked={transaction.status === 'paid'}
+                      onChange={(e) => {
+                        updateTransaction(transaction.id, {
+                          status: e.target.checked ? 'paid' : 'pending',
+                        });
+                      }}
+                      className="w-5 h-5 rounded-md border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-all duration-200 checked:bg-blue-600 checked:border-blue-600 hover:border-blue-400 shadow-sm"
+                      title={transaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
+                    />
                     <span className="text-xs font-medium">
                       {getStatusLabel(transaction.status)}
                     </span>
@@ -271,9 +303,12 @@ export function TransactionList({
                 <div className="text-gray-900 truncate font-medium px-3" title={transaction.notes || categoryName}>
                   {transaction.notes || categoryName}
                 </div>
-                {showCategory && (
-                  <div className={`px-3 py-3 border-l border-gray-200 flex items-center ${getCategoryColor(categoryName)}`}>
-                    <span className="text-xs font-medium">
+                {showCategory && category && (
+                  <div 
+                    className="px-3 py-3 border-l border-gray-200 dark:border-gray-700 flex items-center rounded"
+                    style={getCategoryColorClass(category)}
+                  >
+                    <span className="text-xs font-semibold">
                       {categoryName}
                     </span>
                   </div>
@@ -300,7 +335,18 @@ export function TransactionList({
                   </div>
                 )}
                 {showStatus && transaction.status && (
-                  <div className={`px-3 py-3 border-l border-gray-200 flex items-center ${getStatusColor(transaction.status)}`}>
+                  <div className={`px-3 py-3 border-l border-gray-200 flex items-center gap-2 ${getStatusColor(transaction.status)}`}>
+                    <input
+                      type="checkbox"
+                      checked={transaction.status === 'paid'}
+                      onChange={(e) => {
+                        updateTransaction(transaction.id, {
+                          status: e.target.checked ? 'paid' : 'pending',
+                        });
+                      }}
+                      className="w-5 h-5 rounded-md border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-all duration-200 checked:bg-blue-600 checked:border-blue-600 hover:border-blue-400 shadow-sm"
+                      title={transaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
+                    />
                     <span className="text-xs font-medium">
                       {getStatusLabel(transaction.status)}
                     </span>

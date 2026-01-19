@@ -1,9 +1,14 @@
 type FinanceState = {
   meta: { schemaVersion: number; updatedAt: number };
-  profile: { name: string; currency: 'BRL' | 'USD' | 'EUR' };
-  categories: { id: string; name: string; limit?: number | null }[];
+  profile: { 
+    name: string; 
+    currency: 'BRL' | 'USD' | 'EUR';
+    monthlyIncome: number;
+    wallet: number; // Carteira/Saldo atual
+  };
+  categories: { id: string; name: string; limit?: number | null; color?: string }[];
   people: { id: string; name: string }[];
-  cards: { id: string; name: string; closingDay: number; dueDay: number }[];
+  cards: { id: string; name: string; limit: number; closingDay: number; dueDay: number; createdAt: number }[];
   transactions: {
     id: string;
     value: number;
@@ -24,6 +29,29 @@ type FinanceState = {
     status?: 'paid' | 'pending' | 'overdue';
     // Para dívidas: data de pagamento mensal
     monthlyPaymentDate?: number; // dia do mês (1-31)
+    // Para dívidas parceladas: controle de parcelas pagas
+    paidInstallments?: number[]; // array com números das parcelas pagas (ex: [1, 2, 3])
+  }[];
+  goals: {
+    id: string;
+    title: string;
+    targetValue: number;
+    monthlyContribution: number;
+    currentValue: number;
+    startDate: string;
+    deadline?: string;
+    status: 'active' | 'completed';
+  }[];
+  debts: {
+    id: string;
+    title: string;
+    totalValue: number;
+    installments: number;
+    installmentValue: number;
+    startDate: string;
+    paidInstallments: number[];
+    status: 'active' | 'completed';
+    createdAt: number;
   }[];
   settings: { theme: 'dark' | 'light' };
 };
@@ -38,13 +66,17 @@ const defaultState: FinanceState = {
   profile: {
     name: '',
     currency: 'BRL',
+    monthlyIncome: 0,
+    wallet: 0,
   },
   categories: [],
   people: [],
   cards: [],
   transactions: [],
+  goals: [],
+  debts: [],
   settings: {
-    theme: 'dark',
+    theme: 'light',
   },
 };
 
@@ -73,7 +105,82 @@ export function loadState(): FinanceState {
     return defaultState;
   }
 
-  return state;
+  // Migração: garantir compatibilidade com dados antigos
+  // Primeiro, garantir que a categoria "Ganhos" existe
+  let categories = [...state.categories];
+  let ganhosCategory = categories.find((c) => c.name === 'Ganhos');
+  let categoriesChanged = false;
+  
+  if (!ganhosCategory) {
+    ganhosCategory = {
+      id: crypto.randomUUID(),
+      name: 'Ganhos',
+      limit: null,
+      color: '#22c55e', // verde
+    };
+    categories.push(ganhosCategory);
+    categoriesChanged = true;
+  }
+
+  // Migração: corrigir transações de ganho que têm categoria errada
+  let transactionsChanged = false;
+  const migratedTransactions = state.transactions.map((t) => {
+    // Se é transação de ganho e não tem categoria "Ganhos", corrigir
+    if (t.type === 'income') {
+      const currentCategory = categories.find((c) => c.id === t.categoryId);
+      if (!currentCategory || currentCategory.name !== 'Ganhos') {
+        // Corrigir para usar categoria "Ganhos"
+        transactionsChanged = true;
+        return {
+          ...t,
+          categoryId: ganhosCategory!.id,
+          paidInstallments: t.paidInstallments ?? undefined,
+        };
+      }
+    }
+    return {
+      ...t,
+      paidInstallments: t.paidInstallments ?? undefined,
+    };
+  });
+
+  const migratedState: FinanceState = {
+    ...state,
+    profile: {
+      ...state.profile,
+      monthlyIncome: state.profile.monthlyIncome ?? 0,
+      wallet: state.profile.wallet ?? 0,
+    },
+    goals: state.goals ?? [],
+    debts: state.debts ?? [],
+    transactions: migratedTransactions,
+    categories: categories,
+    settings: {
+      theme: state.settings?.theme ?? 'light',
+    },
+  };
+
+  // Salvar estado migrado se houve mudanças
+  if (transactionsChanged || categoriesChanged) {
+    // Salvar apenas se estiver no cliente
+    if (typeof window !== 'undefined') {
+      setTimeout(() => {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            ...migratedState,
+            meta: {
+              ...migratedState.meta,
+              updatedAt: Date.now(),
+            },
+          }));
+        } catch (error) {
+          console.error('Erro ao salvar migração:', error);
+        }
+      }, 100);
+    }
+  }
+
+  return migratedState;
 }
 
 export function saveState(state: FinanceState): void {

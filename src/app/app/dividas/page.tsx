@@ -6,11 +6,17 @@ import { CardUI } from '@/components/finance/CardUI';
 import { PageHeader } from '@/components/finance/PageHeader';
 import { TransactionList } from '@/components/finance/TransactionList';
 import { AddTransactionSheet } from '@/components/finance/AddTransactionSheet';
+import { DebtCard } from '@/components/finance/DebtCard';
+import { AddDebtSheet } from '@/components/finance/AddDebtSheet';
+import { DateFilter } from '@/components/finance/DateFilter';
 
 export default function DividasPage() {
   const { state, isInitialized } = useFinanceStore();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isDebtSheetOpen, setIsDebtSheetOpen] = useState(false);
   const [filter, setFilter] = useState('');
+  const [dateStart, setDateStart] = useState<string | null>(null);
+  const [dateEnd, setDateEnd] = useState<string | null>(null);
 
   // Calcular meses dinamicamente baseado na data atual
   const currentDate = new Date();
@@ -125,7 +131,6 @@ export default function DividasPage() {
           title="Dívidas"
           icon="🔗"
           onFilterChange={setFilter}
-          onAddClick={() => setIsSheetOpen(true)}
         />
 
         <div className="space-y-6">
@@ -228,12 +233,76 @@ export default function DividasPage() {
             </div>
           </CardUI>
 
+          {/* Dívidas Parceladas */}
+          {state.debts.filter((d) => d.status === 'active').length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900">Dívidas Parceladas</h3>
+                <button
+                  onClick={() => setIsDebtSheetOpen(true)}
+                  className="text-sm text-blue-600 hover:text-blue-700 font-semibold"
+                >
+                  + Adicionar
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {state.debts
+                  .filter((d) => d.status === 'active')
+                  .map((debt) => (
+                    <DebtCard key={debt.id} debt={debt} />
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {/* Dívidas Concluídas */}
+          {state.debts.filter((d) => d.status === 'completed').length > 0 && (
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Dívidas Concluídas</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {state.debts
+                  .filter((d) => d.status === 'completed')
+                  .map((debt) => (
+                    <DebtCard key={debt.id} debt={debt} />
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {/* Botão para adicionar dívida se não houver nenhuma */}
+          {state.debts.length === 0 && (
+            <CardUI>
+              <div className="text-center py-8">
+                <p className="text-gray-600 mb-4">Nenhuma dívida parcelada cadastrada</p>
+                <button
+                  onClick={() => setIsDebtSheetOpen(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition-all shadow-sm hover:shadow-md"
+                >
+                  Adicionar Dívida Parcelada
+                </button>
+              </div>
+            </CardUI>
+          )}
+
+          {/* Filtro de Data */}
+          <div className="mb-4">
+            <DateFilter
+              pageKey="dividas"
+              onDateRangeChange={(start, end) => {
+                setDateStart(start);
+                setDateEnd(end);
+              }}
+            />
+          </div>
+
           {/* Lista de Dívidas */}
           <CardUI>
             <h3 className="text-sm text-gray-600 mb-4 font-medium">Próximos Pagamentos</h3>
             <TransactionList
               type="debt"
               filter={filter}
+              startDate={dateStart}
+              endDate={dateEnd}
               showStatus={true}
               showDueDate={true}
               columns={4}
@@ -251,6 +320,7 @@ export default function DividasPage() {
       </button>
 
       <AddTransactionSheet isOpen={isSheetOpen} onClose={() => setIsSheetOpen(false)} />
+      <AddDebtSheet isOpen={isDebtSheetOpen} onClose={() => setIsDebtSheetOpen(false)} />
     </div>
   );
 }

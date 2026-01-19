@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { getCategoryColor } from '@/lib/categoryColors';
 
 type PieChartData = {
   label: string;
@@ -15,19 +16,20 @@ type PieChartProps = {
   strokeWidth?: number;
 };
 
-const CATEGORY_COLORS: Record<string, string> = {
-  'Compras': '#a855f7',      // purple-500
-  'Educação': '#3b82f6',     // blue-500
-  'Saúde': '#eab308',        // yellow-500
-  'Carro': '#f97316',        // orange-500
-  'Restaurante': '#22c55e',  // green-500
-  'Casa': '#6b7280',         // gray-500
-  'Lazer': '#ec4899',        // pink-500
-  'Presente': '#c084fc',     // purple-400
-  'Farmácia': '#a855f7',     // purple-500
-  'Seguro': '#3b82f6',       // blue-500
-  'Mercado': '#22c55e',      // green-500
-  'Assinatura': '#ec4899',   // pink-500
+const CATEGORY_EMOJIS: Record<string, string> = {
+  'Ganhos': '💰',
+  'Compras': '🛍️',
+  'Educação': '📚',
+  'Saúde': '🏥',
+  'Carro': '🚗',
+  'Restaurante': '🍽️',
+  'Casa': '🏠',
+  'Lazer': '🎬',
+  'Presente': '🎁',
+  'Farmácia': '💊',
+  'Seguro': '🛡️',
+  'Mercado': '🛒',
+  'Assinatura': '📺',
 };
 
 export function PieChart({ data, size = 200, strokeWidth = 20 }: PieChartProps) {
@@ -134,7 +136,7 @@ export function CategoryPieChart({
         const category = categories.find((c) => c.id === categoryId);
         const categoryName = category?.name || 'Outros';
         const percentage = (value / total) * 100;
-        const color = CATEGORY_COLORS[categoryName] || '#6b7280';
+        const color = category ? getCategoryColor(category) : '#6b7280';
 
         return {
           label: categoryName,
@@ -161,20 +163,25 @@ export function CategoryPieChart({
       
       {/* Legenda */}
       <div className="space-y-2">
-        {chartData.slice(0, 6).map((item, index) => (
-          <div key={index} className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2 min-w-0">
-              <div
-                className="w-3 h-3 rounded-full flex-shrink-0"
-                style={{ backgroundColor: item.color }}
-              />
-              <span className="text-gray-700 font-medium truncate">{item.label}</span>
+        {chartData.slice(0, 6).map((item, index) => {
+          const emoji = CATEGORY_EMOJIS[item.label] || '📋';
+          return (
+            <div key={index} className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2 min-w-0">
+                <div
+                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
+                  style={{ backgroundColor: item.color }}
+                >
+                  <span className="text-base">{emoji}</span>
+                </div>
+                <span className="text-gray-700 font-medium truncate">{item.label}</span>
+              </div>
+              <span className="text-gray-600 font-semibold ml-2">
+                {item.percentage.toFixed(1)}%
+              </span>
             </div>
-            <span className="text-gray-600 font-semibold ml-2">
-              {item.percentage.toFixed(1)}%
-            </span>
-          </div>
-        ))}
+          );
+        })}
         {chartData.length > 6 && (
           <div className="text-xs text-gray-500 text-center pt-1">
             +{chartData.length - 6} mais
