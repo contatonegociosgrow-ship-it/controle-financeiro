@@ -50,7 +50,7 @@ export default function CartoesPage() {
 
   return (
     <div className="min-h-screen pb-24 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <PageHeader title="Cartões de Crédito" icon="💳" hideSearch />
 
         {/* Resumo Total */}
@@ -170,7 +170,7 @@ export default function CartoesPage() {
       </div>
 
       {/* Botão flutuante */}
-      <div className="fixed bottom-6 right-6 z-40">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40">
         <button
           onClick={() => {
             setEditingCardId(null);

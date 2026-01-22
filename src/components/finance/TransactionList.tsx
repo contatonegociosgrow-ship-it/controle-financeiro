@@ -191,10 +191,10 @@ export function TransactionList({
 
   return (
     <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
-      {/* Header */}
+      {/* Header - Desktop only */}
       {headers.length > 0 && (
         <div
-          className="grid py-3 px-4 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+          className="hidden md:grid py-3 px-4 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
           style={{ gridTemplateColumns: `repeat(${actualColumns}, minmax(0, 1fr))` }}
         >
           {headers.map((header, idx) => (
@@ -215,13 +215,14 @@ export function TransactionList({
         const isIncome = transaction.type === 'income';
 
         return (
-          <div
-            key={transaction.id}
-            className={`grid py-3 px-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-sm items-center border-b border-gray-200 dark:border-gray-700 ${
-              index === filteredTransactions.length - 1 ? 'border-b-0' : ''
-            }`}
-            style={{ gridTemplateColumns: `repeat(${actualColumns}, minmax(0, 1fr))` }}
-          >
+          <div key={transaction.id}>
+            {/* Desktop View - Grid */}
+            <div
+              className={`hidden md:grid py-3 px-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-sm items-center border-b border-gray-200 dark:border-gray-700 ${
+                index === filteredTransactions.length - 1 ? 'border-b-0' : ''
+              }`}
+              style={{ gridTemplateColumns: `repeat(${actualColumns}, minmax(0, 1fr))` }}
+            >
             {type === 'income' ? (
               <>
                 <div className="text-gray-900 truncate font-medium px-3" title={transaction.notes || categoryName}>
@@ -354,6 +355,157 @@ export function TransactionList({
                 )}
               </>
             )}
+            </div>
+
+            {/* Mobile View - Cards */}
+            <div className="md:hidden border-b border-gray-200 dark:border-gray-700 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+              {type === 'income' ? (
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                        {transaction.notes || categoryName}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {formatDate(transaction.date)}
+                      </div>
+                    </div>
+                    <div className="text-lg font-bold text-green-600 whitespace-nowrap">
+                      {formatCurrency(transaction.value)}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                    <span className="text-xs text-gray-500 dark:text-gray-400">Corresponde:</span>
+                    {editingPersonId === transaction.id ? (
+                      <input
+                        type="text"
+                        value={editingPersonValue}
+                        onChange={(e) => setEditingPersonValue(e.target.value)}
+                        onBlur={() => {
+                          handlePersonChange(transaction.id, editingPersonValue);
+                          setEditingPersonId(null);
+                          setEditingPersonValue('');
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handlePersonChange(transaction.id, editingPersonValue);
+                            setEditingPersonId(null);
+                            setEditingPersonValue('');
+                          } else if (e.key === 'Escape') {
+                            setEditingPersonId(null);
+                            setEditingPersonValue('');
+                          }
+                        }}
+                        className="flex-1 px-2 py-1 text-sm border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                        autoFocus
+                      />
+                    ) : (
+                      <div
+                        className="flex-1 text-sm text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 px-2 py-1 rounded -mx-2"
+                        onClick={() => {
+                          setEditingPersonId(transaction.id);
+                          setEditingPersonValue(getPersonName(transaction.personId));
+                        }}
+                      >
+                        {getPersonName(transaction.personId) || '-'}
+                      </div>
+                    )}
+                  </div>
+                  {transaction.notes && (
+                    <div className="text-xs text-gray-500 dark:text-gray-400 pt-1">
+                      {transaction.notes}
+                    </div>
+                  )}
+                </div>
+              ) : type === 'debt' ? (
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                        Pagamento Mensal
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {formatDate(transaction.dueDate || transaction.date)}
+                      </div>
+                    </div>
+                    <div className="text-lg font-bold text-gray-900 dark:text-white whitespace-nowrap">
+                      {formatCurrency(transaction.value)}
+                    </div>
+                  </div>
+                  {showStatus && transaction.status && (
+                    <div className={`flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-700 px-2 py-2 rounded ${getStatusColor(transaction.status)}`}>
+                      <input
+                        type="checkbox"
+                        checked={transaction.status === 'paid'}
+                        onChange={(e) => {
+                          updateTransaction(transaction.id, {
+                            status: e.target.checked ? 'paid' : 'pending',
+                          });
+                        }}
+                        className="w-5 h-5 rounded-md border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-all duration-200 checked:bg-blue-600 checked:border-blue-600 hover:border-blue-400 shadow-sm"
+                        title={transaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
+                      />
+                      <span className="text-xs font-medium">
+                        {getStatusLabel(transaction.status)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                        {transaction.notes || categoryName}
+                      </div>
+                      {showCategory && category && (
+                        <div 
+                          className="inline-block mt-1 px-2 py-1 rounded text-xs font-semibold"
+                          style={getCategoryColorClass(category)}
+                        >
+                          {categoryName}
+                        </div>
+                      )}
+                      <div className="flex flex-wrap gap-2 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        {type === 'expense_variable' && (
+                          <span>📅 {formatDate(transaction.date)}</span>
+                        )}
+                        {showDueDate && type === 'expense_fixed' && (
+                          <span>📅 {formatDate(transaction.dueDate || transaction.date)}</span>
+                        )}
+                        {showInstallments && transaction.installments && (
+                          <span>💳 {transaction.installments.current} de {transaction.installments.total}</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className={`text-lg font-bold whitespace-nowrap ${
+                      isIncome ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {isIncome ? '+' : '-'}
+                      {formatCurrency(transaction.value)}
+                    </div>
+                  </div>
+                  {showStatus && transaction.status && (
+                    <div className={`flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-700 px-2 py-2 rounded ${getStatusColor(transaction.status)}`}>
+                      <input
+                        type="checkbox"
+                        checked={transaction.status === 'paid'}
+                        onChange={(e) => {
+                          updateTransaction(transaction.id, {
+                            status: e.target.checked ? 'paid' : 'pending',
+                          });
+                        }}
+                        className="w-5 h-5 rounded-md border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-all duration-200 checked:bg-blue-600 checked:border-blue-600 hover:border-blue-400 shadow-sm"
+                        title={transaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
+                      />
+                      <span className="text-xs font-medium">
+                        {getStatusLabel(transaction.status)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         );
       })}

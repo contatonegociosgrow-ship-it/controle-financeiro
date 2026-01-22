@@ -106,7 +106,7 @@ export default function GeraisPage() {
 
   return (
     <div className="min-h-screen pb-24 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Header Section */}
         <div className="mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
           <PageHeader
@@ -117,57 +117,57 @@ export default function GeraisPage() {
         </div>
 
         {/* Cards de Resumo por Tipo */}
-        <div className="mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4">
             {/* Card Ganhos */}
             <CardUI className="shadow-md hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setTypeFilter('income')}>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xl">💰</span>
-                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Ganhos</h4>
+              <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                <span className="text-lg sm:text-xl">💰</span>
+                <h4 className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Ganhos</h4>
               </div>
-              <p className="text-2xl font-bold text-green-600">{formatCurrency(totals.income)}</p>
+              <p className="text-lg sm:text-2xl font-bold text-green-600 break-words">{formatCurrency(totals.income)}</p>
             </CardUI>
 
             {/* Card Despesas Fixas */}
             <CardUI className="shadow-md hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setTypeFilter('expense_fixed')}>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xl">📌</span>
-                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Fixas</h4>
+              <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                <span className="text-lg sm:text-xl">📌</span>
+                <h4 className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Fixas</h4>
               </div>
-              <p className="text-2xl font-bold text-red-600">{formatCurrency(totals.expenseFixed)}</p>
+              <p className="text-lg sm:text-2xl font-bold text-red-600 break-words">{formatCurrency(totals.expenseFixed)}</p>
             </CardUI>
 
             {/* Card Despesas Variáveis */}
             <CardUI className="shadow-md hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setTypeFilter('expense_variable')}>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xl">📈</span>
-                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Variáveis</h4>
+              <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                <span className="text-lg sm:text-xl">📈</span>
+                <h4 className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Variáveis</h4>
               </div>
-              <p className="text-2xl font-bold text-red-600">{formatCurrency(totals.expenseVariable)}</p>
+              <p className="text-lg sm:text-2xl font-bold text-red-600 break-words">{formatCurrency(totals.expenseVariable)}</p>
             </CardUI>
 
             {/* Card Dívidas */}
             <CardUI className="shadow-md hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setTypeFilter('debt')}>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xl">🔗</span>
-                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Dívidas</h4>
+              <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                <span className="text-lg sm:text-xl">🔗</span>
+                <h4 className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Dívidas</h4>
               </div>
-              <p className="text-2xl font-bold text-orange-600">{formatCurrency(totals.debt)}</p>
+              <p className="text-lg sm:text-2xl font-bold text-orange-600 break-words">{formatCurrency(totals.debt)}</p>
             </CardUI>
 
             {/* Card Economias */}
             <CardUI className="shadow-md hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setTypeFilter('savings')}>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-xl">💎</span>
-                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Economias</h4>
+              <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
+                <span className="text-lg sm:text-xl">💎</span>
+                <h4 className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Economias</h4>
               </div>
-              <p className="text-2xl font-bold text-blue-600">{formatCurrency(totals.savings)}</p>
+              <p className="text-lg sm:text-2xl font-bold text-blue-600 break-words">{formatCurrency(totals.savings)}</p>
             </CardUI>
           </div>
         </div>
 
         {/* Filtros Section */}
-        <div className="mb-8 pb-6 border-b border-gray-200 dark:border-gray-700 space-y-4">
+        <div className="mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-gray-200 dark:border-gray-700 space-y-4">
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             <div className="flex-1">
               <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2 font-semibold">Filtrar por tipo:</label>
@@ -195,11 +195,11 @@ export default function GeraisPage() {
         </div>
 
         {/* Gráfico Section */}
-        <div className="mb-8 pb-8 border-b border-gray-200 dark:border-gray-700">
+        <div className="mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-gray-200 dark:border-gray-700">
           <CardUI className="shadow-md hover:shadow-lg transition-shadow">
-            <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
-              <div className="w-1 h-6 bg-blue-600 dark:bg-blue-400 rounded-full"></div>
-              <h3 className="text-base text-gray-900 dark:text-white font-semibold tracking-tight">Distribuição por Categoria</h3>
+            <div className="flex items-center gap-2 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-100 dark:border-gray-700">
+              <div className="w-1 h-5 sm:h-6 bg-blue-600 dark:bg-blue-400 rounded-full"></div>
+              <h3 className="text-sm sm:text-base text-gray-900 dark:text-white font-semibold tracking-tight">Distribuição por Categoria</h3>
             </div>
             <CategoryPieChart
               transactions={filteredTransactions}
@@ -212,9 +212,9 @@ export default function GeraisPage() {
         {/* Lista de Transações Section */}
         <div>
           <CardUI className="shadow-md hover:shadow-lg transition-shadow">
-            <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
-              <div className="w-1 h-6 bg-blue-600 dark:bg-blue-400 rounded-full"></div>
-              <h3 className="text-base text-gray-900 dark:text-white font-semibold tracking-tight">Transações</h3>
+            <div className="flex items-center gap-2 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-100 dark:border-gray-700">
+              <div className="w-1 h-5 sm:h-6 bg-blue-600 dark:bg-blue-400 rounded-full"></div>
+              <h3 className="text-sm sm:text-base text-gray-900 dark:text-white font-semibold tracking-tight">Transações</h3>
             </div>
             <TransactionList 
               type={typeFilter} 
@@ -229,11 +229,11 @@ export default function GeraisPage() {
       </div>
 
       {/* Botões flutuantes */}
-      <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-40">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 flex flex-col gap-2 sm:gap-3 z-40">
         {/* Botão Balance */}
         <button
           onClick={() => setIsBalanceOpen(true)}
-          className="w-14 h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-2xl flex items-center justify-center text-xl font-semibold transition-all hover:scale-110"
+          className="w-12 h-12 sm:w-14 sm:h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-2xl flex items-center justify-center text-lg sm:text-xl font-semibold transition-all hover:scale-110"
           aria-label="Ver carteira"
           title="Ver carteira e saldo"
         >
@@ -243,7 +243,7 @@ export default function GeraisPage() {
         {/* Botão Adicionar */}
         <button
           onClick={() => setIsSheetOpen(true)}
-          className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center text-3xl font-light transition-all hover:scale-110"
+          className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl sm:text-3xl font-light transition-all hover:scale-110"
           aria-label="Adicionar transação"
         >
           +

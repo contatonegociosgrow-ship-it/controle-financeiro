@@ -65,7 +65,7 @@ export default function CardDetailPage() {
   if (!card) {
     return (
       <div className="min-h-screen pb-24 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
-        <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
           <CardUI className="text-center py-12">
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               Cartão não encontrado
@@ -272,7 +272,7 @@ export default function CardDetailPage() {
       </div>
 
       {/* Botões flutuantes */}
-      <div className="fixed bottom-6 right-6 flex flex-col gap-3 z-40">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 flex flex-col gap-2 sm:gap-3 z-40">
         <button
           onClick={() => setIsImportSheetOpen(true)}
           className="w-14 h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-2xl flex items-center justify-center text-xl font-semibold transition-all hover:scale-110"

@@ -17,7 +17,7 @@ export default function AppLayout({
         <Sidebar />
         
         {/* Conteúdo principal */}
-        <main className="flex-1 ml-20 min-h-screen">
+        <main className="flex-1 md:ml-20 min-h-screen">
           {children}
         </main>
         <OnboardingQuiz />

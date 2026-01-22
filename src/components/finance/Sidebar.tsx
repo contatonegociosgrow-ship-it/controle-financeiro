@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { ThemeToggle } from './ThemeToggle';
 
 type TabType = 'gerais' | 'ganhos' | 'fixas' | 'variaveis' | 'dividas' | 'economias' | 'cartoes' | 'mensal' | 'manual' | 'perfil';
@@ -21,52 +22,150 @@ const tabs: { id: TabType; label: string; path: string; icon: string }[] = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Fechar menu ao clicar fora ou ao navegar
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
+  // Fechar menu ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (isMobileMenuOpen && !target.closest('.mobile-menu-container')) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    if (isMobileMenuOpen) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [isMobileMenuOpen]);
+
+  const isActive = (tab: typeof tabs[0]) => {
+    return pathname === tab.path || 
+      (pathname === '/app' && tab.id === 'gerais') ||
+      (pathname?.startsWith('/app/cartoes') && tab.id === 'cartoes');
+  };
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-20 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-sm z-30 flex flex-col items-center py-4 overflow-y-auto">
-      <div className="flex flex-col gap-1 w-full flex-1">
-        {tabs.map((tab) => {
-          const isActive = pathname === tab.path || 
-            (pathname === '/app' && tab.id === 'gerais') ||
-            (pathname?.startsWith('/app/cartoes') && tab.id === 'cartoes');
-          return (
-            <Link
-              key={tab.id}
-              href={tab.path}
-              className={`w-full flex flex-col items-center justify-center py-3 px-2 transition-all relative group ${
-                isActive
-                  ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                  : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
-              }`}
-              title={tab.label}
-            >
-              {/* Indicador ativo */}
-              {isActive && (
-                <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 dark:bg-blue-400 rounded-r-full" />
-              )}
+    <>
+      {/* Sidebar Desktop - oculta em mobile */}
+      <aside className="hidden md:flex fixed left-0 top-0 h-full w-20 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-sm z-30 flex-col items-center py-2 overflow-hidden">
+        <div className="flex flex-col gap-0.5 w-full flex-1 justify-center">
+          {tabs.map((tab) => {
+            const active = isActive(tab);
+            return (
+              <Link
+                key={tab.id}
+                href={tab.path}
+                className={`w-full flex flex-col items-center justify-center py-2 px-2 transition-all relative group ${
+                  active
+                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'
+                }`}
+                title={tab.label}
+              >
+                {/* Indicador ativo */}
+                {active && (
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 dark:bg-blue-400 rounded-r-full" />
+                )}
+                
+                {/* Ícone */}
+                <span className="text-lg mb-0.5">{tab.icon}</span>
+                
+                {/* Label */}
+                <span className={`text-[9px] font-semibold text-center leading-tight ${active ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`}>
+                  {tab.label}
+                </span>
+                
+                {/* Tooltip no hover (desktop) */}
+                <div className="absolute left-full ml-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg">
+                  {tab.label}
+                  <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900 dark:border-r-gray-700" />
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+        
+        {/* Toggle de Tema */}
+        <div className="mt-auto pt-2 pb-2 border-t border-gray-200 dark:border-gray-800 w-full flex justify-center">
+          <ThemeToggle />
+        </div>
+      </aside>
+
+      {/* Botão Mobile - apenas em mobile */}
+      <div className="md:hidden fixed top-4 left-4 z-40 mobile-menu-container">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsMobileMenuOpen(!isMobileMenuOpen);
+          }}
+          className="p-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          aria-label="Menu"
+        >
+          <svg
+            className="w-6 h-6 text-gray-700 dark:text-gray-300"
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            {isMobileMenuOpen ? (
+              <path d="M6 18L18 6M6 6l12 12" />
+            ) : (
+              <path d="M4 6h16M4 12h16M4 18h16" />
+            )}
+          </svg>
+        </button>
+
+        {/* Menu Dropdown Mobile */}
+        {isMobileMenuOpen && (
+          <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-xl overflow-hidden z-50">
+            <div className="max-h-[calc(100vh-120px)] overflow-y-auto">
+              {tabs.map((tab) => {
+                const active = isActive(tab);
+                return (
+                  <Link
+                    key={tab.id}
+                    href={tab.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 transition-colors ${
+                      active
+                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    <span className="text-xl">{tab.icon}</span>
+                    <span className="font-medium">{tab.label}</span>
+                    {active && (
+                      <div className="ml-auto w-2 h-2 rounded-full bg-blue-600 dark:bg-blue-400" />
+                    )}
+                  </Link>
+                );
+              })}
               
-              {/* Ícone */}
-              <span className="text-xl mb-1">{tab.icon}</span>
+              {/* Separador */}
+              <div className="border-t border-gray-200 dark:border-gray-800 my-1" />
               
-              {/* Label */}
-              <span className={`text-[10px] font-semibold text-center leading-tight ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`}>
-                {tab.label}
-              </span>
-              
-              {/* Tooltip no hover (desktop) */}
-              <div className="hidden md:block absolute left-full ml-2 px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg">
-                {tab.label}
-                <div className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent border-r-gray-900 dark:border-r-gray-700" />
+              {/* Toggle de Tema no Mobile */}
+              <div className="px-4 py-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Tema
+                  </span>
+                  <ThemeToggle />
+                </div>
               </div>
-            </Link>
-          );
-        })}
+            </div>
+          </div>
+        )}
       </div>
-      
-      {/* Toggle de Tema */}
-      <div className="mt-auto pt-4 border-t border-gray-200 dark:border-gray-800 w-full flex justify-center">
-        <ThemeToggle />
-      </div>
-    </aside>
+    </>
   );
 }

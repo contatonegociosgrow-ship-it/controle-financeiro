@@ -122,12 +122,12 @@ export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
   }, [filterType, customStartDate, customEndDate, onDateRangeChange]);
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
+    <div className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
       <div className="mb-3">
         <label className="block text-xs text-gray-600 dark:text-gray-400 mb-2 font-semibold uppercase tracking-wide">
           Filtrar por Período
         </label>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
           <button
             type="button"
             onClick={() => setFilterType('today')}

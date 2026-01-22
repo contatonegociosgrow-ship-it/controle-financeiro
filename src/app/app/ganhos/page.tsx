@@ -25,7 +25,7 @@ export default function GanhosPage() {
 
   return (
     <div className="min-h-screen pb-24">
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <PageHeader
           title="Ganhos"
           icon="💰"
@@ -55,7 +55,7 @@ export default function GanhosPage() {
 
       <button
         onClick={() => setIsSheetOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center text-3xl font-light transition-all hover:scale-110 z-40"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 w-12 h-12 sm:w-14 sm:h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl sm:text-3xl font-light transition-all hover:scale-110 z-40"
         aria-label="Adicionar transação"
       >
         +

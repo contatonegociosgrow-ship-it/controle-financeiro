@@ -81,21 +81,21 @@ export function WalletCard() {
     : 0;
 
   return (
-    <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-3 text-white relative overflow-hidden shadow-md w-fit min-w-[240px] h-[100px]">
+    <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-2.5 sm:p-3 text-white relative overflow-hidden shadow-md w-full sm:w-fit sm:min-w-[240px] h-[90px] sm:h-[100px]">
       {/* Decorative circles */}
       <div className="absolute top-0 right-0 w-12 h-12 bg-white/10 rounded-full -mr-6 -mt-6" />
       <div className="absolute bottom-0 left-0 w-10 h-10 bg-white/10 rounded-full -ml-5 -mb-5" />
       
       <div className="relative z-10 h-full flex flex-col justify-between">
         {/* Header compacto */}
-        <div className="flex items-center gap-2">
-          <span className="text-lg">💳</span>
-          <h2 className="text-xs font-semibold opacity-90">Carteira</h2>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <span className="text-base sm:text-lg">💳</span>
+          <h2 className="text-[10px] sm:text-xs font-semibold opacity-90">Carteira</h2>
         </div>
 
         {/* Valor da carteira */}
         <div className="flex items-center">
-          <p className={`text-xl font-bold tracking-tight ${
+          <p className={`text-lg sm:text-xl font-bold tracking-tight truncate ${
             balanceData.currentWallet >= 0 ? 'text-white' : 'text-red-200'
           }`}>
             {formatCurrency(balanceData.currentWallet)}
@@ -103,9 +103,9 @@ export function WalletCard() {
         </div>
 
         {/* Salário do mês */}
-        <div className="flex items-center justify-between text-xs">
+        <div className="flex items-center justify-between text-[10px] sm:text-xs">
           <span className="opacity-90">Salário:</span>
-          <span className="font-semibold">{formatCurrency(balanceData.monthlyIncome)}</span>
+          <span className="font-semibold truncate ml-2">{formatCurrency(balanceData.monthlyIncome)}</span>
         </div>
       </div>
     </div>
