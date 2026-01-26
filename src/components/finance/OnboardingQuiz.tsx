@@ -128,7 +128,7 @@ export function OnboardingQuiz() {
           <div className="text-center mb-8">
             <div className="text-5xl mb-4">👋</div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Bem-vindo ao Controle Financeiro!
+              Bem-vindo ao Meu Salário em dia!
             </h2>
             <p className="text-gray-600">
               Vamos configurar seu perfil em poucos passos

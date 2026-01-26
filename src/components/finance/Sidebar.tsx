@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { ThemeToggle } from './ThemeToggle';
 
 type TabType = 'gerais' | 'ganhos' | 'fixas' | 'variaveis' | 'dividas' | 'economias' | 'cartoes' | 'mensal' | 'manual' | 'perfil';
@@ -54,6 +55,20 @@ export function Sidebar() {
     <>
       {/* Sidebar Desktop - oculta em mobile */}
       <aside className="hidden md:flex fixed left-0 top-0 h-full w-20 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-sm z-30 flex-col items-center py-2 overflow-hidden">
+        {/* Logo */}
+        <div className="w-full flex justify-center py-3 border-b border-gray-200 dark:border-gray-800 mb-2">
+          <Link href="/app" className="flex items-center justify-center">
+            <Image
+              src="/logo.png"
+              alt="Meu Salário em dia"
+              width={40}
+              height={40}
+              className="rounded-lg"
+              priority
+            />
+          </Link>
+        </div>
+        
         <div className="flex flex-col gap-0.5 w-full flex-1 justify-center">
           {tabs.map((tab) => {
             const active = isActive(tab);
@@ -127,6 +142,18 @@ export function Sidebar() {
         {/* Menu Dropdown Mobile */}
         {isMobileMenuOpen && (
           <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg shadow-xl overflow-hidden z-50">
+            {/* Logo no Mobile */}
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-800 flex items-center gap-3">
+              <Image
+                src="/logo.png"
+                alt="Meu Salário em dia"
+                width={32}
+                height={32}
+                className="rounded-lg"
+              />
+              <span className="font-semibold text-gray-900 dark:text-gray-100">Meu Salário em dia</span>
+            </div>
+            
             <div className="max-h-[calc(100vh-120px)] overflow-y-auto">
               {tabs.map((tab) => {
                 const active = isActive(tab);

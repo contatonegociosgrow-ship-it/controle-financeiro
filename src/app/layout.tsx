@@ -4,7 +4,7 @@ import { FinanceProvider } from '@/lib/FinanceProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Controle Financeiro',
+  title: 'Meu Salário em dia',
   description: 'PWA de controle financeiro offline-first',
   manifest: '/manifest.json',
   themeColor: '#f5f7fa',
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Controle Financeiro',
+    title: 'Meu Salário em dia',
   },
 };
 
@@ -31,7 +31,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/icon-192.png" />
+        <link rel="apple-touch-icon" href="/logo.png" />
       </head>
       <body>
         <FinanceProvider>

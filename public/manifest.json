@@ -1,6 +1,6 @@
 {
-  "name": "Controle Financeiro",
-  "short_name": "Finanças",
+  "name": "Meu Salário em dia",
+  "short_name": "Meu Salário",
   "description": "PWA de controle financeiro offline-first",
   "start_url": "/app",
   "display": "standalone",
@@ -9,13 +9,13 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/logo.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
