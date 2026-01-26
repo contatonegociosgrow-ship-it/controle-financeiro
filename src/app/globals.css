@@ -132,10 +132,27 @@ textarea:focus {
 input[type="text"],
 input[type="number"],
 input[type="date"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
 select,
 textarea {
   font-weight: 400;
   letter-spacing: -0.01em;
+}
+
+/* Prevenir zoom automático no iOS Safari - font-size mínimo de 16px em mobile */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
 
 input[type="number"] {

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: 'PWA de controle financeiro offline-first',
   manifest: '/manifest.json',
   themeColor: '#f5f7fa',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
+  viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
