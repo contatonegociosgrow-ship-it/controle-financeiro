@@ -61,8 +61,8 @@ export function Sidebar() {
             <Image
               src="/logo.png"
               alt="Meu Salário em dia"
-              width={40}
-              height={40}
+              width={72}
+              height={72}
               className="rounded-lg"
               priority
             />
@@ -147,8 +147,8 @@ export function Sidebar() {
               <Image
                 src="/logo.png"
                 alt="Meu Salário em dia"
-                width={32}
-                height={32}
+                width={40}
+                height={40}
                 className="rounded-lg"
               />
               <span className="font-semibold text-gray-900 dark:text-gray-100">Meu Salário em dia</span>
