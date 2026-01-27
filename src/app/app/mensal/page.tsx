@@ -4,7 +4,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
 import { PageHeader } from '@/components/finance/PageHeader';
 import { MonthlyView } from '@/components/finance/MonthlyView';
-import { CardUI } from '@/components/finance/CardUI';
+import { PremiumContentCard } from '@/components/finance/PremiumContentCard';
+import { BarChart3, Calendar } from 'lucide-react';
 
 export default function MensalPage() {
   const { isInitialized } = useFinanceStore();
@@ -64,7 +65,7 @@ export default function MensalPage() {
         <div className="mb-8 pb-6 border-b border-gray-200">
           <PageHeader
             title="Visão Mensal"
-            icon="📅"
+            icon={BarChart3}
             onFilterChange={() => {}}
             hideSearch
           />
@@ -72,7 +73,12 @@ export default function MensalPage() {
 
         {/* Seletor de Mês/Ano */}
         <div className="mb-8">
-          <CardUI className="shadow-md">
+          <PremiumContentCard
+            title="Selecionar Período"
+            icon={Calendar}
+            gradientFrom="from-blue-600"
+            gradientTo="to-blue-700"
+          >
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
               <div className="flex-1">
                 <label className="block text-sm text-gray-700 mb-2 font-semibold">Mês:</label>
@@ -104,7 +110,7 @@ export default function MensalPage() {
                 </select>
               </div>
             </div>
-          </CardUI>
+          </PremiumContentCard>
         </div>
 
         {/* Visão Mensal */}

@@ -3,8 +3,10 @@
 import { useMemo } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
 import { CardUI } from './CardUI';
+import { PremiumContentCard } from './PremiumContentCard';
 import { CategoryPieChart } from './PieChart';
 import { BarChart, HorizontalBarChart } from './BarChart';
+import { PieChart as PieChartIcon, BarChart3, TrendingUp } from 'lucide-react';
 
 type ManualViewProps = {
   startDate: string; // YYYY-MM-DD
@@ -232,10 +234,6 @@ export function ManualView({ startDate, endDate }: ManualViewProps) {
       {/* Gráfico de Barras por Dia */}
       {byDay.length > 0 && byDay.length <= 31 && (
         <CardUI className="shadow-md">
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
-            <div className="w-1 h-6 bg-teal-600 rounded-full"></div>
-            <h3 className="text-lg font-semibold text-gray-900">Evolução Diária</h3>
-          </div>
           <div className="mb-4">
             <BarChart
               data={byDay.map((day) => ({

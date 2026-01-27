@@ -4,9 +4,15 @@ import { useState, useMemo } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
 import { PageHeader } from '@/components/finance/PageHeader';
 import { CardUI } from '@/components/finance/CardUI';
+import { PremiumCard } from '@/components/finance/PremiumCard';
+import { PremiumContentCard } from '@/components/finance/PremiumContentCard';
+import { BankLogo } from '@/components/finance/BankLogo';
 import { AddCardSheet } from '@/components/finance/AddCardSheet';
 import { getCurrentInvoice, getAvailableLimit } from '@/lib/cardUtils';
 import { getBankInfo } from '@/lib/bankColors';
+import { getSalaryPercentage, getSalaryStatus, getStatusColor } from '@/lib/salaryUtils';
+import { AnimatedCounter } from '@/components/finance/AnimatedCounter';
+import { CreditCard } from 'lucide-react';
 import Link from 'next/link';
 
 export default function CartoesPage() {
@@ -22,19 +28,50 @@ export default function CartoesPage() {
   };
 
   const cardsWithInvoice = useMemo(() => {
+    const monthlyIncome = state.profile.monthlyIncome || 0;
+    
     return state.cards.map((card) => {
       const currentInvoice = getCurrentInvoice(card, state.transactions);
       const availableLimit = getAvailableLimit(card, state.transactions);
       const usagePercentage = card.limit > 0 ? (currentInvoice.total / card.limit) * 100 : 0;
+      
+      // Calcular percentual do salário comprometido pela fatura
+      const salaryPercentage = getSalaryPercentage(currentInvoice.total, monthlyIncome);
+      const salaryStatus = getSalaryStatus(salaryPercentage);
+      
+      // Calcular melhor dia para comprar (dia após o fechamento)
+      const now = new Date();
+      const currentDay = now.getDate();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      
+      let bestPurchaseDay = card.closingDay + 1;
+      let bestPurchaseDate = new Date(currentYear, currentMonth, bestPurchaseDay);
+      
+      // Se já passou do melhor dia, calcular para o próximo mês
+      if (currentDay > bestPurchaseDay) {
+        bestPurchaseDate = new Date(currentYear, currentMonth + 1, bestPurchaseDay);
+      }
+      
+      // Se o melhor dia ultrapassar o último dia do mês, usar o último dia
+      const lastDayOfMonth = new Date(bestPurchaseDate.getFullYear(), bestPurchaseDate.getMonth() + 1, 0).getDate();
+      if (bestPurchaseDay > lastDayOfMonth) {
+        bestPurchaseDay = lastDayOfMonth;
+        bestPurchaseDate = new Date(bestPurchaseDate.getFullYear(), bestPurchaseDate.getMonth(), bestPurchaseDay);
+      }
 
       return {
         card,
         currentInvoice,
         availableLimit,
         usagePercentage,
+        salaryPercentage,
+        salaryStatus,
+        bestPurchaseDay,
+        bestPurchaseDate,
       };
     });
-  }, [state.cards, state.transactions]);
+  }, [state.cards, state.transactions, state.profile.monthlyIncome]);
 
   const totalCurrentInvoice = useMemo(() => {
     return cardsWithInvoice.reduce((sum, item) => sum + item.currentInvoice.total, 0);
@@ -51,44 +88,43 @@ export default function CartoesPage() {
   return (
     <div className="min-h-screen pb-24 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        <PageHeader title="Cartões de Crédito" icon="💳" hideSearch />
+        <PageHeader title="Cartões de Crédito" icon={CreditCard} hideSearch />
 
         {/* Resumo Total */}
         <div className="mb-8">
-          <CardUI className="shadow-md hover:shadow-lg transition-shadow">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-400 mb-1">
-                  Total da Fatura Atual
-                </h3>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {formatCurrency(totalCurrentInvoice)}
-                </p>
-              </div>
-              <div className="text-4xl">💳</div>
-            </div>
-          </CardUI>
+          <PremiumCard
+            title="Total da Fatura Atual"
+            icon={CreditCard}
+            value={totalCurrentInvoice}
+            gradientFrom="from-purple-600"
+            gradientTo="to-purple-700"
+            formatCurrency={formatCurrency}
+          />
         </div>
 
         {/* Lista de Cartões */}
         <div className="space-y-4">
           {cardsWithInvoice.length === 0 ? (
-            <CardUI className="text-center py-12">
-              <div className="text-gray-500 dark:text-gray-400 mb-4">
-                <span className="text-4xl">💳</span>
+            <PremiumContentCard
+              title="Nenhum cartão cadastrado"
+              icon={CreditCard}
+              gradientFrom="from-gray-600"
+              gradientTo="to-gray-700"
+            >
+              <div className="text-center py-4">
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  Comece adicionando seu primeiro cartão de crédito
+                </p>
+                <button
+                  onClick={() => setIsSheetOpen(true)}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all shadow-sm hover:shadow-md text-sm"
+                >
+                  Adicionar Primeiro Cartão
+                </button>
               </div>
-              <p className="text-gray-600 dark:text-gray-400 mb-2">
-                Nenhum cartão cadastrado
-              </p>
-              <button
-                onClick={() => setIsSheetOpen(true)}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all shadow-sm hover:shadow-md text-sm"
-              >
-                Adicionar Primeiro Cartão
-              </button>
-            </CardUI>
+            </PremiumContentCard>
           ) : (
-            cardsWithInvoice.map(({ card, currentInvoice, availableLimit, usagePercentage }) => {
+            cardsWithInvoice.map(({ card, currentInvoice, availableLimit, usagePercentage, salaryPercentage, salaryStatus, bestPurchaseDay, bestPurchaseDate }) => {
               const bankInfo = getBankInfo(card.name);
               
               return (
@@ -102,13 +138,8 @@ export default function CartoesPage() {
                     
                     <div className="flex items-start justify-between mb-4 pt-2">
                       <div className="flex items-center gap-3">
-                        {/* Ícone do banco */}
-                        <div
-                          className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-sm"
-                          style={{ backgroundColor: `${bankInfo.color}20` }}
-                        >
-                          {bankInfo.icon}
-                        </div>
+                        {/* Logo do banco */}
+                        <BankLogo bankName={card.name} size={48} />
                         <div>
                           <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">
                             {card.name}
@@ -145,6 +176,28 @@ export default function CartoesPage() {
                       />
                     </div>
                   </div>
+
+                    {/* Impacto no salário */}
+                    {state.profile.monthlyIncome > 0 && (
+                      <div className="mb-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between text-xs mb-1">
+                          <span className="text-gray-600 dark:text-gray-400">Impacto no próximo salário:</span>
+                          <span className={`font-semibold ${getStatusColor(salaryStatus)}`}>
+                            <AnimatedCounter value={salaryPercentage} decimals={1} suffix="%" />
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Melhor dia para comprar */}
+                    <div className="mb-2">
+                      <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
+                        <span>📅</span>
+                        <span>
+                          Melhor dia para comprar: dia {bestPurchaseDay} ({bestPurchaseDate.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })})
+                        </span>
+                      </div>
+                    </div>
 
                     {/* Informações da fatura */}
                     <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700">

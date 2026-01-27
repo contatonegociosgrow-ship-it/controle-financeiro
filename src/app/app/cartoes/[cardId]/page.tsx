@@ -5,10 +5,12 @@ import { useState, useMemo } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
 import { PageHeader } from '@/components/finance/PageHeader';
 import { CardUI } from '@/components/finance/CardUI';
+import { BankLogo } from '@/components/finance/BankLogo';
 import { AddCardSheet } from '@/components/finance/AddCardSheet';
 import { getCurrentInvoice, getFutureInvoices, getAvailableLimit } from '@/lib/cardUtils';
 import { getBankInfo } from '@/lib/bankColors';
 import { ImportExtractSheet } from '@/components/finance/ImportExtractSheet';
+import { CreditCard } from 'lucide-react';
 
 export default function CardDetailPage() {
   const params = useParams();
@@ -85,7 +87,7 @@ export default function CardDetailPage() {
   return (
     <div className="min-h-screen pb-24 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <PageHeader title={card.name} icon="💳" hideSearch />
+        <PageHeader title={card.name} icon={CreditCard} hideSearch />
 
         {/* Informações do Cartão */}
         <div className="mb-8">
@@ -98,13 +100,8 @@ export default function CardDetailPage() {
             
             <div className="flex items-start justify-between mb-4 pt-3">
               <div className="flex items-center gap-4">
-                {/* Ícone do banco */}
-                <div
-                  className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-md"
-                  style={{ backgroundColor: `${getBankInfo(card.name).color}20` }}
-                >
-                  {getBankInfo(card.name).icon}
-                </div>
+                {/* Logo do banco */}
+                <BankLogo bankName={card.name} size={64} />
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
                     {card.name}

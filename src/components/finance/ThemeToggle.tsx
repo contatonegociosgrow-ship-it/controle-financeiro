@@ -2,6 +2,7 @@
 
 import { useFinanceStore } from '@/lib/FinanceProvider';
 import { useEffect } from 'react';
+import { Moon, Sun } from 'lucide-react';
 
 export function ThemeToggle() {
   const { state, toggleTheme } = useFinanceStore();
@@ -19,19 +20,21 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggleTheme}
-      className="px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+      className="p-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-all flex items-center justify-center border border-gray-700"
       title={theme === 'dark' ? 'Alternar para modo claro' : 'Alternar para modo escuro'}
     >
       {theme === 'dark' ? (
-        <>
-          <span>☀️</span>
-          <span className="hidden sm:inline">Claro</span>
-        </>
+        <Sun 
+          size={20}
+          strokeWidth={2}
+          className="text-gray-400 hover:text-gray-200 transition-colors"
+        />
       ) : (
-        <>
-          <span>🌙</span>
-          <span className="hidden sm:inline">Escuro</span>
-        </>
+        <Moon 
+          size={20}
+          strokeWidth={2}
+          className="text-gray-400 hover:text-gray-200 transition-colors"
+        />
       )}
     </button>
   );

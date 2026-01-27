@@ -2,13 +2,15 @@
 
 import { useState, useMemo } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
-import { CardUI } from '@/components/finance/CardUI';
+import { PremiumContentCard } from '@/components/finance/PremiumContentCard';
+import { PremiumCard } from '@/components/finance/PremiumCard';
 import { PageHeader } from '@/components/finance/PageHeader';
 import { TransactionList } from '@/components/finance/TransactionList';
 import { AddTransactionSheet } from '@/components/finance/AddTransactionSheet';
 import { AddGoalSheet } from '@/components/finance/AddGoalSheet';
 import { GoalCard } from '@/components/finance/GoalCard';
 import { DateFilter } from '@/components/finance/DateFilter';
+import { PiggyBank, Wallet, List } from 'lucide-react';
 
 export default function EconomiasPage() {
   const { isInitialized, state, setMonthlyIncome } = useFinanceStore();
@@ -57,16 +59,24 @@ export default function EconomiasPage() {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <PageHeader
           title="Economias e Metas"
-          icon="🎯"
+          icon={PiggyBank}
           onFilterChange={setFilter}
         />
 
         {/* Card de Salário Mensal */}
         <div className="mb-6">
-          <CardUI className="shadow-md">
+          <PremiumCard
+            title="Salário Mensal"
+            icon={Wallet}
+            value={state.profile.monthlyIncome}
+            gradientFrom="from-green-600"
+            gradientTo="to-green-700"
+            formatCurrency={formatCurrency}
+          />
+          
+          <div className="mt-4 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-semibold text-gray-700 mb-1">Salário Mensal</h3>
                 {isEditingIncome ? (
                   <div className="flex items-center gap-2">
                     <input
@@ -112,7 +122,7 @@ export default function EconomiasPage() {
                 )}
               </div>
             </div>
-          </CardUI>
+          </div>
         </div>
 
         {/* Metas Ativas */}
@@ -161,7 +171,12 @@ export default function EconomiasPage() {
               }}
             />
           </div>
-          <CardUI className="shadow-md">
+          <PremiumContentCard
+            title="Transações de Economia"
+            icon={List}
+            gradientFrom="from-blue-600"
+            gradientTo="to-blue-700"
+          >
             <TransactionList 
               type="savings" 
               filter={filter} 
@@ -170,7 +185,7 @@ export default function EconomiasPage() {
               showCategory={true} 
               columns={5} 
             />
-          </CardUI>
+          </PremiumContentCard>
         </div>
       </div>
 

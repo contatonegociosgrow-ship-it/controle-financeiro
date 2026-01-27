@@ -3,8 +3,10 @@
 import { useState } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
 import { calculateFinancialHealth } from '@/lib/financialHealthUtils';
-import { CardUI } from '@/components/finance/CardUI';
+import { PremiumContentCard } from '@/components/finance/PremiumContentCard';
+import { PremiumCard } from '@/components/finance/PremiumCard';
 import { PageHeader } from '@/components/finance/PageHeader';
+import { User, UserCircle, HeartPulse, FolderOpen, Download, CheckCircle2, AlertTriangle, XCircle, TrendingUp } from 'lucide-react';
 import { BalanceModal } from '@/components/finance/BalanceModal';
 import { GoalCard } from '@/components/finance/GoalCard';
 import { DataExportImport } from '@/components/finance/DataExportImport';
@@ -50,15 +52,15 @@ export default function PerfilPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'excellent':
-        return '✅';
+        return CheckCircle2;
       case 'good':
-        return '👍';
+        return CheckCircle2;
       case 'warning':
-        return '⚠️';
+        return AlertTriangle;
       case 'critical':
-        return '🚨';
+        return XCircle;
       default:
-        return '📊';
+        return TrendingUp;
     }
   };
 
@@ -116,12 +118,16 @@ export default function PerfilPage() {
   return (
     <div className="min-h-screen pb-24">
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <PageHeader title="Meu Perfil" icon="👤" />
+        <PageHeader title="Meu Perfil" icon={User} />
 
         <div className="space-y-6">
           {/* Informações Pessoais */}
-          <CardUI>
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Informações Pessoais</h3>
+          <PremiumContentCard
+            title="Informações Pessoais"
+            icon={UserCircle}
+            gradientFrom="from-blue-600"
+            gradientTo="to-blue-700"
+          >
             <div className="space-y-4">
               {/* Nome */}
               <div>
@@ -297,88 +303,85 @@ export default function PerfilPage() {
                 )}
               </div>
             </div>
-          </CardUI>
+          </PremiumContentCard>
 
           {/* Saúde Financeira */}
-          <CardUI className={`border-2 ${getStatusColor(healthData.status)}`}>
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-bold mb-2">Saúde Financeira</h3>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-2xl">{getStatusIcon(healthData.status)}</span>
-                  <span className="text-sm font-semibold">{getStatusLabel(healthData.status)}</span>
-                  <span className="text-sm text-gray-600">• Score: {healthData.score}/100</span>
+          <div className={`bg-gradient-to-r ${healthData.status === 'excellent' ? 'from-green-600 to-green-700' : healthData.status === 'good' ? 'from-blue-600 to-blue-700' : healthData.status === 'warning' ? 'from-yellow-600 to-yellow-700' : 'from-red-600 to-red-700'} rounded-2xl p-6 text-white relative overflow-hidden shadow-lg hover:shadow-xl transition-all`}>
+            {/* Decorative circles */}
+            <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10" />
+            <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full -ml-8 -mb-8" />
+            
+            <div className="relative z-10">
+              <div className="flex items-start justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-bold mb-2 text-white">Saúde Financeira</h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    {(() => {
+                      const StatusIcon = getStatusIcon(healthData.status);
+                      return <StatusIcon size={24} strokeWidth={2} className="text-white" />;
+                    })()}
+                    <span className="text-sm font-semibold text-white">{getStatusLabel(healthData.status)}</span>
+                    <span className="text-sm text-white/80">• Score: {healthData.score}/100</span>
+                  </div>
+                  <p className="text-sm text-white/90">{healthData.message}</p>
                 </div>
-                <p className="text-sm text-gray-700">{healthData.message}</p>
               </div>
-            </div>
 
-            {/* Barra de progresso do score */}
-            <div className="mb-4">
-              <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                <div
-                  className={`h-full transition-all duration-500 rounded-full ${
-                    healthData.score >= 80
-                      ? 'bg-green-500'
-                      : healthData.score >= 60
-                      ? 'bg-blue-500'
-                      : healthData.score >= 40
-                      ? 'bg-orange-500'
-                      : 'bg-red-500'
-                  }`}
-                  style={{ width: `${healthData.score}%` }}
-                />
+              {/* Barra de progresso do score */}
+              <div className="mb-4">
+                <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
+                  <div
+                    className="h-full bg-white/40 rounded-full transition-all duration-500"
+                    style={{ width: `${healthData.score}%` }}
+                  />
+                </div>
               </div>
-            </div>
 
-            {/* Estatísticas */}
-            <div className="grid grid-cols-2 gap-4 mb-4">
-              <div className="bg-white/50 rounded-lg p-3">
-                <p className="text-xs text-gray-600 mb-1">Comprometido</p>
-                <p className="text-lg font-bold text-gray-900">
-                  {formatCurrency(healthData.totalCommitted)}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {healthData.expensePercentage.toFixed(1)}% do salário
-                </p>
+              {/* Estatísticas */}
+              <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="bg-white/20 rounded-lg p-3">
+                  <p className="text-xs text-white/80 mb-1">Comprometido</p>
+                  <p className="text-lg font-bold text-white">
+                    {formatCurrency(healthData.totalCommitted)}
+                  </p>
+                  <p className="text-xs text-white/70">
+                    {healthData.expensePercentage.toFixed(1)}% do salário
+                  </p>
+                </div>
+                <div className="bg-white/20 rounded-lg p-3">
+                  <p className="text-xs text-white/80 mb-1">Disponível</p>
+                  <p className={`text-lg font-bold ${healthData.availableMoney >= 0 ? 'text-green-200' : 'text-red-200'}`}>
+                    {formatCurrency(healthData.availableMoney)}
+                  </p>
+                </div>
               </div>
-              <div className="bg-white/50 rounded-lg p-3">
-                <p className="text-xs text-gray-600 mb-1">Disponível</p>
-                <p
-                  className={`text-lg font-bold ${
-                    healthData.availableMoney >= 0 ? 'text-green-600' : 'text-red-600'
-                  }`}
+
+              {/* Recomendações */}
+              {healthData.recommendations.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-white/20">
+                  <h4 className="text-sm font-semibold text-white mb-2">Recomendações</h4>
+                  <ul className="space-y-1">
+                    {healthData.recommendations.map((rec, index) => (
+                      <li key={index} className="text-sm text-white/90 flex items-start gap-2">
+                        <span>•</span>
+                        <span>{rec}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Botão Balance */}
+              <div className="mt-4 pt-4 border-t border-white/20">
+                <button
+                  onClick={() => setIsBalanceOpen(true)}
+                  className="w-full bg-white/20 hover:bg-white/30 text-white font-semibold py-3 rounded-lg transition-all shadow-sm hover:shadow-md"
                 >
-                  {formatCurrency(healthData.availableMoney)}
-                </p>
+                  Ver Saldo Detalhado
+                </button>
               </div>
             </div>
-
-            {/* Recomendações */}
-            {healthData.recommendations.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <h4 className="text-sm font-semibold text-gray-700 mb-2">Recomendações</h4>
-                <ul className="space-y-1">
-                  {healthData.recommendations.map((rec, index) => (
-                    <li key={index} className="text-sm text-gray-600 flex items-start gap-2">
-                      <span>•</span>
-                      <span>{rec}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {/* Botão Balance */}
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <button
-                onClick={() => setIsBalanceOpen(true)}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-all shadow-sm hover:shadow-md"
-              >
-                Ver Saldo Detalhado
-              </button>
-            </div>
-          </CardUI>
+          </div>
 
           {/* Metas Ativas */}
           {activeGoals.length > 0 && (
@@ -393,22 +396,26 @@ export default function PerfilPage() {
           )}
 
           {activeGoals.length === 0 && (
-            <CardUI>
-              <div className="text-center py-8">
-                <p className="text-gray-600 mb-2">Nenhuma meta ativa</p>
-                <p className="text-sm text-gray-500">
-                  Crie metas financeiras para acompanhar seus objetivos
-                </p>
+            <PremiumContentCard
+              title="Nenhuma meta ativa"
+              icon={HeartPulse}
+              gradientFrom="from-gray-600"
+              gradientTo="to-gray-700"
+            >
+              <div className="text-center py-4">
+                <p className="text-gray-600 dark:text-gray-400 mb-2">Crie metas financeiras para acompanhar seus objetivos</p>
               </div>
-            </CardUI>
+            </PremiumContentCard>
           )}
 
           {/* Gerenciar Categorias */}
-          <CardUI>
+          <PremiumContentCard
+            title="Categorias"
+            icon={FolderOpen}
+            gradientFrom="from-purple-600"
+            gradientTo="to-purple-700"
+          >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                Categorias
-              </h3>
               <button
                 onClick={() => {
                   setEditingCategoryId(undefined);
@@ -495,15 +502,17 @@ export default function PerfilPage() {
                 })}
               </div>
             )}
-          </CardUI>
+          </PremiumContentCard>
 
           {/* Exportar/Importar Dados */}
-          <CardUI>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-              Exportar/Importar Dados
-            </h3>
+          <PremiumContentCard
+            title="Exportar/Importar Dados"
+            icon={Download}
+            gradientFrom="from-teal-600"
+            gradientTo="to-teal-700"
+          >
             <DataExportImport />
-          </CardUI>
+          </PremiumContentCard>
         </div>
       </div>
 

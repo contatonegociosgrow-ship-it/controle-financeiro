@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
 import { PageHeader } from '@/components/finance/PageHeader';
 import { ManualView } from '@/components/finance/ManualView';
-import { CardUI } from '@/components/finance/CardUI';
+import { PremiumContentCard } from '@/components/finance/PremiumContentCard';
+import { FileText, Calendar } from 'lucide-react';
 
 export default function ManualPage() {
   const { isInitialized } = useFinanceStore();
@@ -74,7 +75,7 @@ export default function ManualPage() {
         <div className="mb-8 pb-6 border-b border-gray-200">
           <PageHeader
             title="Visão Manual"
-            icon="🔍"
+            icon={FileText}
             onFilterChange={() => {}}
             hideSearch
           />
@@ -82,11 +83,13 @@ export default function ManualPage() {
 
         {/* Seletor de Período */}
         <div className="mb-8">
-          <CardUI className="shadow-md">
+          <PremiumContentCard
+            title="Selecionar Período"
+            icon={Calendar}
+            gradientFrom="from-indigo-600"
+            gradientTo="to-indigo-700"
+          >
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Selecionar Período
-              </h3>
               
               {/* Seletores Rápidos */}
               <div className="mb-6">
@@ -188,16 +191,21 @@ export default function ManualPage() {
                 </div>
               </div>
             </div>
-          </CardUI>
+          </PremiumContentCard>
         </div>
 
         {/* Validação de datas */}
         {startDate > endDate ? (
-          <CardUI className="shadow-md border-red-200 bg-red-50">
-            <div className="text-center py-4 text-red-600">
+          <PremiumContentCard
+            title="Erro de Validação"
+            icon={FileText}
+            gradientFrom="from-red-600"
+            gradientTo="to-red-700"
+          >
+            <div className="text-center py-4 text-white">
               <p className="font-semibold">Data inicial não pode ser maior que data final</p>
             </div>
-          </CardUI>
+          </PremiumContentCard>
         ) : (
           <ManualView startDate={startDate} endDate={endDate} />
         )}

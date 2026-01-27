@@ -67,21 +67,21 @@ export function BarChart({
                   </div>
                 )}
                 
-                {/* Bar */}
+                {/* Bar with gradient */}
                 <div
                   className="w-full rounded-t-lg transition-all duration-300 hover:opacity-90 hover:shadow-lg relative group"
                   style={{
                     height: `${barHeight}%`,
-                    backgroundColor: color,
+                    background: `linear-gradient(to top, ${color}, ${color}dd)`,
                     minHeight: barHeight > 0 ? '4px' : '0',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
                   }}
                 >
                   {/* Gradient overlay for depth */}
                   <div 
-                    className="absolute inset-0 rounded-t-lg opacity-20"
+                    className="absolute inset-0 rounded-t-lg"
                     style={{
-                      background: 'linear-gradient(to top, rgba(0,0,0,0.2), transparent)',
+                      background: 'linear-gradient(to top, rgba(0,0,0,0.2), rgba(0,0,0,0.05), transparent)',
                     }}
                   />
                 </div>
@@ -151,15 +151,15 @@ export function HorizontalBarChart({
                 className="h-full rounded-full transition-all duration-500 relative group"
                 style={{
                   width: `${percentage}%`,
-                  backgroundColor: color,
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
+                  background: `linear-gradient(to right, ${color}, ${color}dd)`,
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
                 }}
               >
                 {/* Gradient overlay */}
                 <div 
-                  className="absolute inset-0 rounded-full opacity-30"
+                  className="absolute inset-0 rounded-full"
                   style={{
-                    background: 'linear-gradient(to right, rgba(255,255,255,0.3), transparent)',
+                    background: 'linear-gradient(to right, rgba(255,255,255,0.4), rgba(255,255,255,0.1), transparent)',
                   }}
                 />
               </div>

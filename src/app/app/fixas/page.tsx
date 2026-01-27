@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
-import { CardUI } from '@/components/finance/CardUI';
+import { PremiumContentCard } from '@/components/finance/PremiumContentCard';
 import { PageHeader } from '@/components/finance/PageHeader';
 import { TransactionList } from '@/components/finance/TransactionList';
 import { AddTransactionSheet } from '@/components/finance/AddTransactionSheet';
 import { DateFilter } from '@/components/finance/DateFilter';
+import { Receipt, List } from 'lucide-react';
 
 export default function FixasPage() {
   const { isInitialized } = useFinanceStore();
@@ -28,7 +29,7 @@ export default function FixasPage() {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <PageHeader
           title="Despesas Fixas"
-          icon="📌"
+          icon={Receipt}
           onFilterChange={setFilter}
         />
 
@@ -42,7 +43,12 @@ export default function FixasPage() {
           />
         </div>
 
-        <CardUI>
+        <PremiumContentCard
+          title="Despesas Fixas"
+          icon={List}
+          gradientFrom="from-red-600"
+          gradientTo="to-red-700"
+        >
           <TransactionList
             type="expense_fixed"
             filter={filter}
@@ -53,7 +59,7 @@ export default function FixasPage() {
             showDueDate={true}
             columns={5}
           />
-        </CardUI>
+        </PremiumContentCard>
       </div>
 
       <button

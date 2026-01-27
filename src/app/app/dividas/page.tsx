@@ -2,13 +2,15 @@
 
 import { useState, useMemo } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
-import { CardUI } from '@/components/finance/CardUI';
+import { PremiumContentCard } from '@/components/finance/PremiumContentCard';
+import { PremiumCard } from '@/components/finance/PremiumCard';
 import { PageHeader } from '@/components/finance/PageHeader';
 import { TransactionList } from '@/components/finance/TransactionList';
 import { AddTransactionSheet } from '@/components/finance/AddTransactionSheet';
 import { DebtCard } from '@/components/finance/DebtCard';
 import { AddDebtSheet } from '@/components/finance/AddDebtSheet';
 import { DateFilter } from '@/components/finance/DateFilter';
+import { Link as LinkIcon, BarChart3, List, TrendingDown } from 'lucide-react';
 
 export default function DividasPage() {
   const { state, isInitialized } = useFinanceStore();
@@ -129,17 +131,19 @@ export default function DividasPage() {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <PageHeader
           title="Dívidas"
-          icon="🔗"
+          icon={LinkIcon}
           onFilterChange={setFilter}
         />
 
         <div className="space-y-6">
           {/* Gráfico de Pagamentos */}
-          <CardUI>
-            <div className="mb-6 pb-4 border-b border-gray-100">
-              <h3 className="text-base font-semibold text-gray-900 tracking-tight">Gráfico de Pagamentos</h3>
-              <p className="text-xs text-gray-500 mt-1">Próximos 4 meses</p>
-            </div>
+          <PremiumContentCard
+            title="Gráfico de Pagamentos"
+            icon={BarChart3}
+            gradientFrom="from-red-600"
+            gradientTo="to-red-700"
+          >
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Próximos 4 meses</p>
             <div className="flex items-end gap-3 h-32 mb-6">
               {displayMonths.map(({ month, key }) => {
                 const data = monthlyData.get(key) || { paid: 0, pending: 0 };
@@ -212,26 +216,35 @@ export default function DividasPage() {
                 </div>
               </div>
             </div>
-          </CardUI>
+          </PremiumContentCard>
 
           {/* Resumo do Ano */}
-          <CardUI>
-            <h3 className="text-sm text-gray-600 mb-3 font-medium">Resumo do Ano</h3>
+          <PremiumCard
+            title="Resumo do Ano"
+            icon={TrendingDown}
+            value={summary.totalOwed}
+            gradientFrom="from-red-600"
+            gradientTo="to-red-700"
+            formatCurrency={formatCurrency}
+          />
+          
+          <PremiumContentCard
+            title="Detalhes do Resumo"
+            icon={TrendingDown}
+            gradientFrom="from-orange-600"
+            gradientTo="to-orange-700"
+          >
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-gray-600">Quanto devo</span>
-                <span className="text-gray-800 font-semibold">{formatCurrency(summary.totalOwed)}</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Quanto paguei</span>
+                <span className="text-base font-semibold text-gray-900 dark:text-white">{formatCurrency(summary.totalPaid)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Quanto paguei</span>
-                <span className="text-gray-800 font-semibold">{formatCurrency(summary.totalPaid)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Meses até zerar</span>
-                <span className="text-gray-800 font-semibold">{summary.monthsToZero} meses</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">Meses até zerar</span>
+                <span className="text-base font-semibold text-gray-900 dark:text-white">{summary.monthsToZero} meses</span>
               </div>
             </div>
-          </CardUI>
+          </PremiumContentCard>
 
           {/* Dívidas Parceladas */}
           {state.debts.filter((d) => d.status === 'active').length > 0 && (
@@ -271,9 +284,14 @@ export default function DividasPage() {
 
           {/* Botão para adicionar dívida se não houver nenhuma */}
           {state.debts.length === 0 && (
-            <CardUI>
-              <div className="text-center py-8">
-                <p className="text-gray-600 mb-4">Nenhuma dívida parcelada cadastrada</p>
+            <PremiumContentCard
+              title="Nenhuma dívida cadastrada"
+              icon={LinkIcon}
+              gradientFrom="from-gray-600"
+              gradientTo="to-gray-700"
+            >
+              <div className="text-center py-4">
+                <p className="text-gray-600 dark:text-gray-400 mb-4">Comece adicionando uma dívida parcelada</p>
                 <button
                   onClick={() => setIsDebtSheetOpen(true)}
                   className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition-all shadow-sm hover:shadow-md"
@@ -281,7 +299,7 @@ export default function DividasPage() {
                   Adicionar Dívida Parcelada
                 </button>
               </div>
-            </CardUI>
+            </PremiumContentCard>
           )}
 
           {/* Filtro de Data */}
@@ -296,8 +314,12 @@ export default function DividasPage() {
           </div>
 
           {/* Lista de Dívidas */}
-          <CardUI>
-            <h3 className="text-sm text-gray-600 mb-4 font-medium">Próximos Pagamentos</h3>
+          <PremiumContentCard
+            title="Próximos Pagamentos"
+            icon={List}
+            gradientFrom="from-red-600"
+            gradientTo="to-red-700"
+          >
             <TransactionList
               type="debt"
               filter={filter}
@@ -307,7 +329,7 @@ export default function DividasPage() {
               showDueDate={true}
               columns={4}
             />
-          </CardUI>
+          </PremiumContentCard>
         </div>
       </div>
 

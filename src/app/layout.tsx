@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
 import { FinanceProvider } from '@/lib/FinanceProvider';
+import { ToastContainer } from '@/components/finance/Toast';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -36,6 +37,7 @@ export default function RootLayout({
       <body>
         <FinanceProvider>
           {children}
+          <ToastContainer />
         </FinanceProvider>
         <Script id="register-sw" strategy="afterInteractive">
           {`

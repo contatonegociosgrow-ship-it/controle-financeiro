@@ -3,8 +3,10 @@
 import { useMemo } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
 import { CardUI } from './CardUI';
+import { PremiumContentCard } from './PremiumContentCard';
 import { CategoryPieChart } from './PieChart';
 import { BarChart, HorizontalBarChart } from './BarChart';
+import { PieChart as PieChartIcon, BarChart3, TrendingUp } from 'lucide-react';
 
 type MonthlyViewProps = {
   year: number;
@@ -191,24 +193,26 @@ export function MonthlyView({ year, month }: MonthlyViewProps) {
       {/* Gráficos */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Gráfico de Pizza por Categoria */}
-        <CardUI className="shadow-md">
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
-            <div className="w-1 h-6 bg-pink-600 rounded-full"></div>
-            <h3 className="text-lg font-semibold text-gray-900">Distribuição por Categoria</h3>
-          </div>
+        <PremiumContentCard
+          title="Distribuição por Categoria"
+          icon={PieChartIcon}
+          gradientFrom="from-pink-600"
+          gradientTo="to-pink-700"
+        >
           <CategoryPieChart
             transactions={monthTransactions}
             categories={state.categories}
             type="all"
           />
-        </CardUI>
+        </PremiumContentCard>
 
         {/* Gráfico de Barras por Tipo */}
-        <CardUI className="shadow-md">
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
-            <div className="w-1 h-6 bg-indigo-600 rounded-full"></div>
-            <h3 className="text-lg font-semibold text-gray-900">Por Tipo de Transação</h3>
-          </div>
+        <PremiumContentCard
+          title="Por Tipo de Transação"
+          icon={BarChart3}
+          gradientFrom="from-indigo-600"
+          gradientTo="to-indigo-700"
+        >
           <BarChart
             data={byType.map(([type, data]) => {
               const isIncome = type === 'Ganhos';
@@ -222,16 +226,17 @@ export function MonthlyView({ year, month }: MonthlyViewProps) {
             height={200}
             formatValue={formatCurrency}
           />
-        </CardUI>
+        </PremiumContentCard>
       </div>
 
       {/* Gráfico de Barras por Dia */}
       {byDay.length > 0 && (
-        <CardUI className="shadow-md">
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
-            <div className="w-1 h-6 bg-teal-600 rounded-full"></div>
-            <h3 className="text-lg font-semibold text-gray-900">Evolução Diária</h3>
-          </div>
+        <PremiumContentCard
+          title="Evolução Diária"
+          icon={TrendingUp}
+          gradientFrom="from-teal-600"
+          gradientTo="to-teal-700"
+        >
           <div className="mb-4">
             <BarChart
               data={byDay.map((day) => ({
@@ -246,22 +251,23 @@ export function MonthlyView({ year, month }: MonthlyViewProps) {
           <div className="flex gap-4 justify-center text-xs">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-green-500"></div>
-              <span className="text-gray-600">Saldo Positivo</span>
+              <span className="text-gray-600 dark:text-gray-400">Saldo Positivo</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-red-500"></div>
-              <span className="text-gray-600">Saldo Negativo</span>
+              <span className="text-gray-600 dark:text-gray-400">Saldo Negativo</span>
             </div>
           </div>
-        </CardUI>
+        </PremiumContentCard>
       )}
 
       {/* Gráfico de Barras Horizontal por Categoria */}
-      <CardUI className="shadow-md">
-        <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
-          <div className="w-1 h-6 bg-amber-600 rounded-full"></div>
-          <h3 className="text-lg font-semibold text-gray-900">Top Categorias (Despesas)</h3>
-        </div>
+      <PremiumContentCard
+        title="Top Categorias (Despesas)"
+        icon={TrendingUp}
+        gradientFrom="from-amber-600"
+        gradientTo="to-amber-700"
+      >
         <HorizontalBarChart
           data={byCategory
             .filter(([_, data]) => {
@@ -284,7 +290,7 @@ export function MonthlyView({ year, month }: MonthlyViewProps) {
           formatValue={formatCurrency}
           maxBars={8}
         />
-      </CardUI>
+      </PremiumContentCard>
 
       {/* Por Tipo */}
       <CardUI className="shadow-md">

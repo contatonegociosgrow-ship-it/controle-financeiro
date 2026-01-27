@@ -5,6 +5,7 @@ export type BankInfo = {
   color: string;
   icon: string;
   gradient?: string; // Gradiente opcional
+  logoPath?: string; // Caminho para o SVG do logo (do repositório https://github.com/Tgentil/Bancos-em-SVG)
 };
 
 export const BANK_COLORS: Record<string, BankInfo> = {
@@ -14,13 +15,36 @@ export const BANK_COLORS: Record<string, BankInfo> = {
     color: '#8A05BE',
     icon: '💜',
     gradient: 'from-purple-600 to-purple-800',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/Nu Pagamentos S.A/nubank-logo-2021.svg',
   },
-  // Itaú
+  // Itaú - variações para cobrir erros de escrita
   itau: {
     name: 'Itaú',
     color: '#EC7000',
     icon: '🟠',
     gradient: 'from-orange-500 to-orange-700',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/Itaú Unibanco S.A/itau.svg',
+  },
+  'itáu': {
+    name: 'Itaú',
+    color: '#EC7000',
+    icon: '🟠',
+    gradient: 'from-orange-500 to-orange-700',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/Itaú Unibanco S.A/itau.svg',
+  },
+  'itáú': {
+    name: 'Itaú',
+    color: '#EC7000',
+    icon: '🟠',
+    gradient: 'from-orange-500 to-orange-700',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/Itaú Unibanco S.A/itau.svg',
+  },
+  'itaú': {
+    name: 'Itaú',
+    color: '#EC7000',
+    icon: '🟠',
+    gradient: 'from-orange-500 to-orange-700',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/Itaú Unibanco S.A/itau.svg',
   },
   // Bradesco
   bradesco: {
@@ -28,6 +52,7 @@ export const BANK_COLORS: Record<string, BankInfo> = {
     color: '#CC092F',
     icon: '🔴',
     gradient: 'from-red-600 to-red-800',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/Bradesco S.A/bradesco.svg',
   },
   // Banco do Brasil
   'banco do brasil': {
@@ -35,12 +60,14 @@ export const BANK_COLORS: Record<string, BankInfo> = {
     color: '#FEDD00',
     icon: '🟡',
     gradient: 'from-yellow-400 to-yellow-600',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/Banco do Brasil S.A/banco-do-brasil-sem-fundo.svg',
   },
   bb: {
     name: 'Banco do Brasil',
     color: '#FEDD00',
     icon: '🟡',
     gradient: 'from-yellow-400 to-yellow-600',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/Banco do Brasil S.A/banco-do-brasil-sem-fundo.svg',
   },
   // Santander
   santander: {
@@ -48,6 +75,7 @@ export const BANK_COLORS: Record<string, BankInfo> = {
     color: '#EC0000',
     icon: '🔴',
     gradient: 'from-red-500 to-red-700',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/Banco Santander Brasil S.A/banco-santander-logo.svg',
   },
   // Caixa
   caixa: {
@@ -55,12 +83,14 @@ export const BANK_COLORS: Record<string, BankInfo> = {
     color: '#0066B3',
     icon: '🔵',
     gradient: 'from-blue-600 to-blue-800',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/Caixa Econômica Federal/caixa-economica-federal-X.svg',
   },
   'caixa econômica': {
     name: 'Caixa',
     color: '#0066B3',
     icon: '🔵',
     gradient: 'from-blue-600 to-blue-800',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/Caixa Econômica Federal/caixa-economica-federal-X.svg',
   },
   // Inter
   inter: {
@@ -68,6 +98,7 @@ export const BANK_COLORS: Record<string, BankInfo> = {
     color: '#FF6B35',
     icon: '🟠',
     gradient: 'from-orange-500 to-orange-600',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/Banco Inter S.A/inter.svg',
   },
   // C6 Bank
   c6: {
@@ -75,12 +106,14 @@ export const BANK_COLORS: Record<string, BankInfo> = {
     color: '#000000',
     icon: '⚫',
     gradient: 'from-gray-800 to-gray-900',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/Banco C6 S.A/c6 bank.svg',
   },
   'c6 bank': {
     name: 'C6 Bank',
     color: '#000000',
     icon: '⚫',
     gradient: 'from-gray-800 to-gray-900',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/Banco C6 S.A/c6 bank.svg',
   },
   // PicPay
   picpay: {
@@ -88,6 +121,7 @@ export const BANK_COLORS: Record<string, BankInfo> = {
     color: '#21C25E',
     icon: '💚',
     gradient: 'from-green-500 to-green-600',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/PicPay/Logo-PicPay.svg',
   },
   // Mercado Pago
   'mercado pago': {
@@ -95,6 +129,7 @@ export const BANK_COLORS: Record<string, BankInfo> = {
     color: '#009EE3',
     icon: '💙',
     gradient: 'from-blue-500 to-blue-600',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/Mercado Pago/mercado-pago.svg',
   },
   // PagSeguro
   pagseguro: {
@@ -102,6 +137,7 @@ export const BANK_COLORS: Record<string, BankInfo> = {
     color: '#FFC801',
     icon: '🟡',
     gradient: 'from-yellow-400 to-yellow-500',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/PagSeguro Internet S.A/logo.svg',
   },
   // Neon
   neon: {
@@ -109,6 +145,7 @@ export const BANK_COLORS: Record<string, BankInfo> = {
     color: '#00D9FF',
     icon: '💎',
     gradient: 'from-cyan-400 to-cyan-600',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/Neon/header-logo-neon.svg',
   },
   // Original
   original: {
@@ -116,6 +153,7 @@ export const BANK_COLORS: Record<string, BankInfo> = {
     color: '#FF6B00',
     icon: '🟠',
     gradient: 'from-orange-500 to-orange-600',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/Banco Original S.A/banco-original-logo-verde.svg',
   },
   // Next
   next: {
@@ -130,6 +168,7 @@ export const BANK_COLORS: Record<string, BankInfo> = {
     color: '#000000',
     icon: '⚫',
     gradient: 'from-gray-900 to-black',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/XP Investimentos/xp-investimentos-logo.svg',
   },
   // BTG
   btg: {
@@ -137,6 +176,7 @@ export const BANK_COLORS: Record<string, BankInfo> = {
     color: '#000000',
     icon: '⚫',
     gradient: 'from-gray-800 to-black',
+    logoPath: '/banks/Bancos-em-SVG-main/Bancos-em-SVG-main/Banco BTG Pacutal/btg-pactual.svg',
   },
   // Citi
   citi: {
@@ -155,14 +195,26 @@ export const BANK_COLORS: Record<string, BankInfo> = {
 };
 
 /**
- * Detecta o banco pelo nome do cartão
+ * Normaliza o nome removendo acentos e caracteres especiais para comparação
+ */
+function normalizeBankName(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+    .trim();
+}
+
+/**
+ * Detecta o banco pelo nome do cartão (ignora erros de escrita e acentos)
  */
 export function detectBank(cardName: string): BankInfo | null {
-  const normalizedName = cardName.toLowerCase().trim();
+  const normalizedName = normalizeBankName(cardName);
   
-  // Buscar correspondência exata ou parcial
+  // Buscar correspondência exata ou parcial (normalizada)
   for (const [key, bankInfo] of Object.entries(BANK_COLORS)) {
-    if (normalizedName.includes(key)) {
+    const normalizedKey = normalizeBankName(key);
+    if (normalizedName.includes(normalizedKey) || normalizedKey.includes(normalizedName)) {
       return bankInfo;
     }
   }

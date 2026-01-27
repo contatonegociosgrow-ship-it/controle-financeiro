@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
-import { CardUI } from '@/components/finance/CardUI';
+import { PremiumContentCard } from '@/components/finance/PremiumContentCard';
 import { PageHeader } from '@/components/finance/PageHeader';
 import { TransactionList } from '@/components/finance/TransactionList';
 import { AddTransactionSheet } from '@/components/finance/AddTransactionSheet';
 import { DateFilter } from '@/components/finance/DateFilter';
+import { Wallet, List } from 'lucide-react';
 
 export default function GanhosPage() {
   const { isInitialized } = useFinanceStore();
@@ -28,7 +29,7 @@ export default function GanhosPage() {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <PageHeader
           title="Ganhos"
-          icon="💰"
+          icon={Wallet}
           onFilterChange={setFilter}
         />
 
@@ -42,7 +43,12 @@ export default function GanhosPage() {
           />
         </div>
 
-        <CardUI>
+        <PremiumContentCard
+          title="Transações de Ganhos"
+          icon={List}
+          gradientFrom="from-green-600"
+          gradientTo="to-green-700"
+        >
           <TransactionList
             type="income"
             filter={filter}
@@ -50,7 +56,7 @@ export default function GanhosPage() {
             endDate={dateEnd}
             columns={5}
           />
-        </CardUI>
+        </PremiumContentCard>
       </div>
 
       <button

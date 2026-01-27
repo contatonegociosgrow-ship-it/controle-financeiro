@@ -9,6 +9,11 @@ import { AddTransactionSheet } from '@/components/finance/AddTransactionSheet';
 import { BalanceModal } from '@/components/finance/BalanceModal';
 import { CategoryPieChart } from '@/components/finance/PieChart';
 import { DateFilter } from '@/components/finance/DateFilter';
+import { MonthlyInsight } from '@/components/finance/MonthlyInsight';
+import { getSalaryPercentage, getSalaryStatus } from '@/lib/salaryUtils';
+import { LayoutDashboard, Wallet, Receipt, ShoppingCart, Link as LinkIcon, PiggyBank, PieChart, List } from 'lucide-react';
+import { PremiumCard } from '@/components/finance/PremiumCard';
+import { PremiumContentCard } from '@/components/finance/PremiumContentCard';
 
 type FilterType = 'all' | 'income' | 'expense_fixed' | 'expense_variable' | 'debt' | 'savings';
 
@@ -66,28 +71,86 @@ export default function GeraisPage() {
 
   // Calcular totais por tipo
   const totals = useMemo(() => {
+    const monthlyIncome = state.profile.monthlyIncome || 0;
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
     const income = state.transactions
-      .filter((t) => t.type === 'income')
+      .filter((t) => {
+        const transactionDate = new Date(t.date);
+        return (
+          t.type === 'income' &&
+          transactionDate.getMonth() === currentMonth &&
+          transactionDate.getFullYear() === currentYear
+        );
+      })
       .reduce((sum, t) => sum + t.value, 0);
     
     const expenseFixed = state.transactions
-      .filter((t) => t.type === 'expense_fixed')
+      .filter((t) => {
+        const transactionDate = new Date(t.date);
+        return (
+          t.type === 'expense_fixed' &&
+          transactionDate.getMonth() === currentMonth &&
+          transactionDate.getFullYear() === currentYear
+        );
+      })
       .reduce((sum, t) => sum + t.value, 0);
     
     const expenseVariable = state.transactions
-      .filter((t) => t.type === 'expense_variable')
+      .filter((t) => {
+        const transactionDate = new Date(t.date);
+        return (
+          t.type === 'expense_variable' &&
+          transactionDate.getMonth() === currentMonth &&
+          transactionDate.getFullYear() === currentYear
+        );
+      })
       .reduce((sum, t) => sum + t.value, 0);
     
     const debt = state.transactions
-      .filter((t) => t.type === 'debt')
+      .filter((t) => {
+        const transactionDate = new Date(t.date);
+        return (
+          t.type === 'debt' &&
+          transactionDate.getMonth() === currentMonth &&
+          transactionDate.getFullYear() === currentYear
+        );
+      })
       .reduce((sum, t) => sum + t.value, 0);
     
     const savings = state.transactions
-      .filter((t) => t.type === 'savings')
+      .filter((t) => {
+        const transactionDate = new Date(t.date);
+        return (
+          t.type === 'savings' &&
+          transactionDate.getMonth() === currentMonth &&
+          transactionDate.getFullYear() === currentYear
+        );
+      })
       .reduce((sum, t) => sum + t.value, 0);
 
-    return { income, expenseFixed, expenseVariable, debt, savings };
-  }, [state.transactions]);
+    // Calcular percentuais
+    const incomePercentage = getSalaryPercentage(income, monthlyIncome);
+    const expenseFixedPercentage = getSalaryPercentage(expenseFixed, monthlyIncome);
+    const expenseVariablePercentage = getSalaryPercentage(expenseVariable, monthlyIncome);
+    const debtPercentage = getSalaryPercentage(debt, monthlyIncome);
+    const savingsPercentage = getSalaryPercentage(savings, monthlyIncome);
+
+    return { 
+      income, 
+      expenseFixed, 
+      expenseVariable, 
+      debt, 
+      savings,
+      incomePercentage,
+      expenseFixedPercentage,
+      expenseVariablePercentage,
+      debtPercentage,
+      savingsPercentage,
+    };
+  }, [state.transactions, state.profile.monthlyIncome]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -111,58 +174,84 @@ export default function GeraisPage() {
         <div className="mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
           <PageHeader
             title="Gerais"
-            icon="📊"
+            icon={LayoutDashboard}
             onFilterChange={setFilter}
           />
         </div>
 
+        {/* Insight do Mês */}
+        <MonthlyInsight />
+
         {/* Cards de Resumo por Tipo */}
         <div className="mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
             {/* Card Ganhos */}
-            <CardUI className="shadow-md hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setTypeFilter('income')}>
-              <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
-                <span className="text-lg sm:text-xl">💰</span>
-                <h4 className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Ganhos</h4>
-              </div>
-              <p className="text-lg sm:text-2xl font-bold text-green-600 break-words">{formatCurrency(totals.income)}</p>
-            </CardUI>
+            <PremiumCard
+              title="Ganhos"
+              value={totals.income}
+              percentage={state.profile.monthlyIncome > 0 ? totals.incomePercentage : undefined}
+              icon={Wallet}
+              gradientFrom="from-green-600"
+              gradientTo="to-green-700"
+              onClick={() => setTypeFilter('income')}
+              formatCurrency={formatCurrency}
+            />
 
             {/* Card Despesas Fixas */}
-            <CardUI className="shadow-md hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setTypeFilter('expense_fixed')}>
-              <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
-                <span className="text-lg sm:text-xl">📌</span>
-                <h4 className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Fixas</h4>
-              </div>
-              <p className="text-lg sm:text-2xl font-bold text-red-600 break-words">{formatCurrency(totals.expenseFixed)}</p>
-            </CardUI>
+            <PremiumCard
+              title="Fixas"
+              value={totals.expenseFixed}
+              percentage={state.profile.monthlyIncome > 0 ? totals.expenseFixedPercentage : undefined}
+              icon={Receipt}
+              gradientFrom="from-red-600"
+              gradientTo="to-red-700"
+              onClick={() => setTypeFilter('expense_fixed')}
+              formatCurrency={formatCurrency}
+              showProgress={state.profile.monthlyIncome > 0}
+              progressValue={totals.expenseFixedPercentage}
+            />
 
             {/* Card Despesas Variáveis */}
-            <CardUI className="shadow-md hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setTypeFilter('expense_variable')}>
-              <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
-                <span className="text-lg sm:text-xl">📈</span>
-                <h4 className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Variáveis</h4>
-              </div>
-              <p className="text-lg sm:text-2xl font-bold text-red-600 break-words">{formatCurrency(totals.expenseVariable)}</p>
-            </CardUI>
+            <PremiumCard
+              title="Variáveis"
+              value={totals.expenseVariable}
+              percentage={state.profile.monthlyIncome > 0 ? totals.expenseVariablePercentage : undefined}
+              icon={ShoppingCart}
+              gradientFrom="from-orange-600"
+              gradientTo="to-orange-700"
+              onClick={() => setTypeFilter('expense_variable')}
+              formatCurrency={formatCurrency}
+              showProgress={state.profile.monthlyIncome > 0}
+              progressValue={totals.expenseVariablePercentage}
+            />
 
             {/* Card Dívidas */}
-            <CardUI className="shadow-md hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setTypeFilter('debt')}>
-              <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
-                <span className="text-lg sm:text-xl">🔗</span>
-                <h4 className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Dívidas</h4>
-              </div>
-              <p className="text-lg sm:text-2xl font-bold text-orange-600 break-words">{formatCurrency(totals.debt)}</p>
-            </CardUI>
+            <PremiumCard
+              title="Dívidas"
+              value={totals.debt}
+              percentage={state.profile.monthlyIncome > 0 ? totals.debtPercentage : undefined}
+              icon={LinkIcon}
+              gradientFrom="from-red-700"
+              gradientTo="to-red-800"
+              onClick={() => setTypeFilter('debt')}
+              formatCurrency={formatCurrency}
+              showProgress={state.profile.monthlyIncome > 0}
+              progressValue={totals.debtPercentage}
+            />
 
             {/* Card Economias */}
-            <CardUI className="shadow-md hover:shadow-lg transition-shadow cursor-pointer" onClick={() => setTypeFilter('savings')}>
-              <div className="flex items-center gap-1 sm:gap-2 mb-1 sm:mb-2">
-                <span className="text-lg sm:text-xl">💎</span>
-                <h4 className="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300">Economias</h4>
-              </div>
-              <p className="text-lg sm:text-2xl font-bold text-blue-600 break-words">{formatCurrency(totals.savings)}</p>
-            </CardUI>
+            <PremiumCard
+              title="Economias"
+              value={totals.savings}
+              percentage={state.profile.monthlyIncome > 0 ? totals.savingsPercentage : undefined}
+              icon={PiggyBank}
+              gradientFrom="from-blue-600"
+              gradientTo="to-blue-700"
+              onClick={() => setTypeFilter('savings')}
+              formatCurrency={formatCurrency}
+              showProgress={state.profile.monthlyIncome > 0}
+              progressValue={totals.savingsPercentage}
+            />
           </div>
         </div>
 
@@ -196,26 +285,28 @@ export default function GeraisPage() {
 
         {/* Gráfico Section */}
         <div className="mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-gray-200 dark:border-gray-700">
-          <CardUI className="shadow-md hover:shadow-lg transition-shadow">
-            <div className="flex items-center gap-2 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-100 dark:border-gray-700">
-              <div className="w-1 h-5 sm:h-6 bg-blue-600 dark:bg-blue-400 rounded-full"></div>
-              <h3 className="text-sm sm:text-base text-gray-900 dark:text-white font-semibold tracking-tight">Distribuição por Categoria</h3>
-            </div>
+          <PremiumContentCard
+            title="Distribuição por Categoria"
+            icon={PieChart}
+            gradientFrom="from-purple-600"
+            gradientTo="to-purple-700"
+          >
             <CategoryPieChart
               transactions={filteredTransactions}
               categories={state.categories}
               type="all"
             />
-          </CardUI>
+          </PremiumContentCard>
         </div>
 
         {/* Lista de Transações Section */}
         <div>
-          <CardUI className="shadow-md hover:shadow-lg transition-shadow">
-            <div className="flex items-center gap-2 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-100 dark:border-gray-700">
-              <div className="w-1 h-5 sm:h-6 bg-blue-600 dark:bg-blue-400 rounded-full"></div>
-              <h3 className="text-sm sm:text-base text-gray-900 dark:text-white font-semibold tracking-tight">Transações</h3>
-            </div>
+          <PremiumContentCard
+            title="Transações"
+            icon={List}
+            gradientFrom="from-indigo-600"
+            gradientTo="to-indigo-700"
+          >
             <TransactionList 
               type={typeFilter} 
               filter={filter} 
@@ -224,7 +315,7 @@ export default function GeraisPage() {
               showCategory={true} 
               columns={5} 
             />
-          </CardUI>
+          </PremiumContentCard>
         </div>
       </div>
 

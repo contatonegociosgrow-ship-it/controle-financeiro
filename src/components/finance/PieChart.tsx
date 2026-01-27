@@ -53,9 +53,39 @@ export function PieChart({ data, size = 200, strokeWidth = 20 }: PieChartProps) 
 
   let currentOffset = 0;
 
+  // Helper function to create gradient colors
+  const getGradientColor = (baseColor: string) => {
+    // Convert hex to RGB
+    const hex = baseColor.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    
+    // Create darker version for gradient
+    const darkerR = Math.max(0, r - 30);
+    const darkerG = Math.max(0, g - 30);
+    const darkerB = Math.max(0, b - 30);
+    
+    return {
+      light: baseColor,
+      dark: `rgb(${darkerR}, ${darkerG}, ${darkerB})`,
+    };
+  };
+
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="transform -rotate-90">
+        <defs>
+          {validData.map((item, index) => {
+            const gradientColors = getGradientColor(item.color);
+            return (
+              <linearGradient key={`gradient-${index}`} id={`gradient-${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={gradientColors.light} />
+                <stop offset="100%" stopColor={gradientColors.dark} />
+              </linearGradient>
+            );
+          })}
+        </defs>
         {validData.map((item, index) => {
           const strokeDasharray = `${(item.percentage / 100) * circumference} ${circumference}`;
           const strokeDashoffset = -currentOffset;
@@ -68,7 +98,7 @@ export function PieChart({ data, size = 200, strokeWidth = 20 }: PieChartProps) 
               cy={center}
               r={radius}
               fill="none"
-              stroke={item.color}
+              stroke={`url(#gradient-${index})`}
               strokeWidth={strokeWidth}
               strokeDasharray={strokeDasharray}
               strokeDashoffset={strokeDashoffset}
