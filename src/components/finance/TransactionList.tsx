@@ -43,6 +43,13 @@ export function TransactionList({
   columns = 5,
 }: TransactionListProps) {
   const { state, updateTransaction, addPerson } = useFinanceStore();
+  
+  // Criar um mapa de transações para acesso rápido
+  const transactionsMap = useMemo(() => {
+    const map = new Map();
+    state.transactions.forEach(t => map.set(t.id, t));
+    return map;
+  }, [state.transactions]);
   const [editingPersonId, setEditingPersonId] = useState<string | null>(null);
   const [editingPersonValue, setEditingPersonValue] = useState('');
 
@@ -113,9 +120,9 @@ export function TransactionList({
 
 
   const getStatusColor = (status?: string) => {
-    if (status === 'paid') return 'bg-green-100 text-gray-900';
-    if (status === 'overdue') return 'bg-red-100 text-gray-900';
-    return 'bg-orange-100 text-gray-900';
+    if (status === 'paid') return 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 text-gray-900 dark:text-gray-100 border border-green-200/50 dark:border-green-800/50';
+    if (status === 'overdue') return 'bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20 text-gray-900 dark:text-gray-100 border border-red-200/50 dark:border-red-800/50';
+    return 'bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 text-gray-900 dark:text-gray-100 border border-orange-200/50 dark:border-orange-800/50';
   };
 
   const getStatusLabel = (status?: string) => {
@@ -210,12 +217,14 @@ export function TransactionList({
       
       {/* Rows */}
       {filteredTransactions.map((transaction, index) => {
-        const category = state.categories.find((c) => c.id === transaction.categoryId);
+        // Buscar transação atualizada do estado para garantir que temos o status mais recente
+        const currentTransaction = transactionsMap.get(transaction.id) || transaction;
+        const category = state.categories.find((c) => c.id === currentTransaction.categoryId);
         const categoryName = category?.name || 'Sem categoria';
-        const isIncome = transaction.type === 'income';
+        const isIncome = currentTransaction.type === 'income';
 
         return (
-          <div key={transaction.id}>
+          <div key={`${currentTransaction.id}-${currentTransaction.status || 'pending'}`}>
             {/* Desktop View - Grid */}
             <div
               className={`hidden md:grid py-3 px-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-sm items-center border-b border-gray-200 dark:border-gray-700 ${
@@ -225,27 +234,27 @@ export function TransactionList({
             >
             {type === 'income' ? (
               <>
-                <div className="text-gray-900 truncate font-medium px-3" title={transaction.notes || categoryName}>
-                  {transaction.notes || categoryName}
+                <div className="text-gray-900 truncate font-medium px-3" title={currentTransaction.notes || categoryName}>
+                  {currentTransaction.notes || categoryName}
                 </div>
-                <div className="text-gray-600 text-sm px-3 border-l border-gray-200">{formatDate(transaction.date)}</div>
+                <div className="text-gray-600 text-sm px-3 border-l border-gray-200">{formatDate(currentTransaction.date)}</div>
                 <div className="text-green-600 font-semibold text-base px-3 border-l border-gray-200">
-                  {formatCurrency(transaction.value)}
+                  {formatCurrency(currentTransaction.value)}
                 </div>
                 <div className="px-3 border-l border-gray-200">
-                  {editingPersonId === transaction.id ? (
+                  {editingPersonId === currentTransaction.id ? (
                     <input
                       type="text"
                       value={editingPersonValue}
                       onChange={(e) => setEditingPersonValue(e.target.value)}
                       onBlur={() => {
-                        handlePersonChange(transaction.id, editingPersonValue);
+                        handlePersonChange(currentTransaction.id, editingPersonValue);
                         setEditingPersonId(null);
                         setEditingPersonValue('');
                       }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
-                          handlePersonChange(transaction.id, editingPersonValue);
+                          handlePersonChange(currentTransaction.id, editingPersonValue);
                           setEditingPersonId(null);
                           setEditingPersonValue('');
                         } else if (e.key === 'Escape') {
@@ -260,49 +269,66 @@ export function TransactionList({
                     <div
                       className="text-gray-600 truncate text-sm cursor-pointer hover:bg-gray-100 px-2 py-1 rounded -mx-2 -my-1"
                       onClick={() => {
-                        setEditingPersonId(transaction.id);
-                        setEditingPersonValue(getPersonName(transaction.personId));
+                        setEditingPersonId(currentTransaction.id);
+                        setEditingPersonValue(getPersonName(currentTransaction.personId));
                       }}
                       title="Clique para editar"
                     >
-                      {getPersonName(transaction.personId) || '-'}
+                      {getPersonName(currentTransaction.personId) || '-'}
                     </div>
                   )}
                 </div>
-                <div className="text-gray-500 text-xs truncate px-3 border-l border-gray-200" title={transaction.notes}>
-                  {transaction.notes || '-'}
+                <div className="text-gray-500 text-xs truncate px-3 border-l border-gray-200" title={currentTransaction.notes}>
+                  {currentTransaction.notes || '-'}
                 </div>
               </>
             ) : type === 'debt' ? (
               <>
                 <div className="text-gray-600 text-sm px-3">
-                  {formatDate(transaction.dueDate || transaction.date)}
+                  {formatDate(currentTransaction.dueDate || currentTransaction.date)}
                 </div>
                 <div className="text-gray-900 font-medium px-3 border-l border-gray-200">Pagamento Mensal</div>
-                <div className="text-gray-900 font-semibold text-base px-3 border-l border-gray-200">{formatCurrency(transaction.value)}</div>
-                {showStatus && transaction.status && (
-                  <div className={`px-3 py-3 border-l border-gray-200 flex items-center gap-2 ${getStatusColor(transaction.status)}`}>
-                    <input
-                      type="checkbox"
-                      checked={transaction.status === 'paid'}
-                      onChange={(e) => {
-                        updateTransaction(transaction.id, {
-                          status: e.target.checked ? 'paid' : 'pending',
-                        });
-                      }}
-                      className="w-5 h-5 rounded-md border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-all duration-200 checked:bg-blue-600 checked:border-blue-600 hover:border-blue-400 shadow-sm"
-                      title={transaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
-                    />
-                    <span className="text-xs font-medium">
-                      {getStatusLabel(transaction.status)}
+                <div className="text-gray-900 font-semibold text-base px-3 border-l border-gray-200">{formatCurrency(currentTransaction.value)}</div>
+                {showStatus && currentTransaction.status && (
+                  <div className={`px-4 py-2.5 border-l border-gray-200 dark:border-gray-700 flex items-center gap-3 rounded-lg ${getStatusColor(currentTransaction.status)}`}>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={currentTransaction.status === 'paid'}
+                        onChange={(e) => {
+                          const newStatus = e.target.checked ? 'paid' : 'pending';
+                          updateTransaction(currentTransaction.id, {
+                            status: newStatus,
+                          });
+                        }}
+                        className="sr-only"
+                        title={currentTransaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
+                      />
+                      <div className="relative w-5 h-5 flex items-center justify-center">
+                        <div className={`absolute inset-0 w-5 h-5 border-2 rounded-md transition-all duration-300 ease-out shadow-sm hover:shadow-md hover:scale-110 ${
+                          currentTransaction.status === 'paid' 
+                            ? 'border-[#22C55E] bg-[#22C55E] hover:border-[#16A34A] hover:bg-[#16A34A]' 
+                            : 'bg-white dark:bg-gray-800 border-gray-400 dark:border-gray-500 hover:border-[#22C55E]/70'
+                        }`}></div>
+                        <svg className={`relative w-3.5 h-3.5 transition-all duration-300 ease-out pointer-events-none z-10 ${
+                          currentTransaction.status === 'paid' 
+                            ? 'opacity-100 transform scale-100 text-white' 
+                            : 'opacity-0 transform scale-0 text-white'
+                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    </label>
+                    <span className="text-sm font-semibold tracking-wide">
+                      {getStatusLabel(currentTransaction.status)}
                     </span>
                   </div>
                 )}
               </>
             ) : (
               <>
-                <div className="text-gray-900 truncate font-medium px-3" title={transaction.notes || categoryName}>
-                  {transaction.notes || categoryName}
+                <div className="text-gray-900 truncate font-medium px-3" title={currentTransaction.notes || categoryName}>
+                  {currentTransaction.notes || categoryName}
                 </div>
                 {showCategory && category && (
                   <div 
@@ -315,7 +341,7 @@ export function TransactionList({
                   </div>
                 )}
                 {type === 'expense_variable' && (
-                  <div className="text-gray-600 text-sm px-3 border-l border-gray-200">{formatDate(transaction.date)}</div>
+                  <div className="text-gray-600 text-sm px-3 border-l border-gray-200">{formatDate(currentTransaction.date)}</div>
                 )}
                 <div
                   className={`font-semibold text-base px-3 border-l border-gray-200 ${
@@ -323,33 +349,50 @@ export function TransactionList({
                   }`}
                 >
                   {isIncome ? '+' : '-'}
-                  {formatCurrency(transaction.value)}
+                  {formatCurrency(currentTransaction.value)}
                 </div>
                 {showDueDate && type === 'expense_fixed' && (
                   <div className="text-gray-600 text-sm px-3 border-l border-gray-200">
-                    {formatDate(transaction.dueDate || transaction.date)}
+                    {formatDate(currentTransaction.dueDate || currentTransaction.date)}
                   </div>
                 )}
-                {showInstallments && transaction.installments && (
+                {showInstallments && currentTransaction.installments && (
                   <div className="text-gray-600 text-sm px-3 border-l border-gray-200">
-                    {transaction.installments.current} de {transaction.installments.total}
+                    {currentTransaction.installments.current} de {currentTransaction.installments.total}
                   </div>
                 )}
-                {showStatus && transaction.status && (
-                  <div className={`px-3 py-3 border-l border-gray-200 flex items-center gap-2 ${getStatusColor(transaction.status)}`}>
-                    <input
-                      type="checkbox"
-                      checked={transaction.status === 'paid'}
-                      onChange={(e) => {
-                        updateTransaction(transaction.id, {
-                          status: e.target.checked ? 'paid' : 'pending',
-                        });
-                      }}
-                      className="w-5 h-5 rounded-md border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-all duration-200 checked:bg-blue-600 checked:border-blue-600 hover:border-blue-400 shadow-sm"
-                      title={transaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
-                    />
-                    <span className="text-xs font-medium">
-                      {getStatusLabel(transaction.status)}
+                {showStatus && currentTransaction.status && (
+                  <div className={`px-4 py-2.5 border-l border-gray-200 dark:border-gray-700 flex items-center gap-3 rounded-lg ${getStatusColor(currentTransaction.status)}`}>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={currentTransaction.status === 'paid'}
+                        onChange={(e) => {
+                          const newStatus = e.target.checked ? 'paid' : 'pending';
+                          updateTransaction(currentTransaction.id, {
+                            status: newStatus,
+                          });
+                        }}
+                        className="sr-only"
+                        title={currentTransaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
+                      />
+                      <div className="relative w-5 h-5 flex items-center justify-center">
+                        <div className={`absolute inset-0 w-5 h-5 border-2 rounded-md transition-all duration-300 ease-out shadow-sm hover:shadow-md hover:scale-110 ${
+                          currentTransaction.status === 'paid' 
+                            ? 'border-[#22C55E] bg-[#22C55E] hover:border-[#16A34A] hover:bg-[#16A34A]' 
+                            : 'bg-white dark:bg-gray-800 border-gray-400 dark:border-gray-500 hover:border-[#22C55E]/70'
+                        }`}></div>
+                        <svg className={`relative w-3.5 h-3.5 transition-all duration-300 ease-out pointer-events-none z-10 ${
+                          currentTransaction.status === 'paid' 
+                            ? 'opacity-100 transform scale-100 text-white' 
+                            : 'opacity-0 transform scale-0 text-white'
+                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    </label>
+                    <span className="text-sm font-semibold tracking-wide">
+                      {getStatusLabel(currentTransaction.status)}
                     </span>
                   </div>
                 )}
@@ -364,31 +407,31 @@ export function TransactionList({
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                        {transaction.notes || categoryName}
+                        {currentTransaction.notes || categoryName}
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {formatDate(transaction.date)}
+                        {formatDate(currentTransaction.date)}
                       </div>
                     </div>
                     <div className="text-lg font-bold text-green-600 whitespace-nowrap">
-                      {formatCurrency(transaction.value)}
+                      {formatCurrency(currentTransaction.value)}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
                     <span className="text-xs text-gray-500 dark:text-gray-400">Corresponde:</span>
-                    {editingPersonId === transaction.id ? (
+                    {editingPersonId === currentTransaction.id ? (
                       <input
                         type="text"
                         value={editingPersonValue}
                         onChange={(e) => setEditingPersonValue(e.target.value)}
                         onBlur={() => {
-                          handlePersonChange(transaction.id, editingPersonValue);
+                          handlePersonChange(currentTransaction.id, editingPersonValue);
                           setEditingPersonId(null);
                           setEditingPersonValue('');
                         }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
-                            handlePersonChange(transaction.id, editingPersonValue);
+                            handlePersonChange(currentTransaction.id, editingPersonValue);
                             setEditingPersonId(null);
                             setEditingPersonValue('');
                           } else if (e.key === 'Escape') {
@@ -403,17 +446,17 @@ export function TransactionList({
                       <div
                         className="flex-1 text-sm text-gray-700 dark:text-gray-300 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 px-2 py-1 rounded -mx-2"
                         onClick={() => {
-                          setEditingPersonId(transaction.id);
-                          setEditingPersonValue(getPersonName(transaction.personId));
+                          setEditingPersonId(currentTransaction.id);
+                          setEditingPersonValue(getPersonName(currentTransaction.personId));
                         }}
                       >
-                        {getPersonName(transaction.personId) || '-'}
+                        {getPersonName(currentTransaction.personId) || '-'}
                       </div>
                     )}
                   </div>
-                  {transaction.notes && (
+                  {currentTransaction.notes && (
                     <div className="text-xs text-gray-500 dark:text-gray-400 pt-1">
-                      {transaction.notes}
+                      {currentTransaction.notes}
                     </div>
                   )}
                 </div>
@@ -425,28 +468,44 @@ export function TransactionList({
                         Pagamento Mensal
                       </div>
                       <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {formatDate(transaction.dueDate || transaction.date)}
+                        {formatDate(currentTransaction.dueDate || currentTransaction.date)}
                       </div>
                     </div>
                     <div className="text-lg font-bold text-gray-900 dark:text-white whitespace-nowrap">
-                      {formatCurrency(transaction.value)}
+                      {formatCurrency(currentTransaction.value)}
                     </div>
                   </div>
-                  {showStatus && transaction.status && (
-                    <div className={`flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-700 px-2 py-2 rounded ${getStatusColor(transaction.status)}`}>
-                      <input
-                        type="checkbox"
-                        checked={transaction.status === 'paid'}
-                        onChange={(e) => {
-                          updateTransaction(transaction.id, {
-                            status: e.target.checked ? 'paid' : 'pending',
-                          });
-                        }}
-                        className="w-5 h-5 rounded-md border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-all duration-200 checked:bg-blue-600 checked:border-blue-600 hover:border-blue-400 shadow-sm"
-                        title={transaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
-                      />
-                      <span className="text-xs font-medium">
-                        {getStatusLabel(transaction.status)}
+                  {showStatus && currentTransaction.status && (
+                    <div className={`flex items-center gap-3 pt-2 border-t border-gray-100 dark:border-gray-700 px-3 py-2.5 rounded-lg ${getStatusColor(currentTransaction.status)}`}>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={currentTransaction.status === 'paid'}
+                          onChange={(e) => {
+                            updateTransaction(currentTransaction.id, {
+                              status: e.target.checked ? 'paid' : 'pending',
+                            });
+                          }}
+                          className="sr-only"
+                          title={currentTransaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
+                        />
+                        <div className={`relative w-5 h-5 flex items-center justify-center ${currentTransaction.status === 'paid' ? 'border-[#22C55E] bg-[#22C55E]' : ''}`}>
+                          <div className={`absolute inset-0 w-5 h-5 bg-white dark:bg-gray-800 border-2 rounded-md transition-all duration-300 ease-out shadow-sm hover:shadow-md hover:scale-110 ${
+                            currentTransaction.status === 'paid' 
+                              ? 'border-[#22C55E] bg-[#22C55E] hover:border-[#16A34A] hover:bg-[#16A34A]' 
+                              : 'border-gray-400 dark:border-gray-500 hover:border-[#22C55E]/70'
+                          }`}></div>
+                          <svg className={`relative w-3.5 h-3.5 text-white transition-all duration-300 ease-out pointer-events-none ${
+                            currentTransaction.status === 'paid' 
+                              ? 'opacity-100 transform scale-100' 
+                              : 'opacity-0 transform scale-0'
+                          }`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      </label>
+                      <span className="text-sm font-semibold tracking-wide">
+                        {getStatusLabel(currentTransaction.status)}
                       </span>
                     </div>
                   )}
@@ -456,7 +515,7 @@ export function TransactionList({
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                        {transaction.notes || categoryName}
+                        {currentTransaction.notes || categoryName}
                       </div>
                       {showCategory && category && (
                         <div 
@@ -468,13 +527,13 @@ export function TransactionList({
                       )}
                       <div className="flex flex-wrap gap-2 mt-2 text-xs text-gray-500 dark:text-gray-400">
                         {type === 'expense_variable' && (
-                          <span>📅 {formatDate(transaction.date)}</span>
+                          <span>📅 {formatDate(currentTransaction.date)}</span>
                         )}
                         {showDueDate && type === 'expense_fixed' && (
-                          <span>📅 {formatDate(transaction.dueDate || transaction.date)}</span>
+                          <span>📅 {formatDate(currentTransaction.dueDate || currentTransaction.date)}</span>
                         )}
-                        {showInstallments && transaction.installments && (
-                          <span>💳 {transaction.installments.current} de {transaction.installments.total}</span>
+                        {showInstallments && currentTransaction.installments && (
+                          <span>💳 {currentTransaction.installments.current} de {currentTransaction.installments.total}</span>
                         )}
                       </div>
                     </div>
@@ -482,24 +541,40 @@ export function TransactionList({
                       isIncome ? 'text-green-600' : 'text-red-600'
                     }`}>
                       {isIncome ? '+' : '-'}
-                      {formatCurrency(transaction.value)}
+                      {formatCurrency(currentTransaction.value)}
                     </div>
                   </div>
-                  {showStatus && transaction.status && (
-                    <div className={`flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-700 px-2 py-2 rounded ${getStatusColor(transaction.status)}`}>
-                      <input
-                        type="checkbox"
-                        checked={transaction.status === 'paid'}
-                        onChange={(e) => {
-                          updateTransaction(transaction.id, {
-                            status: e.target.checked ? 'paid' : 'pending',
-                          });
-                        }}
-                        className="w-5 h-5 rounded-md border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-all duration-200 checked:bg-blue-600 checked:border-blue-600 hover:border-blue-400 shadow-sm"
-                        title={transaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
-                      />
-                      <span className="text-xs font-medium">
-                        {getStatusLabel(transaction.status)}
+                  {showStatus && currentTransaction.status && (
+                    <div className={`flex items-center gap-3 pt-2 border-t border-gray-100 dark:border-gray-700 px-3 py-2.5 rounded-lg ${getStatusColor(currentTransaction.status)}`}>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={currentTransaction.status === 'paid'}
+                          onChange={(e) => {
+                            updateTransaction(currentTransaction.id, {
+                              status: e.target.checked ? 'paid' : 'pending',
+                            });
+                          }}
+                          className="sr-only"
+                          title={currentTransaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
+                        />
+                        <div className={`relative w-5 h-5 flex items-center justify-center ${currentTransaction.status === 'paid' ? 'border-[#22C55E] bg-[#22C55E]' : ''}`}>
+                          <div className={`absolute inset-0 w-5 h-5 bg-white dark:bg-gray-800 border-2 rounded-md transition-all duration-300 ease-out shadow-sm hover:shadow-md hover:scale-110 ${
+                            currentTransaction.status === 'paid' 
+                              ? 'border-[#22C55E] bg-[#22C55E] hover:border-[#16A34A] hover:bg-[#16A34A]' 
+                              : 'border-gray-400 dark:border-gray-500 hover:border-[#22C55E]/70'
+                          }`}></div>
+                          <svg className={`relative w-3.5 h-3.5 text-white transition-all duration-300 ease-out pointer-events-none ${
+                            currentTransaction.status === 'paid' 
+                              ? 'opacity-100 transform scale-100' 
+                              : 'opacity-0 transform scale-0'
+                          }`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      </label>
+                      <span className="text-sm font-semibold tracking-wide">
+                        {getStatusLabel(currentTransaction.status)}
                       </span>
                     </div>
                   )}
