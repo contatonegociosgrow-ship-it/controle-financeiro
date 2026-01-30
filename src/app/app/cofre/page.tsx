@@ -281,20 +281,22 @@ export default function CofrePage() {
                           </div>
                         </div>
                         
-                        <div className="flex gap-1">
+                        <div className="flex gap-1.5 sm:gap-1">
                           <button
                             onClick={() => handleEdit(vault.id)}
-                            className="p-1.5 text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                            className="w-10 h-10 md:w-7 md:h-7 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 active:bg-blue-100 dark:active:bg-blue-900/30 rounded-lg transition-colors touch-manipulation"
                             title="Editar"
+                            aria-label="Editar cofre"
                           >
-                            <Edit size={16} />
+                            <Edit size={18} className="md:w-4 md:h-4" />
                           </button>
                           <button
                             onClick={() => handleDelete(vault.id)}
-                            className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                            className="w-10 h-10 md:w-7 md:h-7 flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 rounded-lg transition-colors touch-manipulation"
                             title="Excluir"
+                            aria-label="Excluir cofre"
                           >
-                            <Trash2 size={16} />
+                            <Trash2 size={18} className="md:w-4 md:h-4" />
                           </button>
                         </div>
                       </div>

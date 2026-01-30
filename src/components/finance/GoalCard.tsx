@@ -72,18 +72,18 @@ export function GoalCard({ goal }: GoalCardProps) {
             {goal.deadline && <span>Prazo: {formatDate(goal.deadline)}</span>}
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {goal.status === 'active' && (
             <>
               <button
                 onClick={() => setShowContribute(!showContribute)}
-                className="px-3 py-1 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                className="min-h-[44px] px-4 py-2.5 md:px-3 md:py-1 text-sm md:text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation font-medium"
               >
                 Contribuir
               </button>
               <button
                 onClick={handleComplete}
-                className="px-3 py-1 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="min-h-[44px] px-4 py-2.5 md:px-3 md:py-1 text-sm md:text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 active:bg-green-800 transition-colors touch-manipulation font-medium"
               >
                 Concluir
               </button>
@@ -91,7 +91,8 @@ export function GoalCard({ goal }: GoalCardProps) {
           )}
           <button
             onClick={handleDelete}
-            className="px-3 py-1 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            className="min-h-[44px] px-4 py-2.5 md:px-3 md:py-1 text-sm md:text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 active:bg-red-800 transition-colors touch-manipulation font-medium"
+            aria-label="Excluir meta"
           >
             Excluir
           </button>

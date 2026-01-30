@@ -147,7 +147,8 @@ export function DebtCard({ debt }: DebtCardProps) {
         {/* Botão remover */}
         <button
           onClick={handleRemove}
-          className="w-full text-red-600 hover:text-red-700 text-sm font-medium py-2 transition-colors"
+          className="w-full min-h-[44px] text-red-600 hover:text-red-700 active:text-red-800 active:bg-red-50 dark:active:bg-red-900/20 text-sm font-medium py-3 px-4 rounded-lg transition-colors touch-manipulation border border-red-200 dark:border-red-800/30 hover:border-red-300 dark:hover:border-red-700/50"
+          aria-label="Remover dívida"
         >
           Remover dívida
         </button>

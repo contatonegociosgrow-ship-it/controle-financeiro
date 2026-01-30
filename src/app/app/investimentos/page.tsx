@@ -325,18 +325,20 @@ export default function InvestimentosPage() {
                         )}
                       </div>
                       
-                      <div className="flex gap-2 ml-4">
+                      <div className="flex gap-2 ml-2 sm:ml-4">
                         <button
                           onClick={() => handleEdit(investment.id)}
-                          className="p-2 text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                          className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 active:bg-blue-100 dark:active:bg-blue-900/30 rounded-lg transition-colors touch-manipulation"
                           title="Editar"
+                          aria-label="Editar investimento"
                         >
                           <Edit size={18} />
                         </button>
                         <button
                           onClick={() => handleDelete(investment.id)}
-                          className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                          className="w-10 h-10 md:w-8 md:h-8 flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 rounded-lg transition-colors touch-manipulation"
                           title="Remover"
+                          aria-label="Remover investimento"
                         >
                           <Trash2 size={18} />
                         </button>

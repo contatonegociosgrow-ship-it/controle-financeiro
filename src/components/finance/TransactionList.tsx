@@ -294,10 +294,11 @@ export function TransactionList({
                 <div className="px-3 border-l border-gray-200 flex items-center justify-center">
                   <button
                     onClick={() => handleRemove(currentTransaction.id)}
-                    className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                    className="p-2 md:p-1.5 w-10 h-10 md:w-auto md:h-auto flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 rounded transition-colors touch-manipulation"
                     title="Remover transação"
+                    aria-label="Remover transação"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={18} className="w-4 h-4" />
                   </button>
                 </div>
               </>
@@ -346,10 +347,11 @@ export function TransactionList({
                 <div className="px-3 border-l border-gray-200 flex items-center justify-center">
                   <button
                     onClick={() => handleRemove(currentTransaction.id)}
-                    className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                    className="p-2 md:p-1.5 w-10 h-10 md:w-auto md:h-auto flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 rounded transition-colors touch-manipulation"
                     title="Remover transação"
+                    aria-label="Remover transação"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={18} className="w-4 h-4" />
                   </button>
                 </div>
               </>
@@ -427,10 +429,11 @@ export function TransactionList({
                 <div className="px-3 border-l border-gray-200 flex items-center justify-center">
                   <button
                     onClick={() => handleRemove(currentTransaction.id)}
-                    className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                    className="p-2 md:p-1.5 w-10 h-10 md:w-auto md:h-auto flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 rounded transition-colors touch-manipulation"
                     title="Remover transação"
+                    aria-label="Remover transação"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={18} className="w-4 h-4" />
                   </button>
                 </div>
               </>
@@ -438,12 +441,13 @@ export function TransactionList({
             </div>
 
             {/* Mobile View - Cards */}
-            <div className="md:hidden border-b border-gray-200 dark:border-gray-700 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 relative">
+            <div className="md:hidden border-b border-gray-200 dark:border-gray-700 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 relative pr-14">
               {/* Botão remover mobile */}
               <button
                 onClick={() => handleRemove(currentTransaction.id)}
-                className="absolute top-4 right-4 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                className="absolute top-3 right-3 w-10 h-10 flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 rounded-lg transition-colors touch-manipulation"
                 title="Remover transação"
+                aria-label="Remover transação"
               >
                 <Trash2 size={18} />
               </button>

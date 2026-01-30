@@ -464,14 +464,15 @@ export default function PerfilPage() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
                         <button
                           onClick={() => {
                             setEditingCategoryId(category.id);
                             setIsCategorySheetOpen(true);
                           }}
-                          className="px-3 py-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 font-semibold rounded-lg transition-all text-sm"
+                          className="min-h-[44px] px-4 py-2.5 md:px-3 md:py-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 active:bg-blue-100 dark:active:bg-blue-900/30 font-semibold rounded-lg transition-all text-sm touch-manipulation"
                           title="Editar categoria"
+                          aria-label="Editar categoria"
                         >
                           Editar
                         </button>
@@ -491,8 +492,9 @@ export default function PerfilPage() {
                               removeCategory(category.id);
                             }
                           }}
-                          className="px-3 py-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 font-semibold rounded-lg transition-all text-sm"
+                          className="min-h-[44px] px-4 py-2.5 md:px-3 md:py-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 font-semibold rounded-lg transition-all text-sm touch-manipulation"
                           title="Excluir categoria"
+                          aria-label="Excluir categoria"
                         >
                           Excluir
                         </button>
