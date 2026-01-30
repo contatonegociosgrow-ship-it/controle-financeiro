@@ -213,7 +213,15 @@ export function ImportExtractSheet({ isOpen, onClose, cardId }: ImportExtractShe
                     className="grid grid-cols-12 gap-2 py-2 px-4 border-b border-gray-200 dark:border-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 last:border-b-0"
                   >
                     <div className="col-span-3 text-gray-600 dark:text-gray-400">
-                      {new Date(row.date).toLocaleDateString('pt-BR')}
+                      {(() => {
+                        // Converter diretamente de ISO (YYYY-MM-DD) para BR (DD/MM/YYYY) sem usar Date
+                        const dateStr = typeof row.date === 'string' ? row.date.split(' ')[0] : row.date;
+                        if (dateStr && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                          const [year, month, day] = dateStr.split('-');
+                          return `${day}/${month}/${year}`;
+                        }
+                        return dateStr || '';
+                      })()}
                     </div>
                     <div className="col-span-6 text-gray-900 dark:text-white truncate" title={row.description}>
                       {row.description}

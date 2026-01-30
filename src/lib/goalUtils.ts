@@ -45,8 +45,24 @@ export function calculateMinEndDate(
  */
 export function formatDateToBR(isoDate: string): string {
   if (!isoDate) return '';
-  const [year, month, day] = isoDate.split('-');
+  // Garantir que a data está no formato correto (YYYY-MM-DD)
+  const parts = isoDate.split('-');
+  if (parts.length !== 3) return '';
+  const [year, month, day] = parts;
+  // Validar que os valores são válidos
+  if (!year || !month || !day) return '';
   return `${day}/${month}/${year}`;
+}
+
+/**
+ * Obtém a data atual no formato ISO (YYYY-MM-DD) sem problemas de fuso horário
+ */
+export function getTodayISO(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 /**

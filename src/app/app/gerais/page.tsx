@@ -25,8 +25,18 @@ export default function GeraisPage() {
   const [typeFilter, setTypeFilter] = useState<FilterType>('all');
   const [dateStart, setDateStart] = useState<string | null>(null);
   const [dateEnd, setDateEnd] = useState<string | null>(null);
+  
+  // Estado para controlar o mês/ano visualizado
+  const [selectedMonth, setSelectedMonth] = useState<number>(() => {
+    const now = new Date();
+    return now.getMonth();
+  });
+  const [selectedYear, setSelectedYear] = useState<number>(() => {
+    const now = new Date();
+    return now.getFullYear();
+  });
 
-  // Filtrar transações por tipo, texto e data (usado apenas para gráficos)
+  // Filtrar transações por tipo, texto e data
   const filteredTransactions = useMemo(() => {
     let filtered = state.transactions;
 
@@ -56,33 +66,42 @@ export default function GeraisPage() {
       });
     }
 
-    // Filtrar por data
-    if (dateStart || dateEnd) {
+    // Se não houver filtro de data manual, filtrar pelo mês/ano selecionado
+    if (!dateStart && !dateEnd) {
+      const firstDay = new Date(selectedYear, selectedMonth, 1);
+      const lastDay = new Date(selectedYear, selectedMonth + 1, 0);
+      const startDateStr = firstDay.toISOString().split('T')[0];
+      const endDateStr = lastDay.toISOString().split('T')[0];
+      
       filtered = filtered.filter((t) => {
-        const transactionDate = t.date;
-        if (dateStart && transactionDate < dateStart) return false;
-        if (dateEnd && transactionDate > dateEnd) return false;
-        return true;
+        return t.date >= startDateStr && t.date <= endDateStr;
       });
+    } else {
+      // Filtrar por data manual (quando usuário usa DateFilter)
+      if (dateStart || dateEnd) {
+        filtered = filtered.filter((t) => {
+          const transactionDate = t.date;
+          if (dateStart && transactionDate < dateStart) return false;
+          if (dateEnd && transactionDate > dateEnd) return false;
+          return true;
+        });
+      }
     }
 
     return filtered;
-  }, [state.transactions, state.categories, state.people, filter, typeFilter, dateStart, dateEnd]);
+  }, [state.transactions, state.categories, state.people, filter, typeFilter, dateStart, dateEnd, selectedMonth, selectedYear]);
 
-  // Calcular totais por tipo
+  // Calcular totais por tipo para o mês selecionado
   const totals = useMemo(() => {
     const monthlyIncome = state.profile.monthlyIncome || 0;
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
 
     const income = state.transactions
       .filter((t) => {
         const transactionDate = new Date(t.date);
         return (
           t.type === 'income' &&
-          transactionDate.getMonth() === currentMonth &&
-          transactionDate.getFullYear() === currentYear
+          transactionDate.getMonth() === selectedMonth &&
+          transactionDate.getFullYear() === selectedYear
         );
       })
       .reduce((sum, t) => sum + t.value, 0);
@@ -92,8 +111,8 @@ export default function GeraisPage() {
         const transactionDate = new Date(t.date);
         return (
           t.type === 'expense_fixed' &&
-          transactionDate.getMonth() === currentMonth &&
-          transactionDate.getFullYear() === currentYear
+          transactionDate.getMonth() === selectedMonth &&
+          transactionDate.getFullYear() === selectedYear
         );
       })
       .reduce((sum, t) => sum + t.value, 0);
@@ -103,8 +122,8 @@ export default function GeraisPage() {
         const transactionDate = new Date(t.date);
         return (
           t.type === 'expense_variable' &&
-          transactionDate.getMonth() === currentMonth &&
-          transactionDate.getFullYear() === currentYear
+          transactionDate.getMonth() === selectedMonth &&
+          transactionDate.getFullYear() === selectedYear
         );
       })
       .reduce((sum, t) => sum + t.value, 0);
@@ -114,8 +133,8 @@ export default function GeraisPage() {
         const transactionDate = new Date(t.date);
         return (
           t.type === 'debt' &&
-          transactionDate.getMonth() === currentMonth &&
-          transactionDate.getFullYear() === currentYear
+          transactionDate.getMonth() === selectedMonth &&
+          transactionDate.getFullYear() === selectedYear
         );
       })
       .reduce((sum, t) => sum + t.value, 0);
@@ -125,8 +144,8 @@ export default function GeraisPage() {
         const transactionDate = new Date(t.date);
         return (
           t.type === 'savings' &&
-          transactionDate.getMonth() === currentMonth &&
-          transactionDate.getFullYear() === currentYear
+          transactionDate.getMonth() === selectedMonth &&
+          transactionDate.getFullYear() === selectedYear
         );
       })
       .reduce((sum, t) => sum + t.value, 0);
@@ -150,7 +169,7 @@ export default function GeraisPage() {
       debtPercentage,
       savingsPercentage,
     };
-  }, [state.transactions, state.profile.monthlyIncome]);
+  }, [state.transactions, state.profile.monthlyIncome, selectedMonth, selectedYear]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -158,6 +177,63 @@ export default function GeraisPage() {
       currency: state.profile.currency || 'BRL',
     }).format(value);
   };
+
+  // Função para navegar entre meses
+  const handleMonthChange = (direction: 'prev' | 'next' | 'current') => {
+    // Sempre limpar filtros de data manual ao navegar entre meses
+    setDateStart(null);
+    setDateEnd(null);
+    
+    if (direction === 'current') {
+      const now = new Date();
+      setSelectedMonth(now.getMonth());
+      setSelectedYear(now.getFullYear());
+      return;
+    }
+    
+    // Calcular novo mês e ano
+    let newMonth = selectedMonth;
+    let newYear = selectedYear;
+    
+    if (direction === 'prev') {
+      newMonth--;
+      if (newMonth < 0) {
+        newMonth = 11;
+        newYear--;
+      }
+    } else if (direction === 'next') {
+      newMonth++;
+      if (newMonth > 11) {
+        newMonth = 0;
+        newYear++;
+      }
+    }
+    
+    // Atualizar ambos os estados
+    setSelectedMonth(newMonth);
+    setSelectedYear(newYear);
+  };
+
+  const monthNames = [
+    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+  ];
+
+  const isCurrentMonth = useMemo(() => {
+    const now = new Date();
+    return selectedMonth === now.getMonth() && selectedYear === now.getFullYear();
+  }, [selectedMonth, selectedYear]);
+
+  // Calcular datas de início e fim do mês selecionado para o TransactionList
+  const monthStartDate = useMemo(() => {
+    const firstDay = new Date(selectedYear, selectedMonth, 1);
+    return firstDay.toISOString().split('T')[0];
+  }, [selectedYear, selectedMonth]);
+
+  const monthEndDate = useMemo(() => {
+    const lastDay = new Date(selectedYear, selectedMonth + 1, 0);
+    return lastDay.toISOString().split('T')[0];
+  }, [selectedYear, selectedMonth]);
 
   if (!isInitialized) {
     return (
@@ -179,8 +255,57 @@ export default function GeraisPage() {
           />
         </div>
 
-        {/* Insight do Mês */}
-        <MonthlyInsight />
+        {/* Seletor de Mês/Ano */}
+        <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => handleMonthChange('prev')}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                aria-label="Mês anterior"
+                title="Mês anterior"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              
+              <div className="text-center min-w-[200px]">
+                <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {monthNames[selectedMonth]} {selectedYear}
+                </div>
+                {!isCurrentMonth && (
+                  <button
+                    onClick={() => handleMonthChange('current')}
+                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1"
+                  >
+                    Voltar para mês atual
+                  </button>
+                )}
+              </div>
+              
+              <button
+                onClick={() => handleMonthChange('next')}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                aria-label="Próximo mês"
+                title="Próximo mês"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+            
+            {!isCurrentMonth && (
+              <div className="text-sm text-gray-500 dark:text-gray-400">
+                Visualizando mês anterior
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Insight do Mês - apenas quando for o mês atual */}
+        {isCurrentMonth && <MonthlyInsight />}
 
         {/* Cards de Resumo por Tipo */}
         <div className="mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-gray-200 dark:border-gray-700">
@@ -279,6 +404,13 @@ export default function GeraisPage() {
             onDateRangeChange={(start, end) => {
               setDateStart(start);
               setDateEnd(end);
+              // Quando limpar o filtro de data manual, não resetar o mês selecionado
+              // Apenas quando houver filtro ativo, manter o mês atual
+              if (start || end) {
+                // Manter o mês selecionado, não resetar
+              } else {
+                // Quando limpar o filtro, manter o mês selecionado
+              }
             }}
           />
         </div>
@@ -310,8 +442,8 @@ export default function GeraisPage() {
             <TransactionList 
               type={typeFilter} 
               filter={filter} 
-              startDate={dateStart}
-              endDate={dateEnd}
+              startDate={dateStart || monthStartDate}
+              endDate={dateEnd || monthEndDate}
               showCategory={true} 
               columns={5} 
             />

@@ -202,16 +202,24 @@ export default function CartoesPage() {
                     {/* Informações da fatura */}
                     <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 pt-2 border-t border-gray-200 dark:border-gray-700">
                       <span>
-                        Fecha: {new Date(currentInvoice.closingDate).toLocaleDateString('pt-BR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                        })}
+                        Fecha: {(() => {
+                          const dateStr = currentInvoice.closingDate;
+                          if (dateStr && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                            const [year, month, day] = dateStr.split('-');
+                            return `${day}/${month}/${year}`;
+                          }
+                          return dateStr || '';
+                        })()}
                       </span>
                       <span>
-                        Vence: {new Date(currentInvoice.dueDate).toLocaleDateString('pt-BR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                        })}
+                        Vence: {(() => {
+                          const dateStr = currentInvoice.dueDate;
+                          if (dateStr && dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                            const [year, month, day] = dateStr.split('-');
+                            return `${day}/${month}/${year}`;
+                          }
+                          return dateStr || '';
+                        })()}
                       </span>
                     </div>
                   </CardUI>

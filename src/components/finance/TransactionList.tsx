@@ -2,6 +2,7 @@
 
 import { useMemo, useCallback, useState } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
+import { Trash2 } from 'lucide-react';
 
 type TransactionListProps = {
   type?: 'income' | 'expense_fixed' | 'expense_variable' | 'debt' | 'savings' | 'all';
@@ -42,7 +43,7 @@ export function TransactionList({
   showDueDate = false,
   columns = 5,
 }: TransactionListProps) {
-  const { state, updateTransaction, addPerson } = useFinanceStore();
+  const { state, updateTransaction, addPerson, removeTransaction } = useFinanceStore();
   
   // Criar um mapa de transações para acesso rápido
   const transactionsMap = useMemo(() => {
@@ -106,12 +107,15 @@ export function TransactionList({
   };
 
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
+    // Usar formatDateToBR para evitar problemas de fuso horário
+    if (!dateStr) return '';
+    // Se já está no formato ISO (YYYY-MM-DD), converter diretamente
+    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const [year, month, day] = dateStr.split('-');
+      return `${day}/${month}/${year}`;
+    }
+    // Se não está no formato esperado, tentar converter
+    return dateStr;
   };
 
   const getCategoryName = (id: string) => {
@@ -158,14 +162,22 @@ export function TransactionList({
     }
   }, [state.people, updateTransaction, addPerson]);
 
-  // Calcular número real de colunas baseado no tipo
+  // Calcular número real de colunas baseado no tipo (incluindo coluna de ações)
   const getActualColumns = useCallback(() => {
-    if (type === 'income') return 5; // Descrição, Recebido em, Valor, Corresponde, Anotação
-    if (type === 'expense_fixed') return 5; // Descrição, Categoria, Valor, Vencimento, Status
-    if (type === 'expense_variable') return 5; // Descrição, Categoria, Data, Valor, Parcelas
-    if (type === 'debt') return 4; // Data, Tipo, Valor, Status
-    return columns;
+    let baseColumns = 0;
+    if (type === 'income') baseColumns = 5; // Descrição, Recebido em, Valor, Corresponde, Anotação
+    else if (type === 'expense_fixed') baseColumns = 5; // Descrição, Categoria, Valor, Vencimento, Status
+    else if (type === 'expense_variable') baseColumns = 5; // Descrição, Categoria, Data, Valor, Parcelas
+    else if (type === 'debt') baseColumns = 4; // Data, Tipo, Valor, Status
+    else baseColumns = columns;
+    return baseColumns + 1; // +1 para coluna de ações (remover)
   }, [type, columns]);
+
+  const handleRemove = useCallback((id: string) => {
+    if (confirm('Tem certeza que deseja remover esta transação?')) {
+      removeTransaction(id);
+    }
+  }, [removeTransaction]);
 
   const actualColumns = getActualColumns();
 
@@ -179,19 +191,17 @@ export function TransactionList({
 
   // Função para obter os headers baseado no tipo
   const getHeaders = () => {
+    let headers: string[] = [];
     if (type === 'income') {
-      return ['Descrição', 'Recebido em', 'Valor', 'Corresponde', 'Anotação'];
+      headers = ['Descrição', 'Recebido em', 'Valor', 'Corresponde', 'Anotação'];
+    } else if (type === 'expense_fixed') {
+      headers = ['Descrição', 'Categoria', 'Valor', 'Vencimento', 'Status'];
+    } else if (type === 'expense_variable') {
+      headers = ['Descrição', 'Categoria', 'Data da compra', 'Valor', 'Parcelas'];
+    } else if (type === 'debt') {
+      headers = ['Data do Pagamento', 'Tipo de Lançamento', 'Valor', 'Status'];
     }
-    if (type === 'expense_fixed') {
-      return ['Descrição', 'Categoria', 'Valor', 'Vencimento', 'Status'];
-    }
-    if (type === 'expense_variable') {
-      return ['Descrição', 'Categoria', 'Data da compra', 'Valor', 'Parcelas'];
-    }
-    if (type === 'debt') {
-      return ['Data do Pagamento', 'Tipo de Lançamento', 'Valor', 'Status'];
-    }
-    return [];
+    return [...headers, 'Ações'];
   };
 
   const headers = getHeaders();
@@ -202,7 +212,7 @@ export function TransactionList({
       {headers.length > 0 && (
         <div
           className="hidden md:grid py-3 px-4 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider"
-          style={{ gridTemplateColumns: `repeat(${actualColumns}, minmax(0, 1fr))` }}
+          style={{ gridTemplateColumns: `repeat(${actualColumns - 1}, minmax(0, 1fr)) auto` }}
         >
           {headers.map((header, idx) => (
             <div 
@@ -230,7 +240,7 @@ export function TransactionList({
               className={`hidden md:grid py-3 px-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-sm items-center border-b border-gray-200 dark:border-gray-700 ${
                 index === filteredTransactions.length - 1 ? 'border-b-0' : ''
               }`}
-              style={{ gridTemplateColumns: `repeat(${actualColumns}, minmax(0, 1fr))` }}
+              style={{ gridTemplateColumns: `repeat(${actualColumns - 1}, minmax(0, 1fr)) auto` }}
             >
             {type === 'income' ? (
               <>
@@ -281,6 +291,15 @@ export function TransactionList({
                 <div className="text-gray-500 text-xs truncate px-3 border-l border-gray-200" title={currentTransaction.notes}>
                   {currentTransaction.notes || '-'}
                 </div>
+                <div className="px-3 border-l border-gray-200 flex items-center justify-center">
+                  <button
+                    onClick={() => handleRemove(currentTransaction.id)}
+                    className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                    title="Remover transação"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </>
             ) : type === 'debt' ? (
               <>
@@ -324,6 +343,15 @@ export function TransactionList({
                     </span>
                   </div>
                 )}
+                <div className="px-3 border-l border-gray-200 flex items-center justify-center">
+                  <button
+                    onClick={() => handleRemove(currentTransaction.id)}
+                    className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                    title="Remover transação"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </>
             ) : (
               <>
@@ -396,12 +424,29 @@ export function TransactionList({
                     </span>
                   </div>
                 )}
+                <div className="px-3 border-l border-gray-200 flex items-center justify-center">
+                  <button
+                    onClick={() => handleRemove(currentTransaction.id)}
+                    className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                    title="Remover transação"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </>
             )}
             </div>
 
             {/* Mobile View - Cards */}
-            <div className="md:hidden border-b border-gray-200 dark:border-gray-700 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+            <div className="md:hidden border-b border-gray-200 dark:border-gray-700 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 relative">
+              {/* Botão remover mobile */}
+              <button
+                onClick={() => handleRemove(currentTransaction.id)}
+                className="absolute top-4 right-4 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                title="Remover transação"
+              >
+                <Trash2 size={18} />
+              </button>
               {type === 'income' ? (
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-2">

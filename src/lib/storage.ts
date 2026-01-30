@@ -53,6 +53,24 @@ type FinanceState = {
     status: 'active' | 'completed';
     createdAt: number;
   }[];
+  investments: {
+    id: string;
+    name: string;
+    type: 'fixed_income' | 'variable_income' | 'crypto' | 'monthly' | 'goal_based';
+    value: number;
+    applicationDate: string; // YYYY-MM-DD
+    estimatedReturn?: number; // percentual opcional
+    notes?: string;
+    createdAt: number;
+  }[];
+  vaults: {
+    id: string;
+    name: string;
+    emoji: string;
+    currentValue: number;
+    targetValue?: number; // opcional
+    createdAt: number;
+  }[];
   settings: { theme: 'dark' | 'light' };
 };
 
@@ -75,6 +93,8 @@ const defaultState: FinanceState = {
   transactions: [],
   goals: [],
   debts: [],
+  investments: [],
+  vaults: [],
   settings: {
     theme: 'light',
   },
@@ -242,6 +262,8 @@ export function loadState(): FinanceState {
     },
     goals: state.goals ?? [],
     debts: state.debts ?? [],
+    investments: state.investments ?? [],
+    vaults: state.vaults ?? [],
     transactions: migratedTransactions,
     categories: categories,
     settings: {

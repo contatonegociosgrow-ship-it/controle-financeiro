@@ -16,10 +16,12 @@ import {
   BarChart3,
   FileText,
   User,
+  TrendingUp,
+  Lock,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 
-type TabType = 'gerais' | 'ganhos' | 'fixas' | 'variaveis' | 'dividas' | 'economias' | 'cartoes' | 'mensal' | 'manual' | 'perfil' | 'saude-financeira';
+type TabType = 'gerais' | 'ganhos' | 'fixas' | 'variaveis' | 'dividas' | 'economias' | 'cartoes' | 'mensal' | 'manual' | 'perfil' | 'saude-financeira' | 'investimentos' | 'cofre';
 
 type TabIcon = typeof LayoutDashboard;
 
@@ -31,6 +33,8 @@ const tabs: { id: TabType; label: string; path: string; Icon: TabIcon }[] = [
   { id: 'variaveis', label: 'Variáveis', path: '/app/variaveis', Icon: ShoppingCart },
   { id: 'dividas', label: 'Dívidas', path: '/app/dividas', Icon: LinkIcon },
   { id: 'economias', label: 'Economias', path: '/app/economias', Icon: PiggyBank },
+  { id: 'investimentos', label: 'Investimentos', path: '/app/investimentos', Icon: TrendingUp },
+  { id: 'cofre', label: 'Cofre', path: '/app/cofre', Icon: Lock },
   { id: 'cartoes', label: 'Cartões', path: '/app/cartoes', Icon: CreditCard },
   { id: 'mensal', label: 'Mensal', path: '/app/mensal', Icon: BarChart3 },
   { id: 'manual', label: 'Manual', path: '/app/manual', Icon: FileText },
@@ -65,7 +69,9 @@ export function Sidebar() {
     return pathname === tab.path || 
       (pathname === '/app' && tab.id === 'gerais') ||
       (pathname?.startsWith('/app/cartoes') && tab.id === 'cartoes') ||
-      (pathname?.startsWith('/app/saude-financeira') && tab.id === 'saude-financeira');
+      (pathname?.startsWith('/app/saude-financeira') && tab.id === 'saude-financeira') ||
+      (pathname?.startsWith('/app/investimentos') && tab.id === 'investimentos') ||
+      (pathname?.startsWith('/app/cofre') && tab.id === 'cofre');
   };
 
   return (

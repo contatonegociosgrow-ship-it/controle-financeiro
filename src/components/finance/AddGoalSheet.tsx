@@ -48,9 +48,9 @@ export function AddGoalSheet({ isOpen, onClose }: AddGoalSheetProps) {
   // Inicializar data de início quando o modal abrir
   useEffect(() => {
     if (isOpen) {
-      const today = new Date();
-      setStartDate(formatDateToBR(today.toISOString().split('T')[0]));
-      setDeadline('');
+      const todayBR = formatDateToBR(getTodayISO());
+      setStartDate(todayBR);
+      setDeadline(todayBR); // Pré-preencher prazo com data atual
       setTitle('');
       setTargetValue('');
       setMonthlyContribution('');

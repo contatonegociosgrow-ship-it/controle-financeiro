@@ -45,6 +45,15 @@ export function AddTransactionSheet({
     return `${day}/${month}/${year}`;
   };
 
+  // Obter data atual sem problemas de fuso horário
+  const getTodayISO = (): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Função para converter brasileiro (DD/MM/YYYY) para ISO (YYYY-MM-DD)
   const formatDateToISO = (brDate: string): string => {
     if (!brDate) return '';
@@ -78,8 +87,7 @@ export function AddTransactionSheet({
   };
 
   const [date, setDate] = useState(() => {
-    const today = new Date();
-    return formatDateToBR(today.toISOString().split('T')[0]);
+    return formatDateToBR(getTodayISO());
   });
   const [saved, setSaved] = useState(false);
 
@@ -104,8 +112,9 @@ export function AddTransactionSheet({
       setValue('');
       setCategoryId('');
       const today = new Date();
-      setDate(formatDateToBR(today.toISOString().split('T')[0]));
-      setDueDate('');
+      const todayBR = formatDateToBR(getTodayISO());
+      setDate(todayBR);
+      setDueDate(todayBR); // Pré-preencher data de vencimento com data atual
       setStatus('pending');
       setInstallments({ current: 1, total: 1 });
       setHasInstallments(false);

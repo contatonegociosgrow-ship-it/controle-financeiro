@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { formatDateToBR, formatDateToISO, applyDateMask } from '@/lib/goalUtils';
 
-type DateFilterType = 'today' | 'week' | 'month' | 'year' | 'lastWeek' | 'lastMonth' | 'custom';
+type DateFilterType = 'today' | 'week' | 'month' | 'year' | 'lastWeek' | 'custom';
 
 type DateFilterProps = {
   pageKey: string; // Chave única para salvar no localStorage por página
@@ -12,12 +12,27 @@ type DateFilterProps = {
 
 const STORAGE_PREFIX = 'app:dateFilter:';
 
+const monthNames = [
+  'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+  'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+];
+
 export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
   const storageKey = `${STORAGE_PREFIX}${pageKey}`;
   
   const [filterType, setFilterType] = useState<DateFilterType>('month');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
+  
+  // Estado para controlar o mês/ano quando usar filtro de mês
+  const [selectedMonth, setSelectedMonth] = useState<number>(() => {
+    const now = new Date();
+    return now.getMonth();
+  });
+  const [selectedYear, setSelectedYear] = useState<number>(() => {
+    const now = new Date();
+    return now.getFullYear();
+  });
 
   // Carregar preferências salvas
   useEffect(() => {
@@ -29,6 +44,8 @@ export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
           setFilterType(parsed.filterType || 'month');
           if (parsed.customStartDate) setCustomStartDate(parsed.customStartDate);
           if (parsed.customEndDate) setCustomEndDate(parsed.customEndDate);
+          if (parsed.selectedMonth !== undefined) setSelectedMonth(parsed.selectedMonth);
+          if (parsed.selectedYear !== undefined) setSelectedYear(parsed.selectedYear);
         } catch (e) {
           console.error('Erro ao carregar filtro de data:', e);
         }
@@ -43,10 +60,12 @@ export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
         filterType,
         customStartDate,
         customEndDate,
+        selectedMonth,
+        selectedYear,
       };
       localStorage.setItem(storageKey, JSON.stringify(toSave));
     }
-  }, [filterType, customStartDate, customEndDate, storageKey]);
+  }, [filterType, customStartDate, customEndDate, selectedMonth, selectedYear, storageKey]);
 
   // Calcular e aplicar filtro quando mudar
   useEffect(() => {
@@ -69,8 +88,9 @@ export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
         break;
       
       case 'month':
-        const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-        const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+        // Usar o mês/ano selecionado ao invés do mês atual
+        const monthStart = new Date(selectedYear, selectedMonth, 1);
+        const monthEnd = new Date(selectedYear, selectedMonth + 1, 0);
         startDate = monthStart.toISOString().split('T')[0];
         endDate = monthEnd.toISOString().split('T')[0];
         break;
@@ -89,13 +109,6 @@ export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
         lastWeekStart.setDate(lastWeekEnd.getDate() - 6); // Domingo da semana passada
         startDate = lastWeekStart.toISOString().split('T')[0];
         endDate = lastWeekEnd.toISOString().split('T')[0];
-        break;
-      
-      case 'lastMonth':
-        const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-        const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
-        startDate = lastMonth.toISOString().split('T')[0];
-        endDate = lastMonthEnd.toISOString().split('T')[0];
         break;
       
       case 'custom':
@@ -119,7 +132,41 @@ export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
     }
 
     onDateRangeChange(startDate, endDate);
-  }, [filterType, customStartDate, customEndDate, onDateRangeChange]);
+  }, [filterType, customStartDate, customEndDate, selectedMonth, selectedYear, onDateRangeChange]);
+
+  // Função para navegar entre meses
+  const handleMonthChange = (direction: 'prev' | 'next' | 'current') => {
+    if (direction === 'current') {
+      const now = new Date();
+      setSelectedMonth(now.getMonth());
+      setSelectedYear(now.getFullYear());
+      setFilterType('month');
+      return;
+    }
+    
+    let newMonth = selectedMonth;
+    let newYear = selectedYear;
+    
+    if (direction === 'prev') {
+      newMonth--;
+      if (newMonth < 0) {
+        newMonth = 11;
+        newYear--;
+      }
+    } else if (direction === 'next') {
+      newMonth++;
+      if (newMonth > 11) {
+        newMonth = 0;
+        newYear++;
+      }
+    }
+    
+    setSelectedMonth(newMonth);
+    setSelectedYear(newYear);
+    setFilterType('month');
+  };
+
+  const isCurrentMonth = selectedMonth === new Date().getMonth() && selectedYear === new Date().getFullYear();
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg p-3 sm:p-4 border border-gray-200 dark:border-gray-700 shadow-sm">
@@ -163,7 +210,12 @@ export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
           </button>
           <button
             type="button"
-            onClick={() => setFilterType('month')}
+            onClick={() => {
+              const now = new Date();
+              setSelectedMonth(now.getMonth());
+              setSelectedYear(now.getFullYear());
+              setFilterType('month');
+            }}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               filterType === 'month'
                 ? 'bg-blue-600 text-white shadow-md'
@@ -171,17 +223,6 @@ export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
             }`}
           >
             Este Mês
-          </button>
-          <button
-            type="button"
-            onClick={() => setFilterType('lastMonth')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-              filterType === 'lastMonth'
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-            }`}
-          >
-            Mês Passado
           </button>
           <button
             type="button"
@@ -207,6 +248,52 @@ export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
           </button>
         </div>
       </div>
+
+      {/* Navegação de Mês - quando o filtro for "month" */}
+      {filterType === 'month' && (
+        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => handleMonthChange('prev')}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              aria-label="Mês anterior"
+              title="Mês anterior"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            
+            <div className="text-center min-w-[200px]">
+              <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                {monthNames[selectedMonth]} {selectedYear}
+              </div>
+              {!isCurrentMonth && (
+                <button
+                  type="button"
+                  onClick={() => handleMonthChange('current')}
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1"
+                >
+                  Voltar para mês atual
+                </button>
+              )}
+            </div>
+            
+            <button
+              type="button"
+              onClick={() => handleMonthChange('next')}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              aria-label="Próximo mês"
+              title="Próximo mês"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
 
       {filterType === 'custom' && (
         <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 grid grid-cols-1 sm:grid-cols-2 gap-3">

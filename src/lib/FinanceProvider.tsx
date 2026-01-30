@@ -45,6 +45,24 @@ type Transaction = {
   monthlyPaymentDate?: number;
   paidInstallments?: number[];
 };
+type Investment = {
+  id: string;
+  name: string;
+  type: 'fixed_income' | 'variable_income' | 'crypto' | 'monthly' | 'goal_based';
+  value: number;
+  applicationDate: string;
+  estimatedReturn?: number;
+  notes?: string;
+  createdAt: number;
+};
+type Vault = {
+  id: string;
+  name: string;
+  emoji: string;
+  currentValue: number;
+  targetValue?: number;
+  createdAt: number;
+};
 
 type FinanceContextType = {
   state: FinanceState;
@@ -98,6 +116,28 @@ type FinanceContextType = {
   toggleTheme: () => void;
   exportData: () => string;
   importData: (jsonData: string) => boolean;
+  // Investimentos
+  addInvestment: (investment: {
+    name: string;
+    type: 'fixed_income' | 'variable_income' | 'crypto' | 'monthly' | 'goal_based';
+    value: number;
+    applicationDate: string;
+    estimatedReturn?: number;
+    notes?: string;
+  }) => string;
+  updateInvestment: (id: string, updates: Partial<Investment>) => void;
+  removeInvestment: (id: string) => void;
+  // Cofres
+  addVault: (vault: {
+    name: string;
+    emoji: string;
+    targetValue?: number;
+  }) => string;
+  updateVault: (id: string, updates: Partial<Vault>) => void;
+  removeVault: (id: string) => void;
+  depositToVault: (vaultId: string, value: number) => void;
+  withdrawFromVault: (vaultId: string, value: number) => void;
+  investFromVault: (vaultId: string, investmentId: string, value: number) => void;
 };
 
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
@@ -458,6 +498,115 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     }
   }, [state.settings.theme]);
 
+  // Investimentos
+  const addInvestment = useCallback((investment: {
+    name: string;
+    type: 'fixed_income' | 'variable_income' | 'crypto' | 'monthly' | 'goal_based';
+    value: number;
+    applicationDate: string;
+    estimatedReturn?: number;
+    notes?: string;
+  }) => {
+    const newInvestment: Investment = {
+      id: crypto.randomUUID(),
+      ...investment,
+      createdAt: Date.now(),
+    };
+    setState((prev) => ({
+      ...prev,
+      investments: [...prev.investments, newInvestment],
+    }));
+    return newInvestment.id;
+  }, []);
+
+  const updateInvestment = useCallback((id: string, updates: Partial<Investment>) => {
+    setState((prev) => ({
+      ...prev,
+      investments: prev.investments.map((i) =>
+        i.id === id ? { ...i, ...updates } : i
+      ),
+    }));
+  }, []);
+
+  const removeInvestment = useCallback((id: string) => {
+    setState((prev) => ({
+      ...prev,
+      investments: prev.investments.filter((i) => i.id !== id),
+    }));
+  }, []);
+
+  // Cofres
+  const addVault = useCallback((vault: {
+    name: string;
+    emoji: string;
+    targetValue?: number;
+  }) => {
+    const newVault: Vault = {
+      id: crypto.randomUUID(),
+      ...vault,
+      currentValue: 0,
+      createdAt: Date.now(),
+    };
+    setState((prev) => ({
+      ...prev,
+      vaults: [...prev.vaults, newVault],
+    }));
+    return newVault.id;
+  }, []);
+
+  const updateVault = useCallback((id: string, updates: Partial<Vault>) => {
+    setState((prev) => ({
+      ...prev,
+      vaults: prev.vaults.map((v) =>
+        v.id === id ? { ...v, ...updates } : v
+      ),
+    }));
+  }, []);
+
+  const removeVault = useCallback((id: string) => {
+    setState((prev) => ({
+      ...prev,
+      vaults: prev.vaults.filter((v) => v.id !== id),
+    }));
+  }, []);
+
+  const depositToVault = useCallback((vaultId: string, value: number) => {
+    setState((prev) => ({
+      ...prev,
+      vaults: prev.vaults.map((v) =>
+        v.id === vaultId ? { ...v, currentValue: v.currentValue + value } : v
+      ),
+    }));
+  }, []);
+
+  const withdrawFromVault = useCallback((vaultId: string, value: number) => {
+    setState((prev) => ({
+      ...prev,
+      vaults: prev.vaults.map((v) =>
+        v.id === vaultId ? { ...v, currentValue: Math.max(0, v.currentValue - value) } : v
+      ),
+    }));
+  }, []);
+
+  const investFromVault = useCallback((vaultId: string, investmentId: string, value: number) => {
+    setState((prev) => {
+      const vault = prev.vaults.find((v) => v.id === vaultId);
+      if (!vault || vault.currentValue < value) {
+        return prev;
+      }
+      // Remover valor do cofre
+      const updatedVaults = prev.vaults.map((v) =>
+        v.id === vaultId ? { ...v, currentValue: v.currentValue - value } : v
+      );
+      // O investimento já foi criado, então não precisamos atualizar aqui
+      // A função é chamada após o investimento ser criado
+      return {
+        ...prev,
+        vaults: updatedVaults,
+      };
+    });
+  }, []);
+
   return (
     <FinanceContext.Provider
       value={{
@@ -488,6 +637,15 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         toggleTheme,
         exportData,
         importData,
+        addInvestment,
+        updateInvestment,
+        removeInvestment,
+        addVault,
+        updateVault,
+        removeVault,
+        depositToVault,
+        withdrawFromVault,
+        investFromVault,
       }}
     >
       {children}

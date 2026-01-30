@@ -44,11 +44,19 @@ export function AddDebtSheet({ isOpen, onClose }: AddDebtSheetProps) {
     return `${day}/${month}/${year}`;
   };
 
+  // Obter data atual sem problemas de fuso horário
+  const getTodayISO = (): string => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Inicializar quando o modal abrir
   useEffect(() => {
     if (isOpen) {
-      const today = new Date();
-      setStartDate(formatDateToBR(today.toISOString().split('T')[0]));
+      setStartDate(formatDateToBR(getTodayISO()));
       setTitle('');
       setTotalValue('');
       setInstallments('');

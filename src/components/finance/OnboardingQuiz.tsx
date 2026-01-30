@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
-import { formatDateToBR, formatDateToISO, applyDateMask } from '@/lib/goalUtils';
+import { formatDateToBR, formatDateToISO, applyDateMask, getTodayISO } from '@/lib/goalUtils';
 
 type GoalInput = {
   title: string;
@@ -16,18 +16,26 @@ export function OnboardingQuiz() {
   const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [monthlyIncome, setMonthlyIncomeValue] = useState('');
-  const [goals, setGoals] = useState<GoalInput[]>([
-    { title: '', targetValue: '', monthlyContribution: '', deadline: '' },
-  ]);
+  const [goals, setGoals] = useState<GoalInput[]>(() => {
+    const todayBR = formatDateToBR(getTodayISO());
+    return [{ title: '', targetValue: '', monthlyContribution: '', deadline: todayBR }];
+  });
   const [showQuiz, setShowQuiz] = useState(false);
 
   useEffect(() => {
     if (isInitialized) {
-      // Verificar se é primeiro acesso: nome vazio ou sem metas
-      const isFirstAccess = !state.profile.name || state.profile.name === '' || state.goals.length === 0;
-      setShowQuiz(isFirstAccess);
+      // Verificar no localStorage se o quiz já foi completado
+      const quizCompleted = localStorage.getItem('onboarding_quiz_completed');
+      
+      if (quizCompleted === 'true') {
+        // Quiz já foi completado, não mostrar
+        setShowQuiz(false);
+      } else {
+        // Primeiro acesso - mostrar o quiz
+        setShowQuiz(true);
+      }
     }
-  }, [isInitialized, state.profile.name, state.goals.length]);
+  }, [isInitialized]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -37,7 +45,8 @@ export function OnboardingQuiz() {
   };
 
   const handleAddGoal = () => {
-    setGoals([...goals, { title: '', targetValue: '', monthlyContribution: '', deadline: '' }]);
+    const todayBR = formatDateToBR(getTodayISO());
+    setGoals([...goals, { title: '', targetValue: '', monthlyContribution: '', deadline: todayBR }]);
   };
 
   const handleRemoveGoal = (index: number) => {
@@ -90,8 +99,7 @@ export function OnboardingQuiz() {
       ) {
         const isoDeadline = formatDateToISO(goal.deadline);
         if (isoDeadline) {
-          const today = new Date();
-          const startDate = formatDateToBR(today.toISOString().split('T')[0]);
+          const startDate = formatDateToBR(getTodayISO());
           addGoal({
             title: goal.title.trim(),
             targetValue: parseFloat(goal.targetValue),
@@ -103,6 +111,9 @@ export function OnboardingQuiz() {
       }
     });
 
+    // Marcar quiz como completado no localStorage
+    localStorage.setItem('onboarding_quiz_completed', 'true');
+    
     setShowQuiz(false);
   };
 
