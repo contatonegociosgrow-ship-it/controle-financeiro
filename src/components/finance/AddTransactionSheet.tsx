@@ -360,7 +360,13 @@ export function AddTransactionSheet({
 
     try {
       // Converter itens do modal para formato de transação
-      const transactions = itens.map((item) => {
+      const transactions: Array<{
+        value: number;
+        type: 'income' | 'expense_fixed' | 'expense_variable' | 'savings';
+        date: string;
+        notes: string;
+        category?: string;
+      }> = itens.map((item) => {
         // Determinar tipo baseado na categoria
         let type: 'income' | 'expense_fixed' | 'expense_variable' | 'savings' = 'expense_variable';
         if (item.categoria === 'Ganhos') {
