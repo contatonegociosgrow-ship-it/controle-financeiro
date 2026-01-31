@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
-import { validateGoal, formatDateToISO, formatDateToBR } from '@/lib/goalUtils';
+import { validateGoal, formatDateToISO, formatDateToBR, getTodayISO } from '@/lib/goalUtils';
 
 type AddGoalSheetProps = {
   isOpen: boolean;
