@@ -439,12 +439,13 @@ export function AddTransactionSheet({
         };
 
         // Campos específicos por tipo
-        if (transaction.type === 'expense_fixed') {
+        const transactionType = transaction.type;
+        if (transactionType === 'expense_fixed') {
           transactionData.dueDate = transaction.date;
           transactionData.status = 'pending';
         }
 
-        if (transaction.type === 'expense_variable') {
+        if (transactionType === 'expense_variable') {
           // Se houver cartão selecionado, adicionar
           if (cardId) {
             transactionData.cardId = cardId;
