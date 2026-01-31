@@ -390,10 +390,13 @@ export function AddTransactionSheet({
 
       // Criar cada transação
       for (const transaction of transactions) {
+        // Capturar o tipo ANTES das verificações condicionais para evitar type narrowing
+        const transactionType: 'income' | 'expense_fixed' | 'expense_variable' | 'savings' = transaction.type;
+        
         // Encontrar ou criar categoria se necessário
         let finalCategoryId: string;
         
-        if (transaction.type === 'income') {
+        if (transactionType === 'income') {
           // Para ganhos, buscar categoria "Ganhos"
           let ganhosCategory = state.categories.find((c) => c.name === 'Ganhos');
           if (!ganhosCategory) {
@@ -401,7 +404,7 @@ export function AddTransactionSheet({
             ganhosCategory = { id: ganhosId, name: 'Ganhos', limit: null, color: '#22c55e' };
           }
           finalCategoryId = ganhosCategory.id;
-        } else if (transaction.type === 'savings') {
+        } else if (transactionType === 'savings') {
           // Para cofre, buscar categoria "Cofre"
           let cofreCategory = state.categories.find((c) => c.name === 'Cofre');
           if (!cofreCategory) {
@@ -432,14 +435,13 @@ export function AddTransactionSheet({
 
         const transactionData: any = {
           value: transaction.value,
-          type: transaction.type,
+          type: transactionType,
           date: transaction.date, // Usar a data convertida
           notes: transaction.notes, // Usar notes que foi definido no map
           categoryId: finalCategoryId, // Sempre definir categoryId
         };
 
         // Campos específicos por tipo
-        const transactionType = transaction.type;
         if (transactionType === 'expense_fixed') {
           transactionData.dueDate = transaction.date;
           transactionData.status = 'pending';
