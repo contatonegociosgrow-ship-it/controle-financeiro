@@ -398,7 +398,7 @@ export function AddTransactionSheet({
       // Criar cada transação
       for (const transaction of transactions) {
         // Capturar o tipo ANTES das verificações condicionais para evitar type narrowing
-        const transactionType: 'income' | 'expense_fixed' | 'expense_variable' | 'savings' = transaction.type;
+        const transactionType: 'income' | 'expense_fixed' | 'expense_variable' | 'savings' | 'debt' = transaction.type;
         
         // Encontrar ou criar categoria se necessário
         let finalCategoryId: string;
