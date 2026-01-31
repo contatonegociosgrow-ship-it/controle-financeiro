@@ -202,6 +202,62 @@ function parseFinancialText(text: string): Array<{
     return total > 0 ? total : null;
   };
 
+  // Função para converter string de valor para número
+  const parseValue = (valueStr: string): number => {
+    // Remover espaços
+    valueStr = valueStr.trim();
+    
+    // Verificar se tem ponto ou vírgula
+    const hasDot = valueStr.includes('.');
+    const hasComma = valueStr.includes(',');
+    
+    if (hasDot && hasComma) {
+      // Formato brasileiro: 50.000,00 ou 50.000,5
+      // O último separador é o decimal
+      const lastDot = valueStr.lastIndexOf('.');
+      const lastComma = valueStr.lastIndexOf(',');
+      
+      if (lastComma > lastDot) {
+        // Vírgula é o separador decimal: 50.000,00
+        const integerPart = valueStr.substring(0, lastComma).replace(/\./g, '');
+        const decimalPart = valueStr.substring(lastComma + 1);
+        return parseFloat(`${integerPart}.${decimalPart}`);
+      } else {
+        // Ponto é o separador decimal: 50,000.00
+        const integerPart = valueStr.substring(0, lastDot).replace(/,/g, '');
+        const decimalPart = valueStr.substring(lastDot + 1);
+        return parseFloat(`${integerPart}.${decimalPart}`);
+      }
+    } else if (hasDot) {
+      // Apenas ponto: verificar se é milhar ou decimal
+      const parts = valueStr.split('.');
+      const lastPart = parts[parts.length - 1];
+      
+      if (lastPart.length <= 2 && parts.length === 2) {
+        // Decimal: 50.00 ou 50.5
+        return parseFloat(valueStr);
+      } else {
+        // Milhar: 50.000 ou 1.500.000
+        return parseFloat(valueStr.replace(/\./g, ''));
+      }
+    } else if (hasComma) {
+      // Apenas vírgula: verificar se é milhar ou decimal
+      const parts = valueStr.split(',');
+      const lastPart = parts[parts.length - 1];
+      
+      if (lastPart.length <= 2 && parts.length === 2) {
+        // Decimal: 50,00 ou 50,5
+        return parseFloat(valueStr.replace(',', '.'));
+      } else {
+        // Milhar: 50,000 ou 1,500,000 (formato não comum no BR, mas possível)
+        return parseFloat(valueStr.replace(/,/g, ''));
+      }
+    } else {
+      // Sem separador: número inteiro
+      return parseFloat(valueStr);
+    }
+  };
+
   // Buscar padrões numéricos (números e palavras)
   const numericPatterns: Array<{ value: number; index: number; text: string }> = [];
   
@@ -448,62 +504,6 @@ function parseFinancialText(text: string): Array<{
     'livro': 'Educação',
     'livros': 'Educação',
     'material': 'Educação',
-  };
-
-  // Função para converter string de valor para número
-  const parseValue = (valueStr: string): number => {
-    // Remover espaços
-    valueStr = valueStr.trim();
-    
-    // Verificar se tem ponto ou vírgula
-    const hasDot = valueStr.includes('.');
-    const hasComma = valueStr.includes(',');
-    
-    if (hasDot && hasComma) {
-      // Formato brasileiro: 50.000,00 ou 50.000,5
-      // O último separador é o decimal
-      const lastDot = valueStr.lastIndexOf('.');
-      const lastComma = valueStr.lastIndexOf(',');
-      
-      if (lastComma > lastDot) {
-        // Vírgula é o separador decimal: 50.000,00
-        const integerPart = valueStr.substring(0, lastComma).replace(/\./g, '');
-        const decimalPart = valueStr.substring(lastComma + 1);
-        return parseFloat(`${integerPart}.${decimalPart}`);
-      } else {
-        // Ponto é o separador decimal: 50,000.00
-        const integerPart = valueStr.substring(0, lastDot).replace(/,/g, '');
-        const decimalPart = valueStr.substring(lastDot + 1);
-        return parseFloat(`${integerPart}.${decimalPart}`);
-      }
-    } else if (hasDot) {
-      // Apenas ponto: verificar se é milhar ou decimal
-      const parts = valueStr.split('.');
-      const lastPart = parts[parts.length - 1];
-      
-      if (lastPart.length <= 2 && parts.length === 2) {
-        // Decimal: 50.00 ou 50.5
-        return parseFloat(valueStr);
-      } else {
-        // Milhar: 50.000 ou 1.500.000
-        return parseFloat(valueStr.replace(/\./g, ''));
-      }
-    } else if (hasComma) {
-      // Apenas vírgula: verificar se é milhar ou decimal
-      const parts = valueStr.split(',');
-      const lastPart = parts[parts.length - 1];
-      
-      if (lastPart.length <= 2 && parts.length === 2) {
-        // Decimal: 50,00 ou 50,5
-        return parseFloat(valueStr.replace(',', '.'));
-      } else {
-        // Milhar: 50,000 ou 1,500,000 (formato não comum no BR, mas possível)
-        return parseFloat(valueStr.replace(/,/g, ''));
-      }
-    } else {
-      // Sem separador: número inteiro
-      return parseFloat(valueStr);
-    }
   };
 
   // Processar cada valor encontrado
