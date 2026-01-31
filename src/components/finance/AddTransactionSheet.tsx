@@ -409,8 +409,8 @@ export function AddTransactionSheet({
             cofreCategory = { id: cofreId, name: 'Cofre', limit: null, color: '#8b5cf6' };
           }
           finalCategoryId = cofreCategory.id;
-        } else if (transaction.category && (transaction.type === 'expense_fixed' || transaction.type === 'expense_variable')) {
-          // Para despesas, buscar ou criar categoria
+        } else if (transaction.category) {
+          // Para despesas (expense_fixed ou expense_variable), buscar ou criar categoria
           const foundCategory = state.categories.find(
             (cat) => cat.name.toLowerCase() === transaction.category!.toLowerCase()
           );
