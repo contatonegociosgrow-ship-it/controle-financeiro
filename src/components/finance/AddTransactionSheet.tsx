@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import { useFinanceStore } from '@/lib/FinanceProvider';
 import { CategoryExamples } from './CategoryExamples';
 import { VoiceInput } from './VoiceInput';
-import { VoiceTransactionConfirmation } from './VoiceTransactionConfirmation';
 import { VoiceConfirmModal } from './VoiceConfirmModal';
 
 type AddTransactionSheetProps = {
@@ -605,20 +604,8 @@ export function AddTransactionSheet({
             </button>
           </div>
 
-          {/* Modo de confirmação de voz */}
-          {voiceMode === 'confirming' && parsedTransactions.length > 0 ? (
-            <VoiceTransactionConfirmation
-              originalText={voiceText}
-              transactions={parsedTransactions}
-              onConfirm={handleConfirmVoiceTransactions}
-              onEdit={handleEditVoiceText}
-              onCancel={handleCancelVoice}
-              isProcessing={isProcessingVoice}
-            />
-          ) : (
-            <>
-              {/* Componente de captura de voz */}
-              <div className="mb-4">
+          {/* Componente de captura de voz */}
+          <div className="mb-4">
                 <VoiceInput
                   onTranscript={handleVoiceTranscript}
                   onError={(error) => {
@@ -771,10 +758,9 @@ export function AddTransactionSheet({
                 {saved ? '✓ Salvo!' : 'Salvar'}
               </button>
             </form>
-          </>
-        )}
         </div>
       </div>
+      )}
           )}
 
           {/* Formulário para Ganhos */}
