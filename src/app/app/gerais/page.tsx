@@ -20,6 +20,7 @@ type FilterType = 'all' | 'income' | 'expense_fixed' | 'expense_variable' | 'deb
 export default function GeraisPage() {
   const { state, isInitialized } = useFinanceStore();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(false);
   const [isBalanceOpen, setIsBalanceOpen] = useState(false);
   const [filter, setFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState<FilterType>('all');
@@ -463,17 +464,44 @@ export default function GeraisPage() {
           💰
         </button>
         
-        {/* Botão Adicionar */}
-        <button
-          onClick={() => setIsSheetOpen(true)}
-          className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl sm:text-3xl font-light transition-all hover:scale-110"
-          aria-label="Adicionar transação"
-        >
-          +
-        </button>
+        {/* Botões de ação */}
+        <div className="flex gap-2">
+          {/* Botão Microfone */}
+          <button
+            onClick={() => {
+              setVoiceMode(true);
+              setIsSheetOpen(true);
+            }}
+            className="w-12 h-12 sm:w-14 sm:h-14 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-2xl flex items-center justify-center text-xl sm:text-2xl transition-all hover:scale-110"
+            aria-label="Falar e registrar"
+            title="Falar e registrar transação"
+          >
+            🎙️
+          </button>
+          
+          {/* Botão Adicionar */}
+          <button
+            onClick={() => {
+              setVoiceMode(false);
+              setIsSheetOpen(true);
+            }}
+            className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl sm:text-3xl font-light transition-all hover:scale-110"
+            aria-label="Adicionar transação"
+            title="Adicionar transação manualmente"
+          >
+            +
+          </button>
+        </div>
       </div>
 
-      <AddTransactionSheet isOpen={isSheetOpen} onClose={() => setIsSheetOpen(false)} />
+      <AddTransactionSheet 
+        isOpen={isSheetOpen} 
+        onClose={() => {
+          setIsSheetOpen(false);
+          setVoiceMode(false);
+        }}
+        startWithVoice={voiceMode}
+      />
       <BalanceModal isOpen={isBalanceOpen} onClose={() => setIsBalanceOpen(false)} />
     </div>
   );

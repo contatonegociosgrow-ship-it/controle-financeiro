@@ -14,6 +14,7 @@ export function FinanceDashboard() {
   const { isInitialized } = useFinanceStore();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [isBalanceOpen, setIsBalanceOpen] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(false);
 
   if (!isInitialized) {
     return (
@@ -57,20 +58,44 @@ export function FinanceDashboard() {
           💰
         </button>
         
-        {/* Botão Adicionar */}
-        <button
-          onClick={() => setIsSheetOpen(true)}
-          className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center text-3xl font-light transition-all hover:scale-110"
-          aria-label="Adicionar transação"
-        >
-          +
-        </button>
+        {/* Botões de ação */}
+        <div className="flex gap-2">
+          {/* Botão Microfone */}
+          <button
+            onClick={() => {
+              setVoiceMode(true);
+              setIsSheetOpen(true);
+            }}
+            className="w-14 h-14 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all hover:scale-110"
+            aria-label="Falar e registrar"
+            title="Falar e registrar transação"
+          >
+            🎙️
+          </button>
+          
+          {/* Botão Adicionar */}
+          <button
+            onClick={() => {
+              setVoiceMode(false);
+              setIsSheetOpen(true);
+            }}
+            className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center text-3xl font-light transition-all hover:scale-110"
+            aria-label="Adicionar transação"
+            title="Adicionar transação manualmente"
+          >
+            +
+          </button>
+        </div>
       </div>
 
       {/* Sheet de adicionar transação */}
       <AddTransactionSheet
         isOpen={isSheetOpen}
-        onClose={() => setIsSheetOpen(false)}
+        onClose={() => {
+          setIsSheetOpen(false);
+          setVoiceMode(false);
+        }}
+        startWithVoice={voiceMode}
       />
 
       {/* Modal Balance */}

@@ -4,17 +4,22 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useFinanceStore } from '@/lib/FinanceProvider';
 import { CategoryExamples } from './CategoryExamples';
+import { VoiceInput } from './VoiceInput';
+import { VoiceTransactionConfirmation } from './VoiceTransactionConfirmation';
+import { VoiceConfirmModal } from './VoiceConfirmModal';
 
 type AddTransactionSheetProps = {
   isOpen: boolean;
   onClose: () => void;
   defaultType?: 'income' | 'expense_fixed' | 'expense_variable' | 'debt' | 'savings';
+  startWithVoice?: boolean;
 };
 
 export function AddTransactionSheet({
   isOpen,
   onClose,
   defaultType,
+  startWithVoice = false,
 }: AddTransactionSheetProps) {
   const { state, addTransaction, addPerson, addCategory } = useFinanceStore();
   const pathname = usePathname();
@@ -102,6 +107,15 @@ export function AddTransactionSheet({
   const [transactionType, setTransactionType] = useState('Pagamento Mensal');
   const [monthlyPaymentDate, setMonthlyPaymentDate] = useState('');
 
+  // Estados para captura de voz
+  const [voiceMode, setVoiceMode] = useState<'idle' | 'transcribing' | 'confirming'>('idle');
+  const [voiceText, setVoiceText] = useState('');
+  const [parsedTransactions, setParsedTransactions] = useState<any[]>([]);
+  const [interpretedItens, setInterpretedItens] = useState<any[]>([]);
+  const [isProcessingVoice, setIsProcessingVoice] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showOnlyVoice, setShowOnlyVoice] = useState(false);
+
   // Categorias já são garantidas no FinanceProvider
 
   useEffect(() => {
@@ -124,8 +138,24 @@ export function AddTransactionSheet({
       setTransactionType('Pagamento Mensal');
       setMonthlyPaymentDate('');
       setSaved(false);
+      // Se startWithVoice for true, mostrar apenas interface de voz
+      if (startWithVoice) {
+        setShowOnlyVoice(true);
+        setVoiceMode('idle');
+      } else {
+        setShowOnlyVoice(false);
+        setVoiceMode('idle');
+        setVoiceText('');
+        setParsedTransactions([]);
+        setInterpretedItens([]);
+        setIsProcessingVoice(false);
+        setShowConfirmModal(false);
+      }
+    } else {
+      // Resetar quando fechar
+      setShowOnlyVoice(false);
     }
-  }, [isOpen, pathname]);
+  }, [isOpen, pathname, startWithVoice]);
 
   const handleExampleClick = (exampleDescription: string, categoryName: string) => {
     // Preencher descrição
@@ -257,11 +287,297 @@ export function AddTransactionSheet({
     }, 800);
   };
 
+  // Handler para processar texto transcrito da voz
+  const handleVoiceTranscript = async (text: string) => {
+    console.log('handleVoiceTranscript chamado com texto:', text);
+    if (!text || text.trim().length === 0) {
+      console.log('Texto vazio, retornando');
+      return;
+    }
+
+    setVoiceText(text);
+    setVoiceMode('transcribing');
+    setIsProcessingVoice(true);
+
+    try {
+      const response = await fetch('/api/voice/parse', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao processar o texto');
+      }
+
+      const data = await response.json();
+      
+      console.log('Resposta da API:', data);
+      
+      if (data.success) {
+        setParsedTransactions(data.transactions || []);
+        
+        // Converter para formato do modal de confirmação
+        const itens = (data.transactions || [])
+          .filter((t: any) => t.value > 0) // Filtrar apenas transações com valor > 0
+          .map((t: any) => ({
+            valor: t.value,
+            categoria: t.category || 'Outros',
+            descricao: t.description || 'Lançamento por voz',
+            data: t.date || 'hoje',
+            necessita_confirmacao: t.needsConfirmation || false,
+          }));
+        
+        console.log('Itens convertidos (após filtro):', itens);
+        console.log('Número de itens válidos:', itens.length);
+        
+        setInterpretedItens(itens);
+        setVoiceMode('idle'); // Resetar para não mostrar o componente antigo
+        setIsProcessingVoice(false); // Resetar antes de abrir o modal
+        // Usar setTimeout para garantir que o estado foi atualizado
+        setTimeout(() => {
+          setShowConfirmModal(true); // Abrir modal de confirmação (mesmo se vazio)
+        }, 100);
+      } else {
+        alert('Erro ao processar o texto. Tente novamente.');
+        setVoiceMode('idle');
+        setIsProcessingVoice(false);
+      }
+    } catch (error: any) {
+      console.error('Erro ao processar voz:', error);
+      alert('Erro ao processar o texto. Tente novamente.');
+      setVoiceMode('idle');
+      setIsProcessingVoice(false);
+    }
+  };
+
+  // Handler para confirmar lançamentos do modal
+  const handleConfirmModalItens = async (itens: any[]) => {
+    setIsProcessingVoice(true);
+    setShowConfirmModal(false);
+
+    try {
+      // Converter itens do modal para formato de transação
+      const transactions = itens.map((item) => {
+        // Determinar tipo baseado na categoria
+        let type: 'income' | 'expense_fixed' | 'expense_variable' | 'savings' = 'expense_variable';
+        if (item.categoria === 'Ganhos') {
+          type = 'income';
+        } else if (item.categoria === 'Cofre') {
+          type = 'savings';
+        }
+
+        // Converter data
+        let dateISO = getTodayISO();
+        if (item.data === 'ontem') {
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          dateISO = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+        } else if (item.data && item.data.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          dateISO = item.data;
+        }
+
+        return {
+          value: item.valor,
+          type,
+          date: dateISO,
+          notes: item.descricao,
+          category: item.categoria !== 'Ganhos' ? item.categoria : undefined,
+        };
+      });
+
+      // Criar cada transação
+      for (const transaction of transactions) {
+        // Encontrar ou criar categoria se necessário
+        let finalCategoryId: string;
+        
+        if (transaction.type === 'income') {
+          // Para ganhos, buscar categoria "Ganhos"
+          let ganhosCategory = state.categories.find((c) => c.name === 'Ganhos');
+          if (!ganhosCategory) {
+            const ganhosId = addCategory('Ganhos', null, '#22c55e');
+            ganhosCategory = { id: ganhosId, name: 'Ganhos', limit: null, color: '#22c55e' };
+          }
+          finalCategoryId = ganhosCategory.id;
+        } else if (transaction.type === 'savings') {
+          // Para cofre, buscar categoria "Cofre"
+          let cofreCategory = state.categories.find((c) => c.name === 'Cofre');
+          if (!cofreCategory) {
+            const cofreId = addCategory('Cofre', null, '#8b5cf6');
+            cofreCategory = { id: cofreId, name: 'Cofre', limit: null, color: '#8b5cf6' };
+          }
+          finalCategoryId = cofreCategory.id;
+        } else if (transaction.category && (transaction.type === 'expense_fixed' || transaction.type === 'expense_variable')) {
+          // Para despesas, buscar ou criar categoria
+          const foundCategory = state.categories.find(
+            (cat) => cat.name.toLowerCase() === transaction.category!.toLowerCase()
+          );
+          if (foundCategory) {
+            finalCategoryId = foundCategory.id;
+          } else {
+            // Criar nova categoria
+            finalCategoryId = addCategory(transaction.category, null, '#6366f1');
+          }
+        } else {
+          // Fallback: usar primeira categoria disponível ou criar "Outros"
+          const outrasCategory = state.categories.find((c) => c.name === 'Outros');
+          if (outrasCategory) {
+            finalCategoryId = outrasCategory.id;
+          } else {
+            finalCategoryId = addCategory('Outros', null, '#6b7280');
+          }
+        }
+
+        const transactionData: any = {
+          value: transaction.value,
+          type: transaction.type,
+          date: transaction.date, // Usar a data convertida
+          notes: transaction.notes, // Usar notes que foi definido no map
+          categoryId: finalCategoryId, // Sempre definir categoryId
+        };
+
+        // Campos específicos por tipo
+        if (transaction.type === 'expense_fixed') {
+          transactionData.dueDate = transaction.date;
+          transactionData.status = 'pending';
+        }
+
+        if (transaction.type === 'expense_variable') {
+          // Se houver cartão selecionado, adicionar
+          if (cardId) {
+            transactionData.cardId = cardId;
+          }
+        }
+
+        addTransaction(transactionData);
+      }
+
+      // Mostrar mensagem de sucesso
+      const successMessage = transactions.length === 1 
+        ? 'Lançamento salvo com sucesso!'
+        : `${transactions.length} lançamentos salvos com sucesso!`;
+      
+      // Fechar e resetar
+      setVoiceMode('idle');
+      setVoiceText('');
+      setParsedTransactions([]);
+      setInterpretedItens([]);
+      
+      // Mostrar alerta de sucesso
+      alert(successMessage);
+      
+      setTimeout(() => {
+        onClose();
+      }, 300);
+    } catch (error: any) {
+      console.error('Erro ao salvar transações:', error);
+      alert('Erro ao salvar os lançamentos. Tente novamente.');
+    } finally {
+      setIsProcessingVoice(false);
+    }
+  };
+
+  // Handler para editar texto de voz
+  const handleEditVoiceText = () => {
+    setVoiceMode('idle');
+    setParsedTransactions([]);
+  };
+
+  // Handler para cancelar fluxo de voz
+  const handleCancelVoice = () => {
+    setVoiceMode('idle');
+    setVoiceText('');
+    setParsedTransactions([]);
+  };
+
+  // Handler para cancelar modal
+  const handleCancelModal = () => {
+    setShowConfirmModal(false);
+    setVoiceMode('idle');
+    setVoiceText('');
+    setInterpretedItens([]);
+  };
+
   if (!isOpen) return null;
 
-  // Formulário para Despesas Variáveis
-  if (type === 'expense_variable') {
+  // Se showOnlyVoice for true, mostrar apenas interface de voz
+  if (showOnlyVoice && !showConfirmModal) {
     return (
+      <div
+        className="fixed inset-0 z-50 flex items-end md:items-center bg-black/40 backdrop-blur-sm p-0 md:p-4"
+        onClick={onClose}
+      >
+        <div
+          className="w-full max-w-sm md:max-w-md mx-auto bg-white dark:bg-gray-800 rounded-t-2xl md:rounded-2xl p-4 md:p-6 shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100 dark:border-gray-700">
+            <div>
+              <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white">
+                🎙️ Falar e Registrar
+              </h2>
+              <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                Fale sua transação normalmente
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              aria-label="Fechar"
+            >
+              ×
+            </button>
+          </div>
+
+          {/* Componente de captura de voz */}
+          <div className="mb-4">
+            <VoiceInput
+              onTranscript={handleVoiceTranscript}
+              onError={(error) => {
+                console.error('Erro no VoiceInput:', error);
+                // Só mostrar alerta para erros críticos (permissão negada)
+                if (error.includes('Permissão') || error.includes('negada')) {
+                  alert(error);
+                }
+              }}
+              disabled={voiceMode === 'transcribing' || isProcessingVoice}
+              autoStart={true}
+            />
+          </div>
+
+          {/* Botão para voltar ao formulário manual */}
+          <button
+            onClick={() => {
+              setShowOnlyVoice(false);
+            }}
+            className="w-full mt-4 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors border-t border-gray-200 dark:border-gray-700 pt-4"
+          >
+            Ou adicionar manualmente →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {/* Modal de confirmação de voz */}
+      <VoiceConfirmModal
+        isOpen={showConfirmModal}
+        originalText={voiceText}
+        itens={interpretedItens}
+        onConfirm={handleConfirmModalItens}
+        onCancel={handleCancelModal}
+        isProcessing={isProcessingVoice}
+      />
+
+      {/* Formulários originais */}
+      {!showConfirmModal && (
+        <>
+          {/* Formulário para Despesas Variáveis */}
+          {type === 'expense_variable' && (
       <div
         className="fixed inset-0 z-50 flex items-end md:items-center bg-black/40 backdrop-blur-sm p-0 md:p-4"
         onClick={onClose}
@@ -280,25 +596,53 @@ export function AddTransactionSheet({
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div>
-              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">
-                Descrição <span className="text-gray-400 font-normal normal-case">(pode usar emojis)</span>
-              </label>
-              <input
-                type="text"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
-                placeholder="Ex: 🍽️ Almoço ou Iphone"
-                required
-                autoFocus
-              />
-              <CategoryExamples type={type} onExampleClick={handleExampleClick} />
-            </div>
+          {/* Modo de confirmação de voz */}
+          {voiceMode === 'confirming' && parsedTransactions.length > 0 ? (
+            <VoiceTransactionConfirmation
+              originalText={voiceText}
+              transactions={parsedTransactions}
+              onConfirm={handleConfirmVoiceTransactions}
+              onEdit={handleEditVoiceText}
+              onCancel={handleCancelVoice}
+              isProcessing={isProcessingVoice}
+            />
+          ) : (
+            <>
+              {/* Componente de captura de voz */}
+              <div className="mb-4">
+                <VoiceInput
+                  onTranscript={handleVoiceTranscript}
+                  onError={(error) => {
+                    console.error('Erro no VoiceInput:', error);
+                    // Só mostrar alerta para erros críticos (permissão negada)
+                    if (error.includes('Permissão') || error.includes('negada')) {
+                      alert(error);
+                    }
+                  }}
+                  disabled={voiceMode === 'transcribing' || isProcessingVoice}
+                  autoStart={startWithVoice && isOpen}
+                />
+              </div>
 
-            <div>
-              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Categoria</label>
+              <form onSubmit={handleSubmit} className="space-y-3">
+                <div>
+                  <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">
+                    Descrição <span className="text-gray-400 font-normal normal-case">(pode usar emojis)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                    placeholder="Ex: 🍽️ Almoço ou Iphone"
+                    required
+                    autoFocus
+                  />
+                  <CategoryExamples type={type} onExampleClick={handleExampleClick} />
+                </div>
+
+                <div>
+                  <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Categoria</label>
               <div className="relative">
                 <select
                   value={categoryId}
@@ -317,14 +661,14 @@ export function AddTransactionSheet({
                   <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">
-                Cartão de Crédito <span className="text-gray-400 font-normal normal-case">(opcional)</span>
-              </label>
+              <div>
+                <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">
+                  Cartão de Crédito <span className="text-gray-400 font-normal normal-case">(opcional)</span>
+                </label>
               <div className="relative">
                 <select
                   value={cardId}
@@ -342,12 +686,12 @@ export function AddTransactionSheet({
                   <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div>
-              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Data da compra</label>
+              <div>
+                <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Data da compra</label>
               <input
                 type="text"
                 value={date}
@@ -373,12 +717,12 @@ export function AddTransactionSheet({
                 onChange={(e) => setValue(e.target.value)}
                 className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 placeholder="0,00"
-                required
-              />
-            </div>
+                  required
+                />
+              </div>
 
-            <div>
-              <label className="flex items-center gap-2 text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide cursor-pointer">
+              <div>
+                <label className="flex items-center gap-2 text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide cursor-pointer">
                 <input
                   type="checkbox"
                   checked={hasInstallments}
@@ -406,26 +750,26 @@ export function AddTransactionSheet({
                     className="flex-1 min-w-[100px] bg-white border border-gray-200 rounded-lg px-3 py-2 text-gray-900 text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                     placeholder="Total"
                   />
-                </div>
-              )}
-            </div>
+                  </div>
+                )}
+              </div>
 
-            <button
-              type="submit"
-              disabled={saved}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 md:py-3 rounded-lg transition-all disabled:bg-green-600 shadow-sm hover:shadow-md text-sm md:text-base"
-            >
-              {saved ? '✓ Salvo!' : 'Salvar'}
-            </button>
-          </form>
+              <button
+                type="submit"
+                disabled={saved}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 md:py-3 rounded-lg transition-all disabled:bg-green-600 shadow-sm hover:shadow-md text-sm md:text-base"
+              >
+                {saved ? '✓ Salvo!' : 'Salvar'}
+              </button>
+            </form>
+          </>
+        )}
         </div>
       </div>
-    );
-  }
+          )}
 
-  // Formulário para Ganhos
-  if (type === 'income') {
-    return (
+          {/* Formulário para Ganhos */}
+          {type === 'income' && (
       <div
         className="fixed inset-0 z-50 flex items-end md:items-center bg-black/40 backdrop-blur-sm p-0 md:p-4"
         onClick={onClose}
@@ -442,6 +786,22 @@ export function AddTransactionSheet({
             >
               ×
             </button>
+          </div>
+
+          {/* Componente de captura de voz */}
+          <div className="mb-4">
+            <VoiceInput
+              onTranscript={handleVoiceTranscript}
+              onError={(error) => {
+                console.error('Erro no VoiceInput:', error);
+                // Só mostrar alerta para erros críticos (permissão negada)
+                if (error.includes('Permissão') || error.includes('negada')) {
+                  alert(error);
+                }
+              }}
+              disabled={voiceMode === 'transcribing' || isProcessingVoice}
+              autoStart={startWithVoice && isOpen}
+            />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
@@ -543,12 +903,10 @@ export function AddTransactionSheet({
           </form>
         </div>
       </div>
-    );
-  }
+          )}
 
-  // Formulário para Dívidas
-  if (type === 'debt') {
-    return (
+          {/* Formulário para Dívidas */}
+          {type === 'debt' && (
       <div
         className="fixed inset-0 z-50 flex items-end md:items-center bg-black/40 backdrop-blur-sm p-0 md:p-4"
         onClick={onClose}
@@ -565,6 +923,21 @@ export function AddTransactionSheet({
             >
               ×
             </button>
+          </div>
+
+          {/* Componente de captura de voz */}
+          <div className="mb-4">
+            <VoiceInput
+              onTranscript={handleVoiceTranscript}
+              onError={(error) => {
+                console.error('Erro no VoiceInput:', error);
+                // Só mostrar alerta para erros críticos (permissão negada)
+                if (error.includes('Permissão') || error.includes('negada')) {
+                  alert(error);
+                }
+              }}
+              disabled={voiceMode === 'transcribing' || isProcessingVoice}
+            />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
@@ -713,12 +1086,10 @@ export function AddTransactionSheet({
           </form>
         </div>
       </div>
-    );
-  }
+          )}
 
-  // Formulário para Despesas Fixas
-  if (type === 'expense_fixed') {
-    return (
+          {/* Formulário para Despesas Fixas */}
+          {type === 'expense_fixed' && (
       <div
         className="fixed inset-0 z-50 flex items-end md:items-center bg-black/40 backdrop-blur-sm p-0 md:p-4"
         onClick={onClose}
@@ -735,6 +1106,22 @@ export function AddTransactionSheet({
             >
               ×
             </button>
+          </div>
+
+          {/* Componente de captura de voz */}
+          <div className="mb-4">
+            <VoiceInput
+              onTranscript={handleVoiceTranscript}
+              onError={(error) => {
+                console.error('Erro no VoiceInput:', error);
+                // Só mostrar alerta para erros críticos (permissão negada)
+                if (error.includes('Permissão') || error.includes('negada')) {
+                  alert(error);
+                }
+              }}
+              disabled={voiceMode === 'transcribing' || isProcessingVoice}
+              autoStart={startWithVoice && isOpen}
+            />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
@@ -831,9 +1218,18 @@ export function AddTransactionSheet({
           </form>
         </div>
       </div>
-    );
-  }
+          )}
 
-  // Fallback (não deveria acontecer)
-  return null;
+          {/* Formulário para Economias */}
+          {type === 'savings' && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6">
+                <p>Tipo savings ainda não implementado</p>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </>
+  );
 }
