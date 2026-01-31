@@ -321,9 +321,49 @@ function parseBasicFallback(text: string): Array<{
   const normalizedText = text.toLowerCase().trim();
   
   // Melhorar regex para capturar valores monetários de várias formas
-  // Ex: "r$ 50", "R$50", "50 reais", "50,00", "50.00", etc.
-  const valuePattern = /(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais?|r\$)?/gi;
+  // Ex: "r$ 50", "R$50", "50 reais", "50,00", "50.00", "50 mil", "50 milhão", etc.
+  // Captura também quando "mil" ou "milhão" vem separado: "50 mil", "2 milhões"
+  const valuePattern = /(?:r\$\s*)?(\d+(?:[.,]\d{1,3})*(?:[.,]\d{1,2})?)\s*(?:mil(?:hão|ões)?|mil|reais?|r\$)?/gi;
   const matches = Array.from(normalizedText.matchAll(valuePattern));
+  
+  // Também buscar padrões como "50 mil", "2 milhões" onde a palavra vem separada
+  const separatedPattern = /(\d+(?:[.,]\d{1,3})*(?:[.,]\d{1,2})?)\s+(mil(?:hão|ões)?|mil)\b/gi;
+  const separatedMatches = Array.from(normalizedText.matchAll(separatedPattern));
+  
+  // Combinar matches, priorizando os separados (mais específicos)
+  const allMatches = [...separatedMatches, ...matches].filter((match, index, self) => {
+    // Remover duplicatas baseadas na posição
+    return index === self.findIndex(m => m.index === match.index);
+  });
+  
+  // Processar matches para converter "mil" e "milhão" em valores numéricos
+  const processedMatches = allMatches.map(match => {
+    const fullMatch = match[0];
+    const valueStr = match[1];
+    const matchIndex = match.index || 0;
+    
+    // Buscar "mil" ou "milhão" no texto após o valor (até 20 caracteres)
+    const afterValue = fullMatch.substring(match[0].indexOf(valueStr) + valueStr.length).trim().toLowerCase();
+    
+    // Também buscar no texto original próximo ao match (até 30 caracteres depois)
+    const contextAfter = normalizedText.substring(matchIndex, matchIndex + match[0].length + 30).toLowerCase();
+    
+    let multiplier = 1;
+    // Verificar primeiro "milhão" para evitar conflito com "mil"
+    if (afterValue.includes('milhão') || afterValue.includes('milhões') || 
+        contextAfter.includes('milhão') || contextAfter.includes('milhões')) {
+      multiplier = 1000000;
+    } else if (afterValue.includes('mil') || contextAfter.includes(' mil ')) {
+      multiplier = 1000;
+    }
+    
+    return {
+      ...match,
+      valueStr,
+      multiplier,
+      originalMatch: match
+    };
+  });
 
   const expenseKeywords = ['gastei', 'paguei', 'comprei', 'despesa', 'gasto', 'pago', 'gastar', 'pagar'];
   const incomeKeywords = ['ganhei', 'recebi', 'entrada', 'salário', 'renda', 'ganhar', 'receber'];
@@ -483,9 +523,70 @@ function parseBasicFallback(text: string): Array<{
     'material': 'Educação',
   };
 
-  matches.forEach((match) => {
-    const valueStr = match[1].replace(',', '.');
-    const value = parseFloat(valueStr);
+  // Função para converter string de valor para número
+  const parseValue = (valueStr: string): number => {
+    // Remover espaços
+    valueStr = valueStr.trim();
+    
+    // Verificar se tem ponto ou vírgula
+    const hasDot = valueStr.includes('.');
+    const hasComma = valueStr.includes(',');
+    
+    if (hasDot && hasComma) {
+      // Formato brasileiro: 50.000,00 ou 50.000,5
+      // O último separador é o decimal
+      const lastDot = valueStr.lastIndexOf('.');
+      const lastComma = valueStr.lastIndexOf(',');
+      
+      if (lastComma > lastDot) {
+        // Vírgula é o separador decimal: 50.000,00
+        const integerPart = valueStr.substring(0, lastComma).replace(/\./g, '');
+        const decimalPart = valueStr.substring(lastComma + 1);
+        return parseFloat(`${integerPart}.${decimalPart}`);
+      } else {
+        // Ponto é o separador decimal: 50,000.00
+        const integerPart = valueStr.substring(0, lastDot).replace(/,/g, '');
+        const decimalPart = valueStr.substring(lastDot + 1);
+        return parseFloat(`${integerPart}.${decimalPart}`);
+      }
+    } else if (hasDot) {
+      // Apenas ponto: verificar se é milhar ou decimal
+      const parts = valueStr.split('.');
+      const lastPart = parts[parts.length - 1];
+      
+      if (lastPart.length <= 2 && parts.length === 2) {
+        // Decimal: 50.00 ou 50.5
+        return parseFloat(valueStr);
+      } else {
+        // Milhar: 50.000 ou 1.500.000
+        return parseFloat(valueStr.replace(/\./g, ''));
+      }
+    } else if (hasComma) {
+      // Apenas vírgula: verificar se é milhar ou decimal
+      const parts = valueStr.split(',');
+      const lastPart = parts[parts.length - 1];
+      
+      if (lastPart.length <= 2 && parts.length === 2) {
+        // Decimal: 50,00 ou 50,5
+        return parseFloat(valueStr.replace(',', '.'));
+      } else {
+        // Milhar: 50,000 ou 1,500,000 (formato não comum no BR, mas possível)
+        return parseFloat(valueStr.replace(/,/g, ''));
+      }
+    } else {
+      // Sem separador: número inteiro
+      return parseFloat(valueStr);
+    }
+  };
+
+  processedMatches.forEach((processedMatch) => {
+    const match = processedMatch.originalMatch;
+    const valueStr = processedMatch.valueStr;
+    const multiplier = processedMatch.multiplier;
+    let value = parseValue(valueStr);
+    
+    // Aplicar multiplicador se houver "mil" ou "milhão"
+    value = value * multiplier;
 
     if (isNaN(value) || value <= 0) return;
 

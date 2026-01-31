@@ -50,6 +50,21 @@ export async function POST(request: NextRequest) {
       // Verificar se a resposta tem transações válidas (com valor > 0)
       const validTransactions = (interpretData.transactions || []).filter((t: any) => t.value > 0);
       
+      // Se não encontrou transações válidas, usar parsing básico como fallback
+      if (validTransactions.length === 0) {
+        console.log('[VOICE PARSE] IA não encontrou transações, usando parsing básico');
+        const parsedTransactions = parseFinancialText(text);
+        const basicValidTransactions = parsedTransactions.filter(t => t.value > 0);
+        
+        return NextResponse.json({
+          success: true,
+          originalText: text,
+          transactions: basicValidTransactions,
+          message: 'Texto processado com parsing básico (IA não encontrou transações)',
+          aiEnabled: false,
+        });
+      }
+      
       return NextResponse.json({
         success: true,
         originalText: text,
@@ -69,7 +84,7 @@ export async function POST(request: NextRequest) {
         success: true,
         originalText: text,
         transactions: validTransactions,
-        message: 'Texto processado com parsing básico',
+        message: 'Texto processado com parsing básico (IA não configurada)',
         aiEnabled: false,
       });
     }
@@ -105,13 +120,174 @@ function parseFinancialText(text: string): Array<{
     date?: string;
   }> = [];
 
-  // Normalizar texto
-  const normalizedText = text.toLowerCase().trim();
+  // Normalizar texto - remover aspas e normalizar
+  const normalizedText = text.toLowerCase().trim().replace(/["'""]/g, '');
+  
+  // Debug: log do texto normalizado
+  console.log('[VOICE PARSE] Texto recebido:', text);
+  console.log('[VOICE PARSE] Texto normalizado:', normalizedText);
 
-  // Melhorar regex para capturar valores monetários de várias formas
-  // Ex: "r$ 50", "R$50", "50 reais", "50,00", "50.00", etc.
-  const valuePattern = /(?:r\$\s*)?(\d+(?:[.,]\d{1,2})?)\s*(?:reais?|r\$)?/gi;
-  const matches = Array.from(normalizedText.matchAll(valuePattern));
+  // Mapear palavras numéricas para números
+  const numberWords: Record<string, number> = {
+    'um': 1, 'uma': 1, 'dois': 2, 'duas': 2, 'três': 3, 'tres': 3,
+    'quatro': 4, 'cinco': 5, 'seis': 6, 'sete': 7, 'oito': 8, 'nove': 9,
+    'dez': 10, 'onze': 11, 'doze': 12, 'treze': 13, 'catorze': 14, 'quatorze': 14,
+    'quinze': 15, 'dezesseis': 16, 'dezessete': 17, 'dezoito': 18, 'dezenove': 19,
+    'vinte': 20, 'trinta': 30, 'quarenta': 40, 'cinquenta': 50, 'sessenta': 60,
+    'setenta': 70, 'oitenta': 80, 'noventa': 90, 'cem': 100, 'cento': 100,
+    'duzentos': 200, 'trezentos': 300, 'quatrocentos': 400, 'quinhentos': 500,
+    'seiscentos': 600, 'setecentos': 700, 'oitocentos': 800, 'novecentos': 900,
+    'meio': 0.5, 'meia': 0.5
+  };
+
+  // Função para converter texto numérico em número
+  const parseTextNumber = (text: string): number | null => {
+    // Primeiro tentar números diretos
+    const directNumber = /(\d+(?:[.,]\d{1,3})*(?:[.,]\d{1,2})?)/.exec(text);
+    if (directNumber) {
+      return parseFloat(directNumber[1].replace(/\./g, '').replace(',', '.'));
+    }
+
+    // Tentar palavras numéricas
+    const words = text.trim().split(/\s+/);
+    let total = 0;
+    let currentNumber = 0;
+    let hasMillion = false;
+    let hasThousand = false;
+    let hasHalf = false;
+
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i].replace(/[.,]/g, '').toLowerCase();
+      
+      if (word === 'milhão' || word === 'milhões') {
+        hasMillion = true;
+        if (currentNumber === 0) currentNumber = 1;
+        total += currentNumber * 1000000;
+        currentNumber = 0;
+      } else if (word === 'mil') {
+        hasThousand = true;
+        if (currentNumber === 0) currentNumber = 1;
+        total += currentNumber * 1000;
+        currentNumber = 0;
+      } else if (word === 'meio' || word === 'meia') {
+        hasHalf = true;
+      } else if (word === 'e') {
+        // Ignorar "e" por enquanto, será tratado depois
+        continue;
+      } else if (numberWords[word] !== undefined) {
+        currentNumber = numberWords[word];
+      }
+    }
+
+    // Adicionar número restante
+    if (currentNumber > 0) {
+      if (hasMillion) {
+        total += currentNumber * 1000000;
+      } else if (hasThousand) {
+        total += currentNumber * 1000;
+      } else {
+        total += currentNumber;
+      }
+    }
+
+    // Adicionar meio se sobrou (após processar tudo)
+    if (hasHalf && hasMillion) {
+      total += 500000;
+    } else if (hasHalf && hasThousand) {
+      total += 500;
+    } else if (hasHalf) {
+      total += 0.5;
+    }
+
+    return total > 0 ? total : null;
+  };
+
+  // Buscar padrões numéricos (números e palavras)
+  const numericPatterns: Array<{ value: number; index: number; text: string }> = [];
+  
+  // Padrão 1: Números diretos
+  const numberPattern = /(?:r\$\s*)?(\d+(?:[.,]\d{1,3})*(?:[.,]\d{1,2})?)\s*(?:mil(?:hão|ões)?|mil|reais?|r\$)?/gi;
+  let match;
+  while ((match = numberPattern.exec(normalizedText)) !== null) {
+    const valueStr = match[1];
+    const value = parseValue(valueStr);
+    const afterText = normalizedText.substring(match.index + match[0].length, match.index + match[0].length + 20).toLowerCase();
+    let multiplier = 1;
+    if (afterText.includes('milhão') || afterText.includes('milhões')) {
+      multiplier = 1000000;
+    } else if (afterText.includes('mil')) {
+      multiplier = 1000;
+    }
+    numericPatterns.push({
+      value: value * multiplier,
+      index: match.index || 0,
+      text: match[0]
+    });
+  }
+
+  // Padrão 2: "um milhão e meio", "dois milhões e meio", etc. (PRIORITÁRIO - mais específico)
+  // Buscar também variações como "um milhão e meio", "1 milhão e meio"
+  const halfMillionPattern = /\b(um|uma|dois|duas|três|tres|quatro|cinco|seis|sete|oito|nove|\d+)\s+milh(?:ão|ões)\s+e\s+meio/gi;
+  while ((match = halfMillionPattern.exec(normalizedText)) !== null) {
+    let baseNumber = numberWords[match[1].toLowerCase()] || 1;
+    // Se for número direto
+    if (!isNaN(parseInt(match[1]))) {
+      baseNumber = parseInt(match[1]);
+    }
+    const value = baseNumber * 1000000 + 500000;
+    numericPatterns.push({
+      value,
+      index: match.index || 0,
+      text: match[0]
+    });
+  }
+
+  // Padrão 3: Palavras numéricas com mil/milhão (sem "e meio")
+  const wordPattern = /\b(um|uma|dois|duas|três|tres|quatro|cinco|seis|sete|oito|nove|dez|onze|doze|treze|catorze|quatorze|quinze|dezesseis|dezessete|dezoito|dezenove|vinte|trinta|quarenta|cinquenta|sessenta|setenta|oitenta|noventa|cem|cento|duzentos|trezentos|quatrocentos|quinhentos|seiscentos|setecentos|oitocentos|novecentos)\s+(milhão|milhões|mil)\b/gi;
+  while ((match = wordPattern.exec(normalizedText)) !== null) {
+    // Verificar se não é parte de um padrão "e meio" já capturado
+    const matchText = match[0];
+    const matchIndex = match.index || 0;
+    const isPartOfHalfPattern = numericPatterns.some(p => {
+      const pEnd = p.index + p.text.length;
+      return matchIndex >= p.index && matchIndex < pEnd;
+    });
+    
+    if (!isPartOfHalfPattern) {
+      console.log('[VOICE PARSE] Padrão 3 encontrado:', matchText);
+      const value = parseTextNumber(matchText);
+      console.log('[VOICE PARSE] Valor parseado:', value);
+      if (value !== null && value > 0) {
+        numericPatterns.push({
+          value,
+          index: matchIndex,
+          text: matchText
+        });
+      }
+    }
+  }
+  
+  console.log('[VOICE PARSE] Total de padrões encontrados antes de filtrar:', numericPatterns.length);
+
+  // Ordenar por posição no texto e remover duplicatas próximas
+  numericPatterns.sort((a, b) => a.index - b.index);
+  const allMatches = numericPatterns.filter((pattern, index, arr) => {
+    if (index === 0) return true;
+    const prev = arr[index - 1];
+    // Remover se estiver muito próximo (menos de 10 caracteres de diferença)
+    return pattern.index - (prev.index + prev.text.length) > 10;
+  }).map(pattern => ({
+    index: pattern.index,
+    value: pattern.value,
+    text: pattern.text
+  }));
+  
+  // Processar matches - agora allMatches já tem os valores calculados
+  const processedMatches = allMatches.map(match => ({
+    value: match.value,
+    index: match.index,
+    text: match.text
+  }));
 
   // Detectar palavras-chave de despesa/ganho
   const expenseKeywords = ['gastei', 'paguei', 'comprei', 'despesa', 'gasto', 'pago', 'gastar', 'pagar'];
@@ -274,21 +450,77 @@ function parseFinancialText(text: string): Array<{
     'material': 'Educação',
   };
 
+  // Função para converter string de valor para número
+  const parseValue = (valueStr: string): number => {
+    // Remover espaços
+    valueStr = valueStr.trim();
+    
+    // Verificar se tem ponto ou vírgula
+    const hasDot = valueStr.includes('.');
+    const hasComma = valueStr.includes(',');
+    
+    if (hasDot && hasComma) {
+      // Formato brasileiro: 50.000,00 ou 50.000,5
+      // O último separador é o decimal
+      const lastDot = valueStr.lastIndexOf('.');
+      const lastComma = valueStr.lastIndexOf(',');
+      
+      if (lastComma > lastDot) {
+        // Vírgula é o separador decimal: 50.000,00
+        const integerPart = valueStr.substring(0, lastComma).replace(/\./g, '');
+        const decimalPart = valueStr.substring(lastComma + 1);
+        return parseFloat(`${integerPart}.${decimalPart}`);
+      } else {
+        // Ponto é o separador decimal: 50,000.00
+        const integerPart = valueStr.substring(0, lastDot).replace(/,/g, '');
+        const decimalPart = valueStr.substring(lastDot + 1);
+        return parseFloat(`${integerPart}.${decimalPart}`);
+      }
+    } else if (hasDot) {
+      // Apenas ponto: verificar se é milhar ou decimal
+      const parts = valueStr.split('.');
+      const lastPart = parts[parts.length - 1];
+      
+      if (lastPart.length <= 2 && parts.length === 2) {
+        // Decimal: 50.00 ou 50.5
+        return parseFloat(valueStr);
+      } else {
+        // Milhar: 50.000 ou 1.500.000
+        return parseFloat(valueStr.replace(/\./g, ''));
+      }
+    } else if (hasComma) {
+      // Apenas vírgula: verificar se é milhar ou decimal
+      const parts = valueStr.split(',');
+      const lastPart = parts[parts.length - 1];
+      
+      if (lastPart.length <= 2 && parts.length === 2) {
+        // Decimal: 50,00 ou 50,5
+        return parseFloat(valueStr.replace(',', '.'));
+      } else {
+        // Milhar: 50,000 ou 1,500,000 (formato não comum no BR, mas possível)
+        return parseFloat(valueStr.replace(/,/g, ''));
+      }
+    } else {
+      // Sem separador: número inteiro
+      return parseFloat(valueStr);
+    }
+  };
+
   // Processar cada valor encontrado
-  matches.forEach((match, matchIndex) => {
-    const valueStr = match[1].replace(',', '.');
-    const value = parseFloat(valueStr);
+  processedMatches.forEach((processedMatch, matchIndex) => {
+    const value = processedMatch.value;
+    const valueIndex = processedMatch.index;
+    const matchText = processedMatch.text;
 
     if (isNaN(value) || value <= 0) return;
 
     // Tentar encontrar descrição correspondente
     let description = 'Lançamento por voz';
     let category: string | undefined;
-    const valueIndex = match.index || 0;
     
     // Buscar primeiro DEPOIS do valor (mais comum: "gastei 50 com Uber")
     // Se não encontrar, buscar antes
-    const valueEndIndex = valueIndex + match[0].length;
+    const valueEndIndex = valueIndex + matchText.length;
     const afterContextStart = valueEndIndex;
     const afterContextEnd = Math.min(normalizedText.length, valueEndIndex + 50);
     const afterContextText = normalizedText.substring(afterContextStart, afterContextEnd);
@@ -332,7 +564,7 @@ function parseFinancialText(text: string): Array<{
       // Procurar por padrões como "com X", "em X", "no X", "na X", "de X"
       // Buscar APENAS no contexto mais próximo (30 caracteres antes e depois)
       const nearContextStart = Math.max(0, valueIndex - 30);
-      const nearContextEnd = Math.min(normalizedText.length, valueIndex + match[0].length + 30);
+      const nearContextEnd = Math.min(normalizedText.length, valueIndex + matchText.length + 30);
       const nearContextText = normalizedText.substring(nearContextStart, nearContextEnd);
       
       const contextPattern = /(?:com|em|no|na|de|do|da|para|por)\s+([a-záàâãéèêíïóôõöúç\s]{2,25}?)(?:\s+(?:também|tambem|e|ou)|,|\.|$)/gi;

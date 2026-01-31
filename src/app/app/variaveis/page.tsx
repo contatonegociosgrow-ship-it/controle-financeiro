@@ -97,6 +97,7 @@ export default function VariaveisPage() {
           setIsSheetOpen(false);
           setVoiceMode(false);
         }}
+        defaultType="expense_variable"
         startWithVoice={voiceMode}
       />
     </div>

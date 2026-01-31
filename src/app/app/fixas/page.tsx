@@ -98,6 +98,7 @@ export default function FixasPage() {
           setIsSheetOpen(false);
           setVoiceMode(false);
         }}
+        defaultType="expense_fixed"
         startWithVoice={voiceMode}
       />
     </div>

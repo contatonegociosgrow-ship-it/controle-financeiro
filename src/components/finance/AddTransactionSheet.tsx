@@ -359,6 +359,8 @@ export function AddTransactionSheet({
 
     try {
       // Converter itens do modal para formato de transação
+      // Usar o tipo atual do formulário como padrão (baseado na página)
+      const currentDefaultType = getDefaultType();
       const transactions: Array<{
         value: number;
         type: 'income' | 'expense_fixed' | 'expense_variable' | 'savings';
@@ -366,8 +368,8 @@ export function AddTransactionSheet({
         notes: string;
         category?: string;
       }> = itens.map((item) => {
-        // Determinar tipo baseado na categoria
-        let type: 'income' | 'expense_fixed' | 'expense_variable' | 'savings' = 'expense_variable';
+        // Determinar tipo baseado na categoria ou usar o tipo da página atual
+        let type: 'income' | 'expense_fixed' | 'expense_variable' | 'savings' = currentDefaultType;
         if (item.categoria === 'Ganhos') {
           type = 'income';
         } else if (item.categoria === 'Cofre') {

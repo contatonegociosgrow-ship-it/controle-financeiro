@@ -369,6 +369,7 @@ export default function DividasPage() {
           setIsSheetOpen(false);
           setVoiceMode(false);
         }}
+        defaultType="debt"
         startWithVoice={voiceMode}
       />
       <AddDebtSheet isOpen={isDebtSheetOpen} onClose={() => setIsDebtSheetOpen(false)} />

@@ -95,6 +95,7 @@ export default function GanhosPage() {
           setIsSheetOpen(false);
           setVoiceMode(false);
         }}
+        defaultType="income"
         startWithVoice={voiceMode}
       />
     </div>

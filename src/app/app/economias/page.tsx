@@ -237,6 +237,7 @@ export default function EconomiasPage() {
           setIsSheetOpen(false);
           setVoiceMode(false);
         }}
+        defaultType="savings"
         startWithVoice={voiceMode}
       />
       <AddGoalSheet isOpen={isGoalSheetOpen} onClose={() => setIsGoalSheetOpen(false)} />
