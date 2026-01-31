@@ -761,7 +761,6 @@ export function AddTransactionSheet({
         </div>
       </div>
       )}
-          )}
 
           {/* Formulário para Ganhos */}
           {type === 'income' && (
