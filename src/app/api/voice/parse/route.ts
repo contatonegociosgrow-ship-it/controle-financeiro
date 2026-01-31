@@ -153,7 +153,6 @@ function parseFinancialText(text: string): Array<{
     'pao de açúcar': 'Alimentação',
     'pao de acucar': 'Alimentação',
     'pão de açúcar': 'Alimentação',
-    'pao de acucar': 'Alimentação',
     'assai': 'Alimentação',
     'sams': 'Alimentação',
     'costco': 'Alimentação',
