@@ -199,7 +199,6 @@ function parseFinancialText(text: string): Array<{
     'americanas': 'Compras',
     'casas bahia': 'Compras',
     'ricardo eletro': 'Compras',
-    'extra': 'Compras',
     'pontofrio': 'Compras',
     'submarino': 'Compras',
     'mercadolivre': 'Compras',
@@ -263,8 +262,8 @@ function parseFinancialText(text: string): Array<{
     'spotify': 'Assinaturas',
     'assinatura': 'Assinaturas',
     'streaming': 'Assinaturas',
-    'amazon': 'Assinaturas',
     'prime': 'Assinaturas',
+    'amazon prime': 'Assinaturas',
     'disney': 'Assinaturas',
     // Educação
     'curso': 'Educação',
