@@ -363,13 +363,13 @@ export function AddTransactionSheet({
       const currentDefaultType = getDefaultType();
       const transactions: Array<{
         value: number;
-        type: 'income' | 'expense_fixed' | 'expense_variable' | 'savings';
+        type: 'income' | 'expense_fixed' | 'expense_variable' | 'savings' | 'debt';
         date: string;
         notes: string;
         category?: string;
       }> = itens.map((item) => {
         // Determinar tipo baseado na categoria ou usar o tipo da página atual
-        let type: 'income' | 'expense_fixed' | 'expense_variable' | 'savings' = currentDefaultType;
+        let type: 'income' | 'expense_fixed' | 'expense_variable' | 'savings' | 'debt' = currentDefaultType;
         if (item.categoria === 'Ganhos') {
           type = 'income';
         } else if (item.categoria === 'Cofre') {
