@@ -1231,11 +1231,133 @@ export function AddTransactionSheet({
 
           {/* Formulário para Economias */}
           {type === 'savings' && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-              <div className="bg-white dark:bg-gray-800 rounded-lg p-6">
-                <p>Tipo savings ainda não implementado</p>
+      <div
+        className="fixed inset-0 z-50 flex items-end md:items-center bg-black/40 backdrop-blur-sm p-0 md:p-4"
+        onClick={onClose}
+      >
+        <div
+          className="w-full max-w-sm md:max-w-md mx-auto bg-white dark:bg-gray-800 rounded-t-2xl md:rounded-2xl p-4 md:p-6 shadow-2xl max-h-[90vh] md:max-h-[85vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between mb-4 md:mb-6 pb-3 border-b border-gray-100 dark:border-gray-700">
+            <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white">Nova Economia</h2>
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl leading-none w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            >
+              ×
+            </button>
+          </div>
+
+          {/* Componente de captura de voz */}
+          <div className="mb-4">
+            <VoiceInput
+              onTranscript={handleVoiceTranscript}
+              onError={(error) => {
+                console.error('Erro no VoiceInput:', error);
+                // Só mostrar alerta para erros críticos (permissão negada)
+                if (error.includes('Permissão') || error.includes('negada')) {
+                  alert(error);
+                }
+              }}
+              disabled={voiceMode === 'transcribing' || isProcessingVoice}
+              autoStart={startWithVoice && isOpen}
+            />
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-3 md:space-y-4">
+            <div>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                Descrição <span className="text-gray-500 text-xs font-normal">(pode usar emojis)</span>
+              </label>
+              <input
+                type="text"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                placeholder="Ex: 💰 Depósito na poupança"
+                required
+                autoFocus
+              />
+              <CategoryExamples type={type} onExampleClick={handleExampleClick} />
+            </div>
+
+            <div>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Categoria</label>
+              <div className="relative">
+                <select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer transition-all hover:border-gray-300 dark:hover:border-gray-500"
+                  required
+                >
+                  <option value="">Selecione uma categoria...</option>
+                  {state.categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
             </div>
+
+            <div>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Data</label>
+              <input
+                type="text"
+                value={date}
+                onChange={(e) => {
+                  const masked = applyDateMask(e.target.value);
+                  if (masked.length <= 10) {
+                    setDate(masked);
+                  }
+                }}
+                placeholder="DD/MM/AAAA"
+                maxLength={10}
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Valor</label>
+              <input
+                type="number"
+                step="0.01"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                placeholder="0,00"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Anotação</label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3.5 py-2.5 md:px-4 md:py-3 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 resize-none transition-all"
+                rows={3}
+                placeholder="Opcional"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={saved}
+              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-2.5 md:py-3 rounded-lg transition-all disabled:from-green-500 disabled:to-green-600 shadow-md hover:shadow-lg text-sm md:text-base"
+            >
+              {saved ? '✓ Salvo!' : 'Salvar'}
+            </button>
+          </form>
+        </div>
+      </div>
           )}
         </>
       )}

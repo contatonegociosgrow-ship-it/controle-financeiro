@@ -10,13 +10,22 @@ import { FileText, Calendar } from 'lucide-react';
 export default function ManualPage() {
   const { isInitialized } = useFinanceStore();
   
-  // Inicializar com o mês atual
-  const today = new Date();
-  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  // Inicializar com o mês atual (usando função para evitar problemas de SSR)
+  const getInitialDates = () => {
+    if (typeof window === 'undefined') {
+      return { start: '', end: '' };
+    }
+    const today = new Date();
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    return {
+      start: firstDayOfMonth.toISOString().split('T')[0],
+      end: lastDayOfMonth.toISOString().split('T')[0],
+    };
+  };
   
-  const [startDate, setStartDate] = useState(firstDayOfMonth.toISOString().split('T')[0]);
-  const [endDate, setEndDate] = useState(lastDayOfMonth.toISOString().split('T')[0]);
+  const [startDate, setStartDate] = useState(() => getInitialDates().start);
+  const [endDate, setEndDate] = useState(() => getInitialDates().end);
 
   // Carregar preferências salvas
   useEffect(() => {

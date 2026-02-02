@@ -24,19 +24,29 @@ export default function InvestimentosPage() {
   
   // Estado para controlar o mês/ano visualizado
   const [selectedMonth, setSelectedMonth] = useState<number>(() => {
+    if (typeof window === 'undefined') return 0;
     const now = new Date();
     return now.getMonth();
   });
   const [selectedYear, setSelectedYear] = useState<number>(() => {
+    if (typeof window === 'undefined') return 2024;
     const now = new Date();
     return now.getFullYear();
   });
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: state.profile.currency || 'BRL',
-    }).format(value);
+    if (typeof window === 'undefined' || !state?.profile) {
+      return 'R$ 0,00';
+    }
+    const numValue = typeof value === 'number' && !isNaN(value) ? value : 0;
+    try {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: state.profile.currency || 'BRL',
+      }).format(numValue);
+    } catch (e) {
+      return 'R$ 0,00';
+    }
   };
 
   const formatDate = (dateStr: string) => {
@@ -46,7 +56,21 @@ export default function InvestimentosPage() {
 
   // Filtrar investimentos pelo mês selecionado
   const filteredInvestments = useMemo(() => {
+    if (!state.investments || state.investments.length === 0) {
+      return [];
+    }
+    
     return state.investments.filter((inv) => {
+      // Validar se o investimento é válido
+      if (!inv || typeof inv !== 'object') {
+        return false;
+      }
+      
+      // Validar valor
+      if (typeof inv.value !== 'number' || isNaN(inv.value) || inv.value <= 0) {
+        return false;
+      }
+      
       // Comparar diretamente pela string ISO (YYYY-MM-DD) para evitar problemas de fuso horário
       if (!inv.applicationDate || !inv.applicationDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
         return false;
@@ -61,32 +85,102 @@ export default function InvestimentosPage() {
 
   // Calcular totais
   const totals = useMemo(() => {
-    const totalInvested = state.investments.reduce((sum, inv) => sum + inv.value, 0);
+    // Verificar se há investimentos
+    if (!state.investments || !Array.isArray(state.investments) || state.investments.length === 0) {
+      return {
+        totalInvested: 0,
+        totalReturns: 0,
+        monthlyContributions: 0,
+        averageReturn: 0,
+      };
+    }
+
+    // Filtrar investimentos válidos (com valor > 0 e dados válidos)
+    const validInvestments = state.investments.filter((inv) => {
+      if (!inv || typeof inv !== 'object') {
+        return false;
+      }
+      
+      // Validar que value existe e é um número válido maior que 0
+      if (typeof inv.value !== 'number' || isNaN(inv.value) || inv.value <= 0) {
+        return false;
+      }
+      
+      // Validar que não é um valor infinito ou muito grande
+      if (!isFinite(inv.value) || inv.value >= Number.MAX_SAFE_INTEGER) {
+        return false;
+      }
+      
+      return true;
+    });
+
+    // Se não há investimentos válidos, retornar zeros
+    if (validInvestments.length === 0) {
+      return {
+        totalInvested: 0,
+        totalReturns: 0,
+        monthlyContributions: 0,
+        averageReturn: 0,
+      };
+    }
+
+    const totalInvested = validInvestments.reduce((sum, inv) => {
+      const value = typeof inv.value === 'number' && isFinite(inv.value) ? inv.value : 0;
+      return sum + value;
+    }, 0);
     
-    const totalReturns = state.investments.reduce((sum, inv) => {
-      if (inv.estimatedReturn) {
+    const totalReturns = validInvestments.reduce((sum, inv) => {
+      if (
+        inv.estimatedReturn && 
+        typeof inv.estimatedReturn === 'number' && 
+        !isNaN(inv.estimatedReturn) &&
+        isFinite(inv.estimatedReturn) &&
+        typeof inv.value === 'number' &&
+        isFinite(inv.value)
+      ) {
         return sum + (inv.value * inv.estimatedReturn / 100);
       }
       return sum;
     }, 0);
 
-    const monthlyContributions = filteredInvestments.reduce((sum, inv) => sum + inv.value, 0);
+    // Filtrar investimentos válidos do mês
+    const validMonthlyInvestments = filteredInvestments.filter((inv) => {
+      if (!inv || typeof inv !== 'object') {
+        return false;
+      }
+      
+      if (typeof inv.value !== 'number' || isNaN(inv.value) || inv.value <= 0) {
+        return false;
+      }
+      
+      if (!isFinite(inv.value) || inv.value >= Number.MAX_SAFE_INTEGER) {
+        return false;
+      }
+      
+      return true;
+    });
+
+    const monthlyContributions = validMonthlyInvestments.reduce((sum, inv) => {
+      const value = typeof inv.value === 'number' && isFinite(inv.value) ? inv.value : 0;
+      return sum + value;
+    }, 0);
 
     const averageReturn = totalInvested > 0 
       ? (totalReturns / totalInvested) * 100 
       : 0;
 
     return {
-      totalInvested,
-      totalReturns,
-      monthlyContributions,
-      averageReturn,
+      totalInvested: Math.max(0, Math.round(totalInvested * 100) / 100), // Arredondar para 2 casas decimais
+      totalReturns: Math.max(0, Math.round(totalReturns * 100) / 100),
+      monthlyContributions: Math.max(0, Math.round(monthlyContributions * 100) / 100),
+      averageReturn: Math.max(0, Math.round(averageReturn * 10) / 10), // Arredondar para 1 casa decimal
     };
   }, [state.investments, filteredInvestments]);
 
   // Função para navegar entre meses
   const handleMonthChange = (direction: 'prev' | 'next' | 'current') => {
     if (direction === 'current') {
+      if (typeof window === 'undefined') return;
       const now = new Date();
       setSelectedMonth(now.getMonth());
       setSelectedYear(now.getFullYear());
@@ -120,6 +214,7 @@ export default function InvestimentosPage() {
   ];
 
   const isCurrentMonth = useMemo(() => {
+    if (typeof window === 'undefined') return false;
     const now = new Date();
     return selectedMonth === now.getMonth() && selectedYear === now.getFullYear();
   }, [selectedMonth, selectedYear]);

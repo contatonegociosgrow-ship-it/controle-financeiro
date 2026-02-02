@@ -23,8 +23,12 @@ function differenceInMonths(date1: Date, date2: Date): number {
  * Adiciona meses a uma data
  */
 function addMonths(date: Date, months: number): Date {
-  const result = new Date(date);
-  result.setMonth(result.getMonth() + months);
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
+  
+  // Criar nova data com os valores explícitos para evitar problemas de fuso horário
+  const result = new Date(year, month + months, day);
   return result;
 }
 
@@ -44,8 +48,22 @@ function formatDate(date: Date): string {
  * @param today - Data de referência (padrão: hoje)
  * @returns Número da parcela atual (1-indexed) ou null se não houver parcela atual
  */
-export function getCurrentInstallment(debt: Debt, today: Date = new Date()): number | null {
-  const startDate = new Date(debt.startDate);
+export function getCurrentInstallment(debt: Debt, today?: Date): number | null {
+  if (!today) {
+    today = new Date();
+  }
+  // Parse da data ISO (YYYY-MM-DD) diretamente para evitar problemas de fuso horário
+  const dateMatch = debt.startDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!dateMatch) {
+    return null;
+  }
+
+  const year = parseInt(dateMatch[1], 10);
+  const month = parseInt(dateMatch[2], 10) - 1; // getMonth() retorna 0-11
+  const day = parseInt(dateMatch[3], 10);
+
+  // Criar data local (sem fuso horário)
+  const startDate = new Date(year, month, day);
   if (isNaN(startDate.getTime())) {
     return null;
   }
@@ -81,11 +99,19 @@ export function getInstallmentDueDate(debt: Debt, installmentNumber: number): st
     return '';
   }
 
-  const startDate = new Date(debt.startDate);
-  if (isNaN(startDate.getTime())) {
+  // Parse da data ISO (YYYY-MM-DD) diretamente para evitar problemas de fuso horário
+  const dateMatch = debt.startDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!dateMatch) {
     return '';
   }
 
+  const year = parseInt(dateMatch[1], 10);
+  const month = parseInt(dateMatch[2], 10) - 1; // getMonth() retorna 0-11
+  const day = parseInt(dateMatch[3], 10);
+
+  // Criar data local (sem fuso horário)
+  const startDate = new Date(year, month, day);
+  
   // Adicionar (installmentNumber - 1) meses à data inicial
   // Exemplo: parcela 1 = startDate + 0 meses, parcela 2 = startDate + 1 mês
   const dueDate = addMonths(startDate, installmentNumber - 1);
@@ -102,8 +128,11 @@ export function getInstallmentDueDate(debt: Debt, installmentNumber: number): st
 export function canMarkInstallmentAsPaid(
   debt: Debt,
   installmentNumber: number,
-  today: Date = new Date()
+  today?: Date
 ): boolean {
+  if (!today) {
+    today = new Date();
+  }
   // Não pode marcar se já está completa
   if (debt.status === 'completed') {
     return false;
@@ -142,8 +171,11 @@ export function canMarkInstallmentAsPaid(
  */
 export function getCurrentMonthUnpaidInstallments(
   debts: Debt[],
-  today: Date = new Date()
+  today?: Date
 ): number {
+  if (!today) {
+    today = new Date();
+  }
   let total = 0;
 
   debts.forEach((debt) => {

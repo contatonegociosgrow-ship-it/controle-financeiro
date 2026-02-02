@@ -22,9 +22,17 @@ export default function DividasPage() {
   const [dateEnd, setDateEnd] = useState<string | null>(null);
 
   // Calcular meses dinamicamente baseado na data atual
-  const currentDate = new Date();
-  const currentYear = currentDate.getFullYear();
-  const currentMonth = currentDate.getMonth(); // 0-11
+  const getCurrentDateInfo = () => {
+    if (typeof window === 'undefined') {
+      return { year: 2024, month: 0 };
+    }
+    const currentDate = new Date();
+    return {
+      year: currentDate.getFullYear(),
+      month: currentDate.getMonth(), // 0-11
+    };
+  };
+  const { year: currentYear, month: currentMonth } = getCurrentDateInfo();
   const months = ['JAN', 'FEV', 'MAR', 'ABR', 'MAI', 'JUN', 'JUL', 'AGO', 'SET', 'OUT', 'NOV', 'DEZ'];
 
   // Obter os próximos 4 meses a partir do mês atual

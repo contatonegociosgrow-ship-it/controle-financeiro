@@ -137,19 +137,38 @@ export function OnboardingQuiz() {
         <div className="p-6 md:p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            {/* Logo SVG */}
+            {/* Logo SVG - Porquinho de Economia */}
             <div className="flex justify-center mb-6">
               <div className="relative">
-                <svg className="w-20 h-20" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg className="w-24 h-24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <defs>
                     <linearGradient id="quizGradient" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-                      <stop stopColor="#60A5FA"/>
-                      <stop offset="1" stopColor="#4F46E5"/>
+                      <stop stopColor="#10B981"/>
+                      <stop offset="1" stopColor="#059669"/>
                     </linearGradient>
                   </defs>
+                  {/* Círculo de fundo */}
                   <circle cx="50" cy="50" r="45" fill="url(#quizGradient)" opacity="0.1"/>
-                  <circle cx="50" cy="50" r="40" fill="url(#quizGradient)"/>
-                  <path d="M35 50 L45 60 L65 40" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+                  {/* Corpo do porquinho */}
+                  <ellipse cx="50" cy="55" rx="30" ry="28" fill="url(#quizGradient)"/>
+                  {/* Cabeça do porquinho */}
+                  <ellipse cx="50" cy="40" rx="22" ry="20" fill="url(#quizGradient)"/>
+                  {/* Orelha esquerda */}
+                  <ellipse cx="35" cy="30" rx="8" ry="12" fill="url(#quizGradient)" transform="rotate(-20 35 30)"/>
+                  {/* Orelha direita */}
+                  <ellipse cx="65" cy="30" rx="8" ry="12" fill="url(#quizGradient)" transform="rotate(20 65 30)"/>
+                  {/* Olho esquerdo */}
+                  <circle cx="43" cy="38" r="3" fill="white"/>
+                  {/* Olho direito */}
+                  <circle cx="57" cy="38" r="3" fill="white"/>
+                  {/* Focinho */}
+                  <ellipse cx="50" cy="45" rx="6" ry="5" fill="white" opacity="0.8"/>
+                  {/* Narinas */}
+                  <circle cx="48" cy="45" r="1" fill="#059669"/>
+                  <circle cx="52" cy="45" r="1" fill="#059669"/>
+                  {/* Moeda no porquinho */}
+                  <circle cx="50" cy="60" r="8" fill="#FCD34D" stroke="#F59E0B" strokeWidth="1.5"/>
+                  <text x="50" y="64" textAnchor="middle" fill="#F59E0B" fontSize="8" fontWeight="bold">R$</text>
                 </svg>
                 {/* Emoji de boas-vindas */}
                 <div className="absolute -bottom-2 -right-2 text-3xl animate-bounce">👋</div>

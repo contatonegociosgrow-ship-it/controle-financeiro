@@ -43,16 +43,28 @@ export function DebtInstallmentsCard({ debt }: DebtInstallmentsCardProps) {
       return [];
     }
 
-    const startDate = new Date(debt.date);
+    // Parse da data ISO (YYYY-MM-DD) diretamente para evitar problemas de fuso horário
+    const dateMatch = debt.date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!dateMatch) {
+      return [];
+    }
+
+    const startYear = parseInt(dateMatch[1], 10);
+    const startMonth = parseInt(dateMatch[2], 10) - 1; // getMonth() retorna 0-11
+    const startDay = parseInt(dateMatch[3], 10);
+
+    // Criar data local (sem fuso horário)
+    const startDate = new Date(startYear, startMonth, startDay);
     const total = debt.installments.total;
     const paidInstallments = debt.paidInstallments || [];
-    const paymentDay = debt.monthlyPaymentDate || startDate.getDate();
+    const paymentDay = debt.monthlyPaymentDate || startDay;
 
     const result = [];
     for (let i = 1; i <= total; i++) {
-      const installmentDate = new Date(startDate);
-      installmentDate.setMonth(installmentDate.getMonth() + (i - 1));
-      installmentDate.setDate(paymentDay);
+      // Calcular data da parcela adicionando meses
+      const installmentYear = startYear + Math.floor((startMonth + (i - 1)) / 12);
+      const installmentMonth = (startMonth + (i - 1)) % 12;
+      const installmentDate = new Date(installmentYear, installmentMonth, paymentDay);
 
       result.push({
         number: i,
@@ -129,7 +141,13 @@ export function DebtInstallmentsCard({ debt }: DebtInstallmentsCardProps) {
       {/* Lista de parcelas */}
       <div className="space-y-2">
         {installments.map((installment) => {
-          const isPastDue = installment.date < new Date() && !installment.isPaid;
+          if (typeof window === 'undefined') return null;
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const installmentDate = new Date(installment.date);
+          if (isNaN(installmentDate.getTime())) return null;
+          installmentDate.setHours(0, 0, 0, 0);
+          const isPastDue = installmentDate < today && !installment.isPaid;
 
           return (
             <div

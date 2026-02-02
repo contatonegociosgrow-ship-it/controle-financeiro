@@ -2,26 +2,16 @@
 
 import { useState, useMemo } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
-import { PremiumContentCard } from '@/components/finance/PremiumContentCard';
 import { PremiumCard } from '@/components/finance/PremiumCard';
-import { PageHeader } from '@/components/finance/PageHeader';
-import { TransactionList } from '@/components/finance/TransactionList';
-import { AddTransactionSheet } from '@/components/finance/AddTransactionSheet';
 import { AddGoalSheet } from '@/components/finance/AddGoalSheet';
 import { GoalCard } from '@/components/finance/GoalCard';
-import { DateFilter } from '@/components/finance/DateFilter';
-import { PiggyBank, Wallet, List } from 'lucide-react';
+import { Wallet } from 'lucide-react';
 
 export default function EconomiasPage() {
   const { isInitialized, state, setMonthlyIncome } = useFinanceStore();
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [voiceMode, setVoiceMode] = useState(false);
   const [isGoalSheetOpen, setIsGoalSheetOpen] = useState(false);
   const [isEditingIncome, setIsEditingIncome] = useState(false);
   const [incomeValue, setIncomeValue] = useState('');
-  const [filter, setFilter] = useState('');
-  const [dateStart, setDateStart] = useState<string | null>(null);
-  const [dateEnd, setDateEnd] = useState<string | null>(null);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -58,11 +48,45 @@ export default function EconomiasPage() {
   return (
     <div className="min-h-screen pb-24 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        <PageHeader
-          title="Economias e Metas"
-          icon={PiggyBank}
-          onFilterChange={setFilter}
-        />
+        {/* Header com Logo SVG */}
+        <div className="mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex items-center gap-4 mb-4">
+            {/* Logo SVG de Metas */}
+            <div className="flex-shrink-0">
+              <svg className="w-12 h-12 md:w-16 md:h-16" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="metasGradient" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#3B82F6"/>
+                    <stop offset="1" stopColor="#2563EB"/>
+                  </linearGradient>
+                  <linearGradient id="metasGradient2" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#60A5FA"/>
+                    <stop offset="1" stopColor="#3B82F6"/>
+                  </linearGradient>
+                </defs>
+                {/* Círculo de fundo */}
+                <circle cx="50" cy="50" r="45" fill="url(#metasGradient)" opacity="0.1"/>
+                {/* Anel externo do alvo */}
+                <circle cx="50" cy="50" r="38" fill="none" stroke="url(#metasGradient)" strokeWidth="3"/>
+                {/* Anel médio */}
+                <circle cx="50" cy="50" r="28" fill="none" stroke="url(#metasGradient2)" strokeWidth="2.5"/>
+                {/* Anel interno */}
+                <circle cx="50" cy="50" r="18" fill="url(#metasGradient2)" opacity="0.3"/>
+                {/* Centro do alvo */}
+                <circle cx="50" cy="50" r="10" fill="url(#metasGradient)"/>
+                {/* Seta/Check no centro */}
+                <path d="M45 50 L48 53 L55 46" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                {/* Estrela decorativa */}
+                <path d="M50 20 L52 28 L60 28 L53 33 L55 41 L50 36 L45 41 L47 33 L40 28 L48 28 Z" fill="#FCD34D" opacity="0.9"/>
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">
+                Metas
+              </h1>
+            </div>
+          </div>
+        </div>
 
         {/* Card de Salário Mensal */}
         <div className="mb-6">
@@ -75,39 +99,41 @@ export default function EconomiasPage() {
             formatCurrency={formatCurrency}
           />
           
-          <div className="mt-4 bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+          <div className="mt-4 bg-white dark:bg-gray-800 rounded-xl p-4 md:p-6 shadow-md">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1 min-w-0">
                 {isEditingIncome ? (
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                     <input
                       type="number"
                       step="0.01"
                       value={incomeValue}
                       onChange={(e) => setIncomeValue(e.target.value)}
                       placeholder={formatCurrency(state.profile.monthlyIncome)}
-                      className="px-3 py-2 border border-gray-300 rounded-lg text-lg font-bold text-gray-900 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                      className="flex-1 min-h-[44px] px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg text-base sm:text-lg lg:text-xl font-bold text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                       autoFocus
                     />
-                    <button
-                      onClick={handleSaveIncome}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold"
-                    >
-                      Salvar
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsEditingIncome(false);
-                        setIncomeValue('');
-                      }}
-                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm"
-                    >
-                      Cancelar
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleSaveIncome}
+                        className="flex-1 sm:flex-none min-h-[44px] px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors text-sm font-semibold touch-manipulation"
+                      >
+                        Salvar
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsEditingIncome(false);
+                          setIncomeValue('');
+                        }}
+                        className="flex-1 sm:flex-none min-h-[44px] px-6 py-2.5 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 active:bg-gray-400 dark:active:bg-gray-400 transition-colors text-sm touch-manipulation"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-3">
-                    <p className="text-2xl font-bold text-green-600">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600 dark:text-green-400 break-words">
                       {formatCurrency(state.profile.monthlyIncome)}
                     </p>
                     <button
@@ -115,7 +141,7 @@ export default function EconomiasPage() {
                         setIsEditingIncome(true);
                         setIncomeValue(state.profile.monthlyIncome.toString());
                       }}
-                      className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                      className="self-start sm:self-auto min-h-[44px] px-4 py-2.5 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 active:bg-gray-300 dark:active:bg-gray-500 transition-colors touch-manipulation font-medium"
                     >
                       Editar
                     </button>
@@ -128,14 +154,14 @@ export default function EconomiasPage() {
 
         {/* Metas Ativas */}
         {activeGoals.length > 0 && (
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Metas Ativas</h2>
-              <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-semibold">
+          <div className="mb-6 lg:mb-8">
+            <div className="flex items-center gap-2 mb-4 lg:mb-6">
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">Metas Ativas</h2>
+              <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-xs lg:text-sm font-semibold">
                 {activeGoals.length}
               </span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
               {activeGoals.map((goal) => (
                 <GoalCard key={goal.id} goal={goal} />
               ))}
@@ -145,14 +171,14 @@ export default function EconomiasPage() {
 
         {/* Metas Concluídas */}
         {completedGoals.length > 0 && (
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Metas Concluídas</h2>
-              <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-semibold">
+          <div className="mb-6 lg:mb-8">
+            <div className="flex items-center gap-2 mb-4 lg:mb-6">
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">Metas Concluídas</h2>
+              <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg text-xs lg:text-sm font-semibold">
                 {completedGoals.length}
               </span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
               {completedGoals.map((goal) => (
                 <GoalCard key={goal.id} goal={goal} />
               ))}
@@ -160,86 +186,20 @@ export default function EconomiasPage() {
           </div>
         )}
 
-        {/* Transações de Economia */}
-        <div className="mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Transações de Economia</h2>
-          <div className="mb-4">
-            <DateFilter
-              pageKey="economias"
-              onDateRangeChange={(start, end) => {
-                setDateStart(start);
-                setDateEnd(end);
-              }}
-            />
-          </div>
-          <PremiumContentCard
-            title="Transações de Economia"
-            icon={List}
-            gradientFrom="from-blue-600"
-            gradientTo="to-blue-700"
-          >
-            <TransactionList 
-              type="savings" 
-              filter={filter} 
-              startDate={dateStart}
-              endDate={dateEnd}
-              showCategory={true} 
-              columns={5} 
-            />
-          </PremiumContentCard>
-        </div>
       </div>
 
-      {/* Botões flutuantes */}
-      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 flex flex-col gap-2 sm:gap-3 z-40">
+      {/* Botão flutuante */}
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40">
         <button
           onClick={() => setIsGoalSheetOpen(true)}
-          className="w-14 h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl font-light transition-all hover:scale-110"
+          className="w-14 h-14 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl font-light transition-all hover:scale-110"
           aria-label="Adicionar meta"
           title="Nova Meta"
         >
           🎯
         </button>
-        
-        {/* Botões de ação */}
-        <div className="flex gap-2">
-          {/* Botão Microfone */}
-          <button
-            onClick={() => {
-              setVoiceMode(true);
-              setIsSheetOpen(true);
-            }}
-            className="w-14 h-14 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all hover:scale-110"
-            aria-label="Falar e registrar"
-            title="Falar e registrar transação"
-          >
-            🎙️
-          </button>
-          
-          {/* Botão Adicionar */}
-          <button
-            onClick={() => {
-              setVoiceMode(false);
-              setIsSheetOpen(true);
-            }}
-            className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center text-3xl font-light transition-all hover:scale-110"
-            aria-label="Adicionar transação"
-            title="Nova Transação"
-          >
-            +
-          </button>
-        </div>
       </div>
 
-      <AddTransactionSheet 
-        isOpen={isSheetOpen} 
-        onClose={() => {
-          setIsSheetOpen(false);
-          setVoiceMode(false);
-        }}
-        defaultType="savings"
-        startWithVoice={voiceMode}
-      />
       <AddGoalSheet isOpen={isGoalSheetOpen} onClose={() => setIsGoalSheetOpen(false)} />
     </div>
   );

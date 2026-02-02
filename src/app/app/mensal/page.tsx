@@ -9,8 +9,14 @@ import { BarChart3, Calendar } from 'lucide-react';
 
 export default function MensalPage() {
   const { isInitialized } = useFinanceStore();
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(() => {
+    if (typeof window === 'undefined') return 2024;
+    return new Date().getFullYear();
+  });
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    if (typeof window === 'undefined') return 0;
+    return new Date().getMonth();
+  });
 
   // Carregar preferências salvas
   useEffect(() => {

@@ -17,7 +17,7 @@ import {
   FileText,
   User,
   TrendingUp,
-  Lock,
+  Target,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -32,9 +32,9 @@ const tabs: { id: TabType; label: string; path: string; Icon: TabIcon }[] = [
   { id: 'fixas', label: 'Fixas', path: '/app/fixas', Icon: Receipt },
   { id: 'variaveis', label: 'Variáveis', path: '/app/variaveis', Icon: ShoppingCart },
   { id: 'dividas', label: 'Dívidas', path: '/app/dividas', Icon: LinkIcon },
-  { id: 'economias', label: 'Economias', path: '/app/economias', Icon: PiggyBank },
+  { id: 'economias', label: 'Metas', path: '/app/economias', Icon: Target },
   { id: 'investimentos', label: 'Investimentos', path: '/app/investimentos', Icon: TrendingUp },
-  { id: 'cofre', label: 'Cofre', path: '/app/cofre', Icon: Lock },
+  { id: 'cofre', label: 'Cofre', path: '/app/cofre', Icon: PiggyBank },
   { id: 'cartoes', label: 'Cartões', path: '/app/cartoes', Icon: CreditCard },
   { id: 'mensal', label: 'Mensal', path: '/app/mensal', Icon: BarChart3 },
   { id: 'manual', label: 'Manual', path: '/app/manual', Icon: FileText },

@@ -311,11 +311,21 @@ export function TransactionList({
                 <div className="text-gray-900 font-semibold text-base px-3 border-l border-gray-200">{formatCurrency(currentTransaction.value)}</div>
                 {showStatus && currentTransaction.status && (
                   <div className={`px-4 py-2.5 border-l border-gray-200 dark:border-gray-700 flex items-center gap-3 rounded-lg ${getStatusColor(currentTransaction.status)}`}>
-                    <label className="relative inline-flex items-center cursor-pointer">
+                    <label 
+                      className="relative inline-flex items-center cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const newStatus = currentTransaction.status === 'paid' ? 'pending' : 'paid';
+                        updateTransaction(currentTransaction.id, {
+                          status: newStatus,
+                        });
+                      }}
+                    >
                       <input
                         type="checkbox"
                         checked={currentTransaction.status === 'paid'}
                         onChange={(e) => {
+                          e.stopPropagation();
                           const newStatus = e.target.checked ? 'paid' : 'pending';
                           updateTransaction(currentTransaction.id, {
                             status: newStatus,
@@ -324,7 +334,7 @@ export function TransactionList({
                         className="sr-only"
                         title={currentTransaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
                       />
-                      <div className="relative w-5 h-5 flex items-center justify-center">
+                      <div className="relative w-5 h-5 flex items-center justify-center pointer-events-none">
                         <div className={`absolute inset-0 w-5 h-5 border-2 rounded-md transition-all duration-300 ease-out shadow-sm hover:shadow-md hover:scale-110 ${
                           currentTransaction.status === 'paid' 
                             ? 'border-[#22C55E] bg-[#22C55E] hover:border-[#16A34A] hover:bg-[#16A34A]' 
@@ -393,11 +403,21 @@ export function TransactionList({
                 )}
                 {showStatus && currentTransaction.status && (
                   <div className={`px-4 py-2.5 border-l border-gray-200 dark:border-gray-700 flex items-center gap-3 rounded-lg ${getStatusColor(currentTransaction.status)}`}>
-                    <label className="relative inline-flex items-center cursor-pointer">
+                    <label 
+                      className="relative inline-flex items-center cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const newStatus = currentTransaction.status === 'paid' ? 'pending' : 'paid';
+                        updateTransaction(currentTransaction.id, {
+                          status: newStatus,
+                        });
+                      }}
+                    >
                       <input
                         type="checkbox"
                         checked={currentTransaction.status === 'paid'}
                         onChange={(e) => {
+                          e.stopPropagation();
                           const newStatus = e.target.checked ? 'paid' : 'pending';
                           updateTransaction(currentTransaction.id, {
                             status: newStatus,
@@ -406,7 +426,7 @@ export function TransactionList({
                         className="sr-only"
                         title={currentTransaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
                       />
-                      <div className="relative w-5 h-5 flex items-center justify-center">
+                      <div className="relative w-5 h-5 flex items-center justify-center pointer-events-none">
                         <div className={`absolute inset-0 w-5 h-5 border-2 rounded-md transition-all duration-300 ease-out shadow-sm hover:shadow-md hover:scale-110 ${
                           currentTransaction.status === 'paid' 
                             ? 'border-[#22C55E] bg-[#22C55E] hover:border-[#16A34A] hover:bg-[#16A34A]' 
@@ -526,11 +546,21 @@ export function TransactionList({
                   </div>
                   {showStatus && currentTransaction.status && (
                     <div className={`flex items-center gap-3 pt-2 border-t border-gray-100 dark:border-gray-700 px-3 py-2.5 rounded-lg ${getStatusColor(currentTransaction.status)}`}>
-                      <label className="relative inline-flex items-center cursor-pointer">
+                      <label 
+                        className="relative inline-flex items-center cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const newStatus = currentTransaction.status === 'paid' ? 'pending' : 'paid';
+                          updateTransaction(currentTransaction.id, {
+                            status: newStatus,
+                          });
+                        }}
+                      >
                         <input
                           type="checkbox"
                           checked={currentTransaction.status === 'paid'}
                           onChange={(e) => {
+                            e.stopPropagation();
                             updateTransaction(currentTransaction.id, {
                               status: e.target.checked ? 'paid' : 'pending',
                             });
@@ -538,7 +568,7 @@ export function TransactionList({
                           className="sr-only"
                           title={currentTransaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
                         />
-                        <div className={`relative w-5 h-5 flex items-center justify-center ${currentTransaction.status === 'paid' ? 'border-[#22C55E] bg-[#22C55E]' : ''}`}>
+                        <div className={`relative w-5 h-5 flex items-center justify-center pointer-events-none ${currentTransaction.status === 'paid' ? 'border-[#22C55E] bg-[#22C55E]' : ''}`}>
                           <div className={`absolute inset-0 w-5 h-5 bg-white dark:bg-gray-800 border-2 rounded-md transition-all duration-300 ease-out shadow-sm hover:shadow-md hover:scale-110 ${
                             currentTransaction.status === 'paid' 
                               ? 'border-[#22C55E] bg-[#22C55E] hover:border-[#16A34A] hover:bg-[#16A34A]' 
@@ -595,11 +625,21 @@ export function TransactionList({
                   </div>
                   {showStatus && currentTransaction.status && (
                     <div className={`flex items-center gap-3 pt-2 border-t border-gray-100 dark:border-gray-700 px-3 py-2.5 rounded-lg ${getStatusColor(currentTransaction.status)}`}>
-                      <label className="relative inline-flex items-center cursor-pointer">
+                      <label 
+                        className="relative inline-flex items-center cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const newStatus = currentTransaction.status === 'paid' ? 'pending' : 'paid';
+                          updateTransaction(currentTransaction.id, {
+                            status: newStatus,
+                          });
+                        }}
+                      >
                         <input
                           type="checkbox"
                           checked={currentTransaction.status === 'paid'}
                           onChange={(e) => {
+                            e.stopPropagation();
                             updateTransaction(currentTransaction.id, {
                               status: e.target.checked ? 'paid' : 'pending',
                             });
@@ -607,7 +647,7 @@ export function TransactionList({
                           className="sr-only"
                           title={currentTransaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
                         />
-                        <div className={`relative w-5 h-5 flex items-center justify-center ${currentTransaction.status === 'paid' ? 'border-[#22C55E] bg-[#22C55E]' : ''}`}>
+                        <div className={`relative w-5 h-5 flex items-center justify-center pointer-events-none ${currentTransaction.status === 'paid' ? 'border-[#22C55E] bg-[#22C55E]' : ''}`}>
                           <div className={`absolute inset-0 w-5 h-5 bg-white dark:bg-gray-800 border-2 rounded-md transition-all duration-300 ease-out shadow-sm hover:shadow-md hover:scale-110 ${
                             currentTransaction.status === 'paid' 
                               ? 'border-[#22C55E] bg-[#22C55E] hover:border-[#16A34A] hover:bg-[#16A34A]' 

@@ -26,10 +26,12 @@ export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
   
   // Estado para controlar o mês/ano quando usar filtro de mês
   const [selectedMonth, setSelectedMonth] = useState<number>(() => {
+    if (typeof window === 'undefined') return 0;
     const now = new Date();
     return now.getMonth();
   });
   const [selectedYear, setSelectedYear] = useState<number>(() => {
+    if (typeof window === 'undefined') return new Date().getFullYear();
     const now = new Date();
     return now.getFullYear();
   });

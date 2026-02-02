@@ -4,8 +4,7 @@ import { useState, useMemo } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
 import { PremiumContentCard } from '@/components/finance/PremiumContentCard';
 import { PremiumCard } from '@/components/finance/PremiumCard';
-import { PageHeader } from '@/components/finance/PageHeader';
-import { Lock, DollarSign, Target, Calendar, Plus, Edit, Trash2, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
+import { DollarSign, Target, Calendar, Plus, Edit, Trash2, ArrowDownCircle, ArrowUpCircle, Lock } from 'lucide-react';
 import { AddVaultSheet } from '@/components/finance/AddVaultSheet';
 import { VaultDepositWithdrawSheet } from '@/components/finance/VaultDepositWithdrawSheet';
 
@@ -19,23 +18,35 @@ export default function CofrePage() {
   
   // Estado para controlar o mês/ano visualizado
   const [selectedMonth, setSelectedMonth] = useState<number>(() => {
+    if (typeof window === 'undefined') return 0;
     const now = new Date();
     return now.getMonth();
   });
   const [selectedYear, setSelectedYear] = useState<number>(() => {
+    if (typeof window === 'undefined') return 2024;
     const now = new Date();
     return now.getFullYear();
   });
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: state.profile.currency || 'BRL',
-    }).format(value);
+    if (typeof window === 'undefined' || !state?.profile) {
+      return 'R$ 0,00';
+    }
+    try {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: state.profile.currency || 'BRL',
+      }).format(value);
+    } catch (e) {
+      return 'R$ 0,00';
+    }
   };
 
   // Calcular depósitos do mês selecionado
   const monthlyDeposits = useMemo(() => {
+    if (typeof window === 'undefined' || !state?.categories || !state?.transactions) {
+      return 0;
+    }
     const vaultCategory = state.categories.find(c => c.name === '🔐 Cofre');
     if (!vaultCategory) return 0;
 
@@ -71,6 +82,7 @@ export default function CofrePage() {
   // Função para navegar entre meses
   const handleMonthChange = (direction: 'prev' | 'next' | 'current') => {
     if (direction === 'current') {
+      if (typeof window === 'undefined') return;
       const now = new Date();
       setSelectedMonth(now.getMonth());
       setSelectedYear(now.getFullYear());
@@ -104,6 +116,7 @@ export default function CofrePage() {
   ];
 
   const isCurrentMonth = useMemo(() => {
+    if (typeof window === 'undefined') return false;
     const now = new Date();
     return selectedMonth === now.getMonth() && selectedYear === now.getFullYear();
   }, [selectedMonth, selectedYear]);
@@ -144,17 +157,52 @@ export default function CofrePage() {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Header */}
         <div className="mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
-          <PageHeader
-            title="🔐 Cofre"
-            icon={Lock}
-            onFilterChange={() => {}}
-          />
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-            Dinheiro separado para te dar segurança
-          </p>
-          <p className="text-xs text-gray-500 dark:text-gray-500 mt-2 italic">
-            🔐 Dinheiro no cofre não é gasto, é proteção
-          </p>
+          <div className="flex items-center gap-4 mb-4">
+            {/* Logo SVG de Economia */}
+            <div className="flex-shrink-0">
+              <svg className="w-12 h-12 md:w-16 md:h-16" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="economyGradient" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#10B981"/>
+                    <stop offset="1" stopColor="#059669"/>
+                  </linearGradient>
+                </defs>
+                {/* Círculo de fundo */}
+                <circle cx="50" cy="50" r="45" fill="url(#economyGradient)" opacity="0.1"/>
+                {/* Corpo do porquinho */}
+                <ellipse cx="50" cy="55" rx="30" ry="28" fill="url(#economyGradient)"/>
+                {/* Cabeça do porquinho */}
+                <ellipse cx="50" cy="40" rx="22" ry="20" fill="url(#economyGradient)"/>
+                {/* Orelha esquerda */}
+                <ellipse cx="35" cy="30" rx="8" ry="12" fill="url(#economyGradient)" transform="rotate(-20 35 30)"/>
+                {/* Orelha direita */}
+                <ellipse cx="65" cy="30" rx="8" ry="12" fill="url(#economyGradient)" transform="rotate(20 65 30)"/>
+                {/* Olho esquerdo */}
+                <circle cx="43" cy="38" r="3" fill="white"/>
+                {/* Olho direito */}
+                <circle cx="57" cy="38" r="3" fill="white"/>
+                {/* Focinho */}
+                <ellipse cx="50" cy="45" rx="6" ry="5" fill="white" opacity="0.8"/>
+                {/* Narinas */}
+                <circle cx="48" cy="45" r="1" fill="#059669"/>
+                <circle cx="52" cy="45" r="1" fill="#059669"/>
+                {/* Moeda no porquinho */}
+                <circle cx="50" cy="60" r="8" fill="#FCD34D" stroke="#F59E0B" strokeWidth="1.5"/>
+                <text x="50" y="64" textAnchor="middle" fill="#F59E0B" fontSize="8" fontWeight="bold">R$</text>
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">
+                Cofre
+              </h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                Dinheiro separado para te dar segurança
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-2 italic">
+                🔐 Dinheiro no cofre não é gasto, é proteção
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Seletor de Mês/Ano */}

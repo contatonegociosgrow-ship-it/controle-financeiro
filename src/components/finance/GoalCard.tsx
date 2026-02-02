@@ -31,12 +31,13 @@ export function GoalCard({ goal }: GoalCardProps) {
   };
 
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
+    // Converter diretamente de ISO (YYYY-MM-DD) para BR (DD/MM/YYYY) sem usar Date para evitar problemas de fuso horário
+    if (!dateStr) return '';
+    if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      const [year, month, day] = dateStr.split('-');
+      return `${day}/${month}/${year}`;
+    }
+    return dateStr;
   };
 
   const percentage = goal.targetValue > 0 
@@ -63,27 +64,104 @@ export function GoalCard({ goal }: GoalCardProps) {
   };
 
   return (
-    <CardUI className="shadow-md hover:shadow-lg transition-shadow">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">{goal.title}</h3>
-          <div className="flex items-center gap-4 text-sm text-gray-600">
+    <CardUI className="shadow-md hover:shadow-lg transition-shadow h-full flex flex-col">
+      {/* Cabeçalho */}
+      <div className="mb-4">
+        <h3 className="text-xl lg:text-2xl font-bold text-gray-900 dark:text-white mb-3">{goal.title}</h3>
+        
+        {/* Datas */}
+        <div className="flex flex-wrap gap-3 text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-4">
+          <div className="flex items-center gap-1.5">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
             <span>Início: {formatDate(goal.startDate)}</span>
-            {goal.deadline && <span>Prazo: {formatDate(goal.deadline)}</span>}
+          </div>
+          {goal.deadline && (
+            <div className="flex items-center gap-1.5">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>Prazo: {formatDate(goal.deadline)}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Barra de progresso */}
+      <div className="mb-5 flex-1">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex-1 min-w-0">
+            <div className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white mb-1">
+              {formatCurrency(goal.currentValue)} de {formatCurrency(goal.targetValue)}
+            </div>
+            <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+              Contribuição mensal: <span className="font-semibold text-gray-700 dark:text-gray-300">{formatCurrency(goal.monthlyContribution)}</span>
+            </div>
+          </div>
+          <div className="ml-4 flex-shrink-0">
+            <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">
+              {percentage.toFixed(1)}%
+            </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 lg:h-5 overflow-hidden shadow-inner">
+          <div
+            className={`h-full rounded-full transition-all duration-500 ${
+              goal.status === 'completed' ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-blue-500 to-blue-600'
+            }`}
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Formulário de contribuição */}
+      {showContribute && goal.status === 'active' && (
+        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col gap-3">
+            <input
+              type="number"
+              step="0.01"
+              value={contributionValue}
+              onChange={(e) => setContributionValue(e.target.value)}
+              placeholder="Digite o valor"
+              className="w-full min-h-[44px] px-4 py-2.5 bg-white dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-lg text-base text-gray-900 dark:text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={handleContribute}
+                className="flex-1 min-h-[44px] px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 active:from-blue-800 active:to-blue-900 transition-all text-sm font-semibold touch-manipulation shadow-md hover:shadow-lg"
+              >
+                Adicionar
+              </button>
+              <button
+                onClick={() => {
+                  setShowContribute(false);
+                  setContributionValue('');
+                }}
+                className="flex-1 min-h-[44px] px-4 py-2.5 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-600 dark:to-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:from-gray-300 hover:to-gray-400 dark:hover:from-gray-500 dark:hover:to-gray-600 active:from-gray-400 active:to-gray-500 dark:active:from-gray-400 dark:active:to-gray-500 transition-all text-sm touch-manipulation shadow-sm hover:shadow-md"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Botões de ação */}
+      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <div className="flex flex-col sm:flex-row gap-2">
           {goal.status === 'active' && (
             <>
               <button
                 onClick={() => setShowContribute(!showContribute)}
-                className="min-h-[44px] px-4 py-2.5 md:px-3 md:py-1 text-sm md:text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation font-medium"
+                className="flex-1 min-h-[44px] px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 active:from-blue-800 active:to-blue-900 transition-all text-sm font-semibold touch-manipulation shadow-md hover:shadow-lg"
               >
                 Contribuir
               </button>
               <button
                 onClick={handleComplete}
-                className="min-h-[44px] px-4 py-2.5 md:px-3 md:py-1 text-sm md:text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 active:bg-green-800 transition-colors touch-manipulation font-medium"
+                className="flex-1 min-h-[44px] px-4 py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 active:from-green-800 active:to-green-900 transition-all text-sm font-semibold touch-manipulation shadow-md hover:shadow-lg"
               >
                 Concluir
               </button>
@@ -91,67 +169,13 @@ export function GoalCard({ goal }: GoalCardProps) {
           )}
           <button
             onClick={handleDelete}
-            className="min-h-[44px] px-4 py-2.5 md:px-3 md:py-1 text-sm md:text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 active:bg-red-800 transition-colors touch-manipulation font-medium"
+            className="flex-1 min-h-[44px] px-4 py-2.5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg hover:from-red-700 hover:to-red-800 active:from-red-800 active:to-red-900 transition-all text-sm font-semibold touch-manipulation shadow-md hover:shadow-lg"
             aria-label="Excluir meta"
           >
             Excluir
           </button>
         </div>
       </div>
-
-      {/* Barra de progresso */}
-      <div className="mb-3">
-        <div className="flex items-center justify-between text-sm mb-1">
-          <span className="text-gray-700 font-medium">
-            {formatCurrency(goal.currentValue)} de {formatCurrency(goal.targetValue)}
-          </span>
-          <span className="text-gray-600">{percentage.toFixed(1)}%</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-300 ${
-              goal.status === 'completed' ? 'bg-green-500' : 'bg-blue-500'
-            }`}
-            style={{ width: `${percentage}%` }}
-          />
-        </div>
-      </div>
-
-      {/* Contribuição mensal */}
-      <div className="text-sm text-gray-600 mb-2">
-        Contribuição mensal: <span className="font-semibold">{formatCurrency(goal.monthlyContribution)}</span>
-      </div>
-
-      {/* Formulário de contribuição */}
-      {showContribute && goal.status === 'active' && (
-        <div className="mt-3 pt-3 border-t border-gray-200">
-          <div className="flex gap-2">
-            <input
-              type="number"
-              step="0.01"
-              value={contributionValue}
-              onChange={(e) => setContributionValue(e.target.value)}
-              placeholder="Valor"
-              className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-            />
-            <button
-              onClick={handleContribute}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold"
-            >
-              Adicionar
-            </button>
-            <button
-              onClick={() => {
-                setShowContribute(false);
-                setContributionValue('');
-              }}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
     </CardUI>
   );
 }
