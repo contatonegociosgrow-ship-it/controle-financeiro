@@ -514,7 +514,6 @@ function parseBasicFallback(text: string): Array<{
     'spotify': 'Assinaturas',
     'assinatura': 'Assinaturas',
     'streaming': 'Assinaturas',
-    'amazon': 'Assinaturas',
     'prime': 'Assinaturas',
     'disney': 'Assinaturas',
     // Educação
