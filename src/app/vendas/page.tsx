@@ -66,7 +66,7 @@ export default function VendasPage() {
           <div className="flex justify-center lg:justify-center order-first lg:order-last">
             <div className="relative">
               <img 
-                src="/falando.png" 
+                src="/inicio.webp" 
                 alt="Organize suas finanças falando" 
                 className="w-full max-w-lg xl:max-w-xl h-auto rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-300"
               />
