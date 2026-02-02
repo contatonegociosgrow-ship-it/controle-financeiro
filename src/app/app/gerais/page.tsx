@@ -271,18 +271,103 @@ export default function GeraisPage() {
                 </svg>
               </button>
               
-              <div className="text-center min-w-[200px]">
-                <div className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {monthNames[selectedMonth]} {selectedYear}
-                </div>
-                {!isCurrentMonth && (
-                  <button
-                    onClick={() => handleMonthChange('current')}
-                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1"
+              <div className="flex items-center gap-3 text-center min-w-[200px]">
+                {/* Ícone SVG de Calendário Moderno */}
+                <div className="flex-shrink-0 relative">
+                  <svg 
+                    className="w-8 h-8 text-blue-600 dark:text-blue-400 drop-shadow-sm" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    xmlns="http://www.w3.org/2000/svg"
                   >
-                    Voltar para mês atual
-                  </button>
-                )}
+                    {/* Gradiente para o calendário */}
+                    <defs>
+                      <linearGradient id="calendarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="currentColor" stopOpacity="1" />
+                        <stop offset="100%" stopColor="currentColor" stopOpacity="0.8" />
+                      </linearGradient>
+                    </defs>
+                    
+                    {/* Corpo do calendário */}
+                    <rect 
+                      x="4" 
+                      y="5" 
+                      width="16" 
+                      height="16" 
+                      rx="2.5" 
+                      stroke="url(#calendarGradient)" 
+                      strokeWidth="1.8" 
+                      fill="none"
+                      className="drop-shadow-sm"
+                    />
+                    
+                    {/* Linha divisória do cabeçalho */}
+                    <path 
+                      d="M4 11h16" 
+                      stroke="url(#calendarGradient)" 
+                      strokeWidth="1.8" 
+                      strokeLinecap="round"
+                    />
+                    
+                    {/* Anéis de encadernação */}
+                    <path 
+                      d="M8 2v3M16 2v3" 
+                      stroke="url(#calendarGradient)" 
+                      strokeWidth="2" 
+                      strokeLinecap="round"
+                    />
+                    
+                    {/* Pontos representando dias */}
+                    <circle 
+                      cx="8" 
+                      cy="15.5" 
+                      r="1.2" 
+                      fill="url(#calendarGradient)"
+                      opacity="0.9"
+                    />
+                    <circle 
+                      cx="12" 
+                      cy="15.5" 
+                      r="1.2" 
+                      fill="url(#calendarGradient)"
+                      opacity="0.9"
+                    />
+                    <circle 
+                      cx="16" 
+                      cy="15.5" 
+                      r="1.2" 
+                      fill="url(#calendarGradient)"
+                      opacity="0.9"
+                    />
+                    <circle 
+                      cx="8" 
+                      cy="19" 
+                      r="1.2" 
+                      fill="url(#calendarGradient)"
+                      opacity="0.7"
+                    />
+                    <circle 
+                      cx="12" 
+                      cy="19" 
+                      r="1.2" 
+                      fill="url(#calendarGradient)"
+                      opacity="0.7"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {monthNames[selectedMonth]} {selectedYear}
+                  </div>
+                  {!isCurrentMonth && (
+                    <button
+                      onClick={() => handleMonthChange('current')}
+                      className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1"
+                    >
+                      Voltar para mês atual
+                    </button>
+                  )}
+                </div>
               </div>
               
               <button

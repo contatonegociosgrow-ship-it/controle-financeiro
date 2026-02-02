@@ -426,6 +426,8 @@ function parseFinancialText(text: string): Array<{
     'compra': 'Compras',
     'shopping': 'Compras',
     'loja': 'Compras',
+    'shopee': 'Compras',
+    'shoppe': 'Compras',
     'magazine luiza': 'Compras',
     'magalu': 'Compras',
     'americanas': 'Compras',

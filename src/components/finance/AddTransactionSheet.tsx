@@ -280,6 +280,8 @@ export function AddTransactionSheet({
     addTransaction(transactionData);
 
     setSaved(true);
+    
+    // Aguardar um pouco para garantir que o estado foi atualizado
     setTimeout(() => {
       onClose();
       setSaved(false);
@@ -395,7 +397,9 @@ export function AddTransactionSheet({
         };
       });
 
-      // Criar cada transação
+      // Preparar todas as transações primeiro
+      const transactionsToAdd: any[] = [];
+      
       for (const transaction of transactions) {
         // Capturar o tipo ANTES das verificações condicionais para evitar type narrowing
         const transactionType: 'income' | 'expense_fixed' | 'expense_variable' | 'savings' | 'debt' = transaction.type;
@@ -461,8 +465,16 @@ export function AddTransactionSheet({
           }
         }
 
-        addTransaction(transactionData);
+        transactionsToAdd.push(transactionData);
       }
+
+      // Adicionar todas as transações
+      transactionsToAdd.forEach(transactionData => {
+        addTransaction(transactionData);
+      });
+
+      // Aguardar um pouco para garantir que o estado foi atualizado e os componentes re-renderizem
+      await new Promise(resolve => setTimeout(resolve, 150));
 
       // Mostrar mensagem de sucesso
       const successMessage = transactions.length === 1 
@@ -475,12 +487,13 @@ export function AddTransactionSheet({
       setParsedTransactions([]);
       setInterpretedItens([]);
       
-      // Mostrar alerta de sucesso
-      alert(successMessage);
+      // Fechar o modal primeiro para permitir que os componentes re-renderizem
+      onClose();
       
+      // Mostrar alerta de sucesso após fechar o modal
       setTimeout(() => {
-        onClose();
-      }, 300);
+        alert(successMessage);
+      }, 100);
     } catch (error: any) {
       console.error('Erro ao salvar transações:', error);
       alert('Erro ao salvar os lançamentos. Tente novamente.');

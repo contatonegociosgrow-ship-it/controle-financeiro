@@ -16,14 +16,41 @@ export default function MensalPage() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('app:dateFilter:mensal');
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          if (parsed.year) setSelectedYear(parsed.year);
-          if (parsed.month !== undefined) setSelectedMonth(parsed.month);
+          
+          // Verificar se o mês salvo é anterior ao mês atual
+          // Se o mês/ano salvos são anteriores ao atual, sempre usar o mês atual
+          if (parsed.year !== undefined && parsed.month !== undefined) {
+            const savedMonth = parsed.month;
+            const savedYear = parsed.year;
+            
+            // Se o mês/ano salvos são anteriores ao atual, usar o mês atual
+            if (savedYear < currentYear || 
+                (savedYear === currentYear && savedMonth < currentMonth)) {
+              setSelectedYear(currentYear);
+              setSelectedMonth(currentMonth);
+            } else {
+              setSelectedYear(savedYear);
+              setSelectedMonth(savedMonth);
+            }
+          } else {
+            setSelectedYear(currentYear);
+            setSelectedMonth(currentMonth);
+          }
         } catch (e) {
           console.error('Erro ao carregar preferências:', e);
+          setSelectedYear(currentYear);
+          setSelectedMonth(currentMonth);
         }
+      } else {
+        setSelectedYear(currentYear);
+        setSelectedMonth(currentMonth);
       }
     }
   }, []);

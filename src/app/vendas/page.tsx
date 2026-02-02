@@ -358,7 +358,7 @@ export default function VendasPage() {
       <section className="px-4 py-20 sm:py-24 bg-gradient-to-br from-blue-600 to-indigo-700 text-white">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-8">
-            Tudo isso por apenas R$ 37,90
+            Tudo isso por apenas ••••
           </h2>
 
           <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 sm:p-10 mb-10 border border-white/20">

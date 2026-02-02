@@ -38,17 +38,44 @@ export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem(storageKey);
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      
       if (saved) {
         try {
           const parsed = JSON.parse(saved);
           setFilterType(parsed.filterType || 'month');
           if (parsed.customStartDate) setCustomStartDate(parsed.customStartDate);
           if (parsed.customEndDate) setCustomEndDate(parsed.customEndDate);
-          if (parsed.selectedMonth !== undefined) setSelectedMonth(parsed.selectedMonth);
-          if (parsed.selectedYear !== undefined) setSelectedYear(parsed.selectedYear);
+          
+          // Verificar se o mês salvo é anterior ao mês atual
+          // Se o mês/ano salvos são anteriores ao atual, sempre usar o mês atual
+          if (parsed.selectedMonth !== undefined && parsed.selectedYear !== undefined) {
+            const savedMonth = parsed.selectedMonth;
+            const savedYear = parsed.selectedYear;
+            
+            // Se o mês/ano salvos são anteriores ao atual, usar o mês atual
+            if (savedYear < currentYear || 
+                (savedYear === currentYear && savedMonth < currentMonth)) {
+              setSelectedMonth(currentMonth);
+              setSelectedYear(currentYear);
+            } else {
+              setSelectedMonth(savedMonth);
+              setSelectedYear(savedYear);
+            }
+          } else {
+            setSelectedMonth(currentMonth);
+            setSelectedYear(currentYear);
+          }
         } catch (e) {
           console.error('Erro ao carregar filtro de data:', e);
+          setSelectedMonth(currentMonth);
+          setSelectedYear(currentYear);
         }
+      } else {
+        setSelectedMonth(currentMonth);
+        setSelectedYear(currentYear);
       }
     }
   }, [storageKey]);
@@ -265,19 +292,95 @@ export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
               </svg>
             </button>
             
-            <div className="text-center min-w-[200px]">
-              <div className="text-sm font-semibold text-gray-900 dark:text-white">
-                {monthNames[selectedMonth]} {selectedYear}
-              </div>
-              {!isCurrentMonth && (
-                <button
-                  type="button"
-                  onClick={() => handleMonthChange('current')}
-                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1"
+            <div className="flex items-center gap-2 text-center min-w-[200px]">
+              {/* Ícone SVG de Calendário Moderno */}
+              <div className="flex-shrink-0">
+                <svg 
+                  className="w-6 h-6 text-blue-600 dark:text-blue-400 drop-shadow-sm" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  Voltar para mês atual
-                </button>
-              )}
+                  <defs>
+                    <linearGradient id="calendarGradientFilter" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="currentColor" stopOpacity="1" />
+                      <stop offset="100%" stopColor="currentColor" stopOpacity="0.8" />
+                    </linearGradient>
+                  </defs>
+                  <rect 
+                    x="4" 
+                    y="5" 
+                    width="16" 
+                    height="16" 
+                    rx="2.5" 
+                    stroke="url(#calendarGradientFilter)" 
+                    strokeWidth="1.8" 
+                    fill="none"
+                    className="drop-shadow-sm"
+                  />
+                  <path 
+                    d="M4 11h16" 
+                    stroke="url(#calendarGradientFilter)" 
+                    strokeWidth="1.8" 
+                    strokeLinecap="round"
+                  />
+                  <path 
+                    d="M8 2v3M16 2v3" 
+                    stroke="url(#calendarGradientFilter)" 
+                    strokeWidth="2" 
+                    strokeLinecap="round"
+                  />
+                  <circle 
+                    cx="8" 
+                    cy="15.5" 
+                    r="1.2" 
+                    fill="url(#calendarGradientFilter)"
+                    opacity="0.9"
+                  />
+                  <circle 
+                    cx="12" 
+                    cy="15.5" 
+                    r="1.2" 
+                    fill="url(#calendarGradientFilter)"
+                    opacity="0.9"
+                  />
+                  <circle 
+                    cx="16" 
+                    cy="15.5" 
+                    r="1.2" 
+                    fill="url(#calendarGradientFilter)"
+                    opacity="0.9"
+                  />
+                  <circle 
+                    cx="8" 
+                    cy="19" 
+                    r="1.2" 
+                    fill="url(#calendarGradientFilter)"
+                    opacity="0.7"
+                  />
+                  <circle 
+                    cx="12" 
+                    cy="19" 
+                    r="1.2" 
+                    fill="url(#calendarGradientFilter)"
+                    opacity="0.7"
+                  />
+                </svg>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-900 dark:text-white">
+                  {monthNames[selectedMonth]} {selectedYear}
+                </div>
+                {!isCurrentMonth && (
+                  <button
+                    type="button"
+                    onClick={() => handleMonthChange('current')}
+                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1"
+                  >
+                    Voltar para mês atual
+                  </button>
+                )}
+              </div>
             </div>
             
             <button

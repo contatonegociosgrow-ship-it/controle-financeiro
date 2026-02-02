@@ -12,6 +12,11 @@ const categoryExamples: Record<string, { description: string; category: string; 
     { description: 'Lanche', category: 'Restaurante', emoji: '🍔' },
     { description: 'Café', category: 'Restaurante', emoji: '☕' },
     { description: 'Delivery', category: 'Restaurante', emoji: '🍕' },
+    { description: 'Shopee', category: 'Compras', emoji: '🛍️' },
+    { description: 'Mercado Livre', category: 'Compras', emoji: '📦' },
+    { description: 'Amazon', category: 'Compras', emoji: '📦' },
+    { description: 'Magazine Luiza', category: 'Compras', emoji: '🛒' },
+    { description: 'Americanas', category: 'Compras', emoji: '🛒' },
     { description: 'Iphone', category: 'Compras', emoji: '📱' },
     { description: 'Notebook', category: 'Compras', emoji: '💻' },
     { description: 'Fone de ouvido', category: 'Compras', emoji: '🎧' },
@@ -100,6 +105,25 @@ const categoryExamples: Record<string, { description: string; category: string; 
 };
 
 export function CategoryExamples({ type, onExampleClick }: CategoryExamplesProps) {
-  // Componente desabilitado - exemplos removidos
-  return null;
+  const examples = categoryExamples[type] || [];
+  
+  if (examples.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="mt-2 flex flex-wrap gap-2">
+      {examples.map((example, index) => (
+        <button
+          key={index}
+          type="button"
+          onClick={() => onExampleClick?.(example.description, example.category)}
+          className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+        >
+          {example.emoji && <span className="mr-1">{example.emoji}</span>}
+          {example.description}
+        </button>
+      ))}
+    </div>
+  );
 }
