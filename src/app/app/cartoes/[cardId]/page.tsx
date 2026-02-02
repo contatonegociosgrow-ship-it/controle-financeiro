@@ -10,6 +10,7 @@ import { AddCardSheet } from '@/components/finance/AddCardSheet';
 import { getCurrentInvoice, getFutureInvoices, getAvailableLimit } from '@/lib/cardUtils';
 import { getBankInfo } from '@/lib/bankColors';
 import { ImportExtractSheet } from '@/components/finance/ImportExtractSheet';
+import { AddTransactionSheet } from '@/components/finance/AddTransactionSheet';
 import { CreditCard } from 'lucide-react';
 
 export default function CardDetailPage() {
@@ -18,6 +19,7 @@ export default function CardDetailPage() {
   const { state, isInitialized, removeCard } = useFinanceStore();
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const [isImportSheetOpen, setIsImportSheetOpen] = useState(false);
+  const [isAddTransactionOpen, setIsAddTransactionOpen] = useState(false);
 
   const cardId = params.cardId as string;
   const card = state.cards.find((c) => c.id === cardId);
@@ -41,6 +43,9 @@ export default function CardDetailPage() {
 
   const currentInvoice = useMemo(() => {
     if (!card) return null;
+    // Filtrar apenas transações do cartão para debug
+    const cardTransactions = state.transactions.filter(t => t.cardId === card.id);
+    console.log('Transações do cartão:', cardTransactions);
     return getCurrentInvoice(card, state.transactions);
   }, [card, state.transactions]);
 
@@ -186,6 +191,19 @@ export default function CardDetailPage() {
                 </div>
               </div>
 
+              {/* Botão de importar extrato */}
+              <div className="mb-4">
+                <button
+                  onClick={() => setIsImportSheetOpen(true)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-lg transition-all shadow-sm hover:shadow-md text-sm"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  Importar Extrato (PDF, CSV, etc)
+                </button>
+              </div>
+
               {/* Extrato */}
               {currentInvoice.items.length === 0 ? (
                 <p className="text-center text-gray-500 dark:text-gray-400 py-4 text-sm">
@@ -233,6 +251,77 @@ export default function CardDetailPage() {
           </div>
         )}
 
+        {/* Todas as Transações do Cartão */}
+        <div className="mb-8">
+          <CardUI className="shadow-md hover:shadow-lg transition-shadow">
+            <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-2">
+                <div className="w-1 h-6 bg-purple-600 dark:bg-purple-400 rounded-full"></div>
+                <h3 className="text-base text-gray-900 dark:text-white font-semibold tracking-tight">
+                  Todas as Transações
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsImportSheetOpen(true)}
+                className="px-3 py-1.5 text-xs bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition-all shadow-sm"
+              >
+                + Importar
+              </button>
+            </div>
+
+            {(() => {
+              const allCardTransactions = state.transactions
+                .filter((t) => t.cardId === cardId && t.type === 'expense_variable')
+                .sort((a, b) => b.date.localeCompare(a.date));
+
+              if (allCardTransactions.length === 0) {
+                return (
+                  <p className="text-center text-gray-500 dark:text-gray-400 py-4 text-sm">
+                    Nenhuma transação encontrada. Importe um extrato para começar.
+                  </p>
+                );
+              }
+
+              return (
+                <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                  <div className="grid grid-cols-12 gap-2 py-2 px-3 bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                    <div className="col-span-3">Data</div>
+                    <div className="col-span-5">Descrição</div>
+                    <div className="col-span-2 text-center">Parcela</div>
+                    <div className="col-span-2 text-right">Valor</div>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {allCardTransactions.map((transaction) => {
+                      const category = state.categories.find((c) => c.id === transaction.categoryId);
+                      const description = transaction.notes || category?.name || 'Sem descrição';
+                      
+                      return (
+                        <div
+                          key={transaction.id}
+                          className="grid grid-cols-12 gap-2 py-3 px-3 border-b border-gray-200 dark:border-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-800/50 last:border-b-0"
+                        >
+                          <div className="col-span-3 text-gray-600 dark:text-gray-400">
+                            {formatDate(transaction.date)}
+                          </div>
+                          <div className="col-span-5 text-gray-900 dark:text-white truncate" title={description}>
+                            {description}
+                          </div>
+                          <div className="col-span-2 text-center text-gray-600 dark:text-gray-400">
+                            {transaction.installments ? `${transaction.installments.current}/${transaction.installments.total}` : '-'}
+                          </div>
+                          <div className="col-span-2 text-right font-semibold text-gray-900 dark:text-white">
+                            {formatCurrency(transaction.value)}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
+          </CardUI>
+        </div>
+
         {/* Faturas Futuras */}
         {futureInvoices.length > 0 && (
           <div className="mb-8">
@@ -242,6 +331,19 @@ export default function CardDetailPage() {
                 <h3 className="text-base text-gray-900 dark:text-white font-semibold tracking-tight">
                   Faturas Futuras
                 </h3>
+              </div>
+
+              {/* Botão de importar extrato */}
+              <div className="mb-4">
+                <button
+                  onClick={() => setIsImportSheetOpen(true)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold rounded-lg transition-all shadow-sm hover:shadow-md text-sm"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  Importar Extrato (PDF, CSV, etc)
+                </button>
               </div>
 
               <div className="space-y-4">
@@ -272,6 +374,14 @@ export default function CardDetailPage() {
       {/* Botões flutuantes */}
       <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 flex flex-col gap-2 sm:gap-3 z-40">
         <button
+          onClick={() => setIsAddTransactionOpen(true)}
+          className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center text-3xl font-light transition-all hover:scale-110"
+          aria-label="Adicionar transação manual"
+          title="Adicionar transação manual"
+        >
+          +
+        </button>
+        <button
           onClick={() => setIsImportSheetOpen(true)}
           className="w-14 h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-2xl flex items-center justify-center text-xl font-semibold transition-all hover:scale-110"
           aria-label="Importar extrato"
@@ -281,7 +391,7 @@ export default function CardDetailPage() {
         </button>
         <button
           onClick={() => setIsEditSheetOpen(true)}
-          className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center text-xl font-semibold transition-all hover:scale-110"
+          className="w-14 h-14 bg-gray-600 hover:bg-gray-700 text-white rounded-full shadow-2xl flex items-center justify-center text-xl font-semibold transition-all hover:scale-110"
           aria-label="Editar cartão"
           title="Editar cartão"
         >
@@ -298,6 +408,12 @@ export default function CardDetailPage() {
         isOpen={isImportSheetOpen}
         onClose={() => setIsImportSheetOpen(false)}
         cardId={cardId}
+      />
+      <AddTransactionSheet
+        isOpen={isAddTransactionOpen}
+        onClose={() => setIsAddTransactionOpen(false)}
+        defaultType="expense_variable"
+        defaultCardId={cardId}
       />
     </div>
   );

@@ -12,6 +12,7 @@ type AddTransactionSheetProps = {
   onClose: () => void;
   defaultType?: 'income' | 'expense_fixed' | 'expense_variable' | 'debt' | 'savings';
   startWithVoice?: boolean;
+  defaultCardId?: string; // ID do cartão para pré-selecionar
 };
 
 export function AddTransactionSheet({
@@ -19,6 +20,7 @@ export function AddTransactionSheet({
   onClose,
   defaultType,
   startWithVoice = false,
+  defaultCardId,
 }: AddTransactionSheetProps) {
   const { state, addTransaction, addPerson, addCategory } = useFinanceStore();
   const pathname = usePathname();
@@ -124,6 +126,8 @@ export function AddTransactionSheet({
       setDescription('');
       setValue('');
       setCategoryId('');
+      // Pré-selecionar cartão se fornecido
+      setCardId(defaultCardId || '');
       const today = new Date();
       const todayBR = formatDateToBR(getTodayISO());
       setDate(todayBR);
@@ -154,7 +158,7 @@ export function AddTransactionSheet({
       // Resetar quando fechar
       setShowOnlyVoice(false);
     }
-  }, [isOpen, pathname, startWithVoice]);
+  }, [isOpen, pathname, startWithVoice, defaultCardId]);
 
   const handleExampleClick = (exampleDescription: string, categoryName: string) => {
     // Preencher descrição
@@ -733,15 +737,20 @@ export function AddTransactionSheet({
               </div>
 
               <div>
-                <label className="flex items-center gap-2 text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={hasInstallments}
-                  onChange={(e) => setHasInstallments(e.target.checked)}
-                  className="w-5 h-5 rounded-md border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-all duration-200 checked:bg-blue-600 checked:border-blue-600 hover:border-blue-400 shadow-sm"
-                />
-                <span className="normal-case">Parcelado</span>
-              </label>
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={hasInstallments}
+                      onChange={(e) => setHasInstallments(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-gradient-to-r peer-checked:from-blue-600 peer-checked:to-blue-700 shadow-inner"></div>
+                  </div>
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    Parcelado
+                  </span>
+                </label>
               {hasInstallments && (
                 <div className="mt-2 flex flex-wrap gap-2 items-center">
                   <input
@@ -1019,14 +1028,19 @@ export function AddTransactionSheet({
             {/* Campo de parcelas - apenas se tipo for "Parcela" */}
             {transactionType === 'Parcela' && (
               <div>
-                <label className="flex items-center gap-2 text-xs text-gray-600 mb-1.5 font-semibold uppercase tracking-wide cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={hasInstallments}
-                    onChange={(e) => setHasInstallments(e.target.checked)}
-                    className="w-5 h-5 rounded-md border-2 border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0 cursor-pointer transition-all duration-200 checked:bg-blue-600 checked:border-blue-600 hover:border-blue-400 shadow-sm"
-                  />
-                  <span className="normal-case">Parcelado</span>
+                <label className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={hasInstallments}
+                      onChange={(e) => setHasInstallments(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-gradient-to-r peer-checked:from-blue-600 peer-checked:to-blue-700 shadow-inner"></div>
+                  </div>
+                  <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    Parcelado
+                  </span>
                 </label>
                 {hasInstallments && (
                   <div className="mt-2">
