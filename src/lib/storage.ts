@@ -1,5 +1,10 @@
 type FinanceState = {
-  meta: { schemaVersion: number; updatedAt: number };
+  meta: { 
+    schemaVersion: number; 
+    updatedAt: number;
+    lastRecurringExpensesMonth?: number;
+    lastRecurringExpensesYear?: number;
+  };
   profile: { 
     name: string; 
     currency: 'BRL' | 'USD' | 'EUR';
@@ -71,6 +76,16 @@ type FinanceState = {
     targetValue?: number; // opcional
     createdAt: number;
   }[];
+  recurringExpenses: {
+    id: string;
+    name: string;
+    value: number;
+    categoryId: string;
+    dueDay: number; // dia do mês (1-31)
+    notes?: string;
+    isActive: boolean;
+    createdAt: number;
+  }[];
   settings: { theme: 'dark' | 'light' };
 };
 
@@ -80,6 +95,8 @@ const defaultState: FinanceState = {
   meta: {
     schemaVersion: 1,
     updatedAt: Date.now(),
+    lastRecurringExpensesMonth: undefined,
+    lastRecurringExpensesYear: undefined,
   },
   profile: {
     name: '',
@@ -93,12 +110,13 @@ const defaultState: FinanceState = {
   transactions: [],
   goals: [],
   debts: [],
-  investments: [],
-  vaults: [],
-  settings: {
-    theme: 'light',
-  },
-};
+    investments: [],
+    vaults: [],
+    recurringExpenses: [],
+    settings: {
+      theme: 'light',
+    },
+  };
 
 let saveTimeout: NodeJS.Timeout | null = null;
 
@@ -264,6 +282,7 @@ export function loadState(): FinanceState {
     debts: state.debts ?? [],
     investments: state.investments ?? [],
     vaults: state.vaults ?? [],
+    recurringExpenses: state.recurringExpenses ?? [],
     transactions: migratedTransactions,
     categories: categories,
     settings: {

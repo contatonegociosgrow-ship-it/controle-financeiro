@@ -247,7 +247,7 @@ export default function GeraisPage() {
   }
 
   return (
-    <div className="min-h-screen pb-24 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-950">
+    <div className="min-h-screen pb-24">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Header Section */}
         <div className="mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
@@ -259,113 +259,112 @@ export default function GeraisPage() {
         </div>
 
         {/* Seletor de Mês/Ano */}
-        <div className="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-3">
+        <div className="mb-6 bg-gradient-to-r from-white to-blue-50/30 dark:from-gray-800 dark:to-blue-950/30 rounded-2xl shadow-lg border border-blue-100/50 dark:border-blue-900/50 p-5 backdrop-blur-sm relative overflow-hidden">
+          {/* Efeito de brilho decorativo */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 dark:bg-blue-500/5 rounded-full blur-2xl -mr-16 -mt-16"></div>
+          
+          <div className="flex items-center justify-between flex-wrap gap-4 relative z-10">
+            <div className="flex items-center gap-4">
               <button
                 onClick={() => handleMonthChange('prev')}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2.5 bg-white/80 dark:bg-gray-700/80 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-gray-200 dark:border-gray-600 rounded-xl transition-all hover:scale-105 hover:shadow-md active:scale-95"
                 aria-label="Mês anterior"
                 title="Mês anterior"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
               
-              <div className="flex items-center gap-3 text-center min-w-[200px]">
+              <div className="flex items-center gap-4 text-center min-w-[220px]">
                 {/* Ícone SVG de Calendário Moderno */}
                 <div className="flex-shrink-0 relative">
-                  <svg 
-                    className="w-8 h-8 text-blue-600 dark:text-blue-400 drop-shadow-sm" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    {/* Gradiente para o calendário */}
-                    <defs>
-                      <linearGradient id="calendarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="currentColor" stopOpacity="1" />
-                        <stop offset="100%" stopColor="currentColor" stopOpacity="0.8" />
-                      </linearGradient>
-                    </defs>
-                    
-                    {/* Corpo do calendário */}
-                    <rect 
-                      x="4" 
-                      y="5" 
-                      width="16" 
-                      height="16" 
-                      rx="2.5" 
-                      stroke="url(#calendarGradient)" 
-                      strokeWidth="1.8" 
-                      fill="none"
-                      className="drop-shadow-sm"
-                    />
-                    
-                    {/* Linha divisória do cabeçalho */}
-                    <path 
-                      d="M4 11h16" 
-                      stroke="url(#calendarGradient)" 
-                      strokeWidth="1.8" 
-                      strokeLinecap="round"
-                    />
-                    
-                    {/* Anéis de encadernação */}
-                    <path 
-                      d="M8 2v3M16 2v3" 
-                      stroke="url(#calendarGradient)" 
-                      strokeWidth="2" 
-                      strokeLinecap="round"
-                    />
-                    
-                    {/* Pontos representando dias */}
-                    <circle 
-                      cx="8" 
-                      cy="15.5" 
-                      r="1.2" 
-                      fill="url(#calendarGradient)"
-                      opacity="0.9"
-                    />
-                    <circle 
-                      cx="12" 
-                      cy="15.5" 
-                      r="1.2" 
-                      fill="url(#calendarGradient)"
-                      opacity="0.9"
-                    />
-                    <circle 
-                      cx="16" 
-                      cy="15.5" 
-                      r="1.2" 
-                      fill="url(#calendarGradient)"
-                      opacity="0.9"
-                    />
-                    <circle 
-                      cx="8" 
-                      cy="19" 
-                      r="1.2" 
-                      fill="url(#calendarGradient)"
-                      opacity="0.7"
-                    />
-                    <circle 
-                      cx="12" 
-                      cy="19" 
-                      r="1.2" 
-                      fill="url(#calendarGradient)"
-                      opacity="0.7"
-                    />
-                  </svg>
+                  <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+                    <svg 
+                      className="w-7 h-7 text-white drop-shadow-sm" 
+                      viewBox="0 0 24 24" 
+                      fill="none" 
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      {/* Corpo do calendário */}
+                      <rect 
+                        x="4" 
+                        y="5" 
+                        width="16" 
+                        height="16" 
+                        rx="2.5" 
+                        stroke="currentColor" 
+                        strokeWidth="1.8" 
+                        fill="none"
+                      />
+                      
+                      {/* Linha divisória do cabeçalho */}
+                      <path 
+                        d="M4 11h16" 
+                        stroke="currentColor" 
+                        strokeWidth="1.8" 
+                        strokeLinecap="round"
+                      />
+                      
+                      {/* Anéis de encadernação */}
+                      <path 
+                        d="M8 2v3M16 2v3" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round"
+                      />
+                      
+                      {/* Pontos representando dias */}
+                      <circle 
+                        cx="8" 
+                        cy="15.5" 
+                        r="1.2" 
+                        fill="currentColor"
+                        opacity="0.9"
+                      />
+                      <circle 
+                        cx="12" 
+                        cy="15.5" 
+                        r="1.2" 
+                        fill="currentColor"
+                        opacity="0.9"
+                      />
+                      <circle 
+                        cx="16" 
+                        cy="15.5" 
+                        r="1.2" 
+                        fill="currentColor"
+                        opacity="0.9"
+                      />
+                      <circle 
+                        cx="8" 
+                        cy="19" 
+                        r="1.2" 
+                        fill="currentColor"
+                        opacity="0.7"
+                      />
+                      <circle 
+                        cx="12" 
+                        cy="19" 
+                        r="1.2" 
+                        fill="currentColor"
+                        opacity="0.7"
+                      />
+                    </svg>
+                  </div>
                 </div>
                 <div>
-                  <div className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
                     {monthNames[selectedMonth]} {selectedYear}
                   </div>
                   {!isCurrentMonth && (
                     <button
                       onClick={() => handleMonthChange('current')}
-                      className="text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1"
+                      className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 mt-1.5 transition-colors flex items-center gap-1 group"
                     >
+                      <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                      </svg>
                       Voltar para mês atual
                     </button>
                   )}
@@ -374,19 +373,24 @@ export default function GeraisPage() {
               
               <button
                 onClick={() => handleMonthChange('next')}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-2.5 bg-white/80 dark:bg-gray-700/80 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-gray-200 dark:border-gray-600 rounded-xl transition-all hover:scale-105 hover:shadow-md active:scale-95"
                 aria-label="Próximo mês"
                 title="Próximo mês"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
             </div>
             
             {!isCurrentMonth && (
-              <div className="text-sm text-gray-500 dark:text-gray-400">
-                Visualizando mês anterior
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <svg className="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                  Visualizando mês anterior
+                </span>
               </div>
             )}
           </div>
@@ -453,18 +457,20 @@ export default function GeraisPage() {
             />
 
             {/* Card Economias */}
-            <PremiumCard
-              title="Economias"
-              value={totals.savings}
-              percentage={state.profile.monthlyIncome > 0 ? totals.savingsPercentage : undefined}
-              icon={PiggyBank}
-              gradientFrom="from-blue-600"
-              gradientTo="to-blue-700"
-              onClick={() => setTypeFilter('savings')}
-              formatCurrency={formatCurrency}
-              showProgress={state.profile.monthlyIncome > 0}
-              progressValue={totals.savingsPercentage}
-            />
+            <div className="col-span-2 md:col-span-1">
+              <PremiumCard
+                title="Economias"
+                value={totals.savings}
+                percentage={state.profile.monthlyIncome > 0 ? totals.savingsPercentage : undefined}
+                icon={PiggyBank}
+                gradientFrom="from-blue-600"
+                gradientTo="to-blue-700"
+                onClick={() => setTypeFilter('savings')}
+                formatCurrency={formatCurrency}
+                showProgress={state.profile.monthlyIncome > 0}
+                progressValue={totals.savingsPercentage}
+              />
+            </div>
           </div>
         </div>
 
@@ -540,45 +546,42 @@ export default function GeraisPage() {
       </div>
 
       {/* Botões flutuantes */}
-      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 flex flex-col gap-2 sm:gap-3 z-40">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 flex flex-col gap-3 z-40">
         {/* Botão Balance */}
         <button
           onClick={() => setIsBalanceOpen(true)}
-          className="w-12 h-12 sm:w-14 sm:h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-2xl flex items-center justify-center text-lg sm:text-xl font-semibold transition-all hover:scale-110"
+          className="w-14 h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-2xl flex items-center justify-center text-xl font-semibold transition-all hover:scale-110 active:scale-95"
           aria-label="Ver carteira"
           title="Ver carteira e saldo"
         >
           💰
         </button>
         
-        {/* Botões de ação */}
-        <div className="flex gap-2">
-          {/* Botão Microfone */}
-          <button
-            onClick={() => {
-              setVoiceMode(true);
-              setIsSheetOpen(true);
-            }}
-            className="w-12 h-12 sm:w-14 sm:h-14 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-2xl flex items-center justify-center text-xl sm:text-2xl transition-all hover:scale-110"
-            aria-label="Falar e registrar"
-            title="Falar e registrar transação"
-          >
-            🎙️
-          </button>
-          
-          {/* Botão Adicionar */}
-          <button
-            onClick={() => {
-              setVoiceMode(false);
-              setIsSheetOpen(true);
-            }}
-            className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl sm:text-3xl font-light transition-all hover:scale-110"
-            aria-label="Adicionar transação"
-            title="Adicionar transação manualmente"
-          >
-            +
-          </button>
-        </div>
+        {/* Botão Microfone */}
+        <button
+          onClick={() => {
+            setVoiceMode(true);
+            setIsSheetOpen(true);
+          }}
+          className="w-14 h-14 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all hover:scale-110 active:scale-95"
+          aria-label="Falar e registrar"
+          title="Falar e registrar transação"
+        >
+          🎙️
+        </button>
+        
+        {/* Botão Adicionar */}
+        <button
+          onClick={() => {
+            setVoiceMode(false);
+            setIsSheetOpen(true);
+          }}
+          className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center text-3xl font-light transition-all hover:scale-110 active:scale-95"
+          aria-label="Adicionar transação"
+          title="Adicionar transação manualmente"
+        >
+          +
+        </button>
       </div>
 
       <AddTransactionSheet 

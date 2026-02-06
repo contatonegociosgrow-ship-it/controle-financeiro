@@ -138,6 +138,24 @@ type FinanceContextType = {
   depositToVault: (vaultId: string, value: number) => void;
   withdrawFromVault: (vaultId: string, value: number) => void;
   investFromVault: (vaultId: string, investmentId: string, value: number) => void;
+  // Despesas Recorrentes
+  addRecurringExpense: (expense: {
+    name: string;
+    value: number;
+    categoryId: string;
+    dueDay: number;
+    notes?: string;
+  }) => string;
+  updateRecurringExpense: (id: string, updates: Partial<{
+    name: string;
+    value: number;
+    categoryId: string;
+    dueDay: number;
+    notes?: string;
+    isActive: boolean;
+  }>) => void;
+  removeRecurringExpense: (id: string) => void;
+  generateMonthlyRecurringExpenses: () => void;
 };
 
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
@@ -607,6 +625,215 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  // Função auxiliar para criar transação de uma despesa recorrente
+  const createTransactionFromRecurringExpense = useCallback((recurring: {
+    id: string;
+    name: string;
+    value: number;
+    categoryId: string;
+    dueDay: number;
+    notes?: string;
+  }, targetMonth?: number, targetYear?: number): Transaction | null => {
+    const now = new Date();
+    const currentMonth = targetMonth !== undefined ? targetMonth : now.getMonth();
+    const currentYear = targetYear !== undefined ? targetYear : now.getFullYear();
+    
+    // Formatar data como YYYY-MM-DD
+    const formatDate = (year: number, month: number, day: number): string => {
+      const monthStr = String(month + 1).padStart(2, '0');
+      const dayStr = String(day).padStart(2, '0');
+      return `${year}-${monthStr}-${dayStr}`;
+    };
+
+    // Calcular data de vencimento (dia do mês)
+    const dueDay = Math.min(recurring.dueDay, new Date(currentYear, currentMonth + 1, 0).getDate());
+    const dueDate = formatDate(currentYear, currentMonth, dueDay);
+    
+    // Data da transação: usar dia atual se estiver no mês alvo, senão usar dia 1
+    const today = new Date();
+    const isCurrentMonth = currentMonth === today.getMonth() && currentYear === today.getFullYear();
+    const transactionDay = isCurrentMonth ? today.getDate() : 1;
+    const transactionDate = formatDate(currentYear, currentMonth, transactionDay);
+
+    return {
+      id: crypto.randomUUID(),
+      value: recurring.value,
+      type: 'expense_fixed',
+      categoryId: recurring.categoryId,
+      date: transactionDate,
+      dueDate: dueDate,
+      notes: recurring.notes || recurring.name,
+      status: 'pending',
+      createdAt: Date.now(),
+    };
+  }, []);
+
+  // Despesas Recorrentes
+  const addRecurringExpense = useCallback((expense: {
+    name: string;
+    value: number;
+    categoryId: string;
+    dueDay: number;
+    notes?: string;
+  }) => {
+    const newRecurringExpense = {
+      id: crypto.randomUUID(),
+      ...expense,
+      isActive: true,
+      createdAt: Date.now(),
+    };
+    
+    setState((prev) => {
+      // Criar transação para o mês atual imediatamente
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      
+      // Verificar se já existe uma transação para este mês
+      const existingTransaction = prev.transactions.find((t) => {
+        if (t.type !== 'expense_fixed') return false;
+        const transactionDate = new Date(t.date);
+        const isSameMonth = transactionDate.getMonth() === currentMonth && 
+                           transactionDate.getFullYear() === currentYear;
+        if (!isSameMonth) return false;
+        
+        const transactionDueDate = t.dueDate ? new Date(t.dueDate) : transactionDate;
+        const isSameDay = transactionDueDate.getDate() === newRecurringExpense.dueDay;
+        const isSameValue = Math.abs(t.value - newRecurringExpense.value) < 0.01;
+        const isSameCategory = t.categoryId === newRecurringExpense.categoryId;
+        
+        return isSameDay && isSameValue && isSameCategory;
+      });
+
+      let newTransaction: Transaction | null = null;
+      if (!existingTransaction) {
+        newTransaction = createTransactionFromRecurringExpense(newRecurringExpense, currentMonth, currentYear);
+      }
+
+      return {
+        ...prev,
+        recurringExpenses: [...prev.recurringExpenses, newRecurringExpense],
+        transactions: newTransaction ? [...prev.transactions, newTransaction] : prev.transactions,
+      };
+    });
+    
+    return newRecurringExpense.id;
+  }, [createTransactionFromRecurringExpense]);
+
+  const updateRecurringExpense = useCallback((id: string, updates: Partial<{
+    name: string;
+    value: number;
+    categoryId: string;
+    dueDay: number;
+    notes?: string;
+    isActive: boolean;
+  }>) => {
+    setState((prev) => ({
+      ...prev,
+      recurringExpenses: prev.recurringExpenses.map((e) =>
+        e.id === id ? { ...e, ...updates } : e
+      ),
+    }));
+  }, []);
+
+  const removeRecurringExpense = useCallback((id: string) => {
+    setState((prev) => ({
+      ...prev,
+      recurringExpenses: prev.recurringExpenses.filter((e) => e.id !== id),
+    }));
+  }, []);
+
+  const generateMonthlyRecurringExpenses = useCallback(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    
+    // Formatar data atual como YYYY-MM-DD
+    const formatDate = (year: number, month: number, day: number): string => {
+      const monthStr = String(month + 1).padStart(2, '0');
+      const dayStr = String(day).padStart(2, '0');
+      return `${year}-${monthStr}-${dayStr}`;
+    };
+
+    setState((prev) => {
+      // Verificar se já foi gerado para este mês (usar uma marca no meta)
+      const lastGeneratedMonth = prev.meta?.lastRecurringExpensesMonth;
+      const lastGeneratedYear = prev.meta?.lastRecurringExpensesYear;
+      
+      if (lastGeneratedMonth === currentMonth && lastGeneratedYear === currentYear) {
+        // Já foi gerado para este mês
+        return prev;
+      }
+
+      const activeRecurringExpenses = prev.recurringExpenses.filter((e) => e.isActive);
+      const newTransactions: Transaction[] = [];
+
+      activeRecurringExpenses.forEach((recurring) => {
+        // Verificar se já existe uma transação para este mês para esta despesa recorrente
+        // Usar uma verificação mais flexível: mesmo valor, categoria e dia de vencimento
+        const existingTransaction = prev.transactions.find((t) => {
+          if (t.type !== 'expense_fixed') return false;
+          const transactionDate = new Date(t.date);
+          const isSameMonth = transactionDate.getMonth() === currentMonth && 
+                             transactionDate.getFullYear() === currentYear;
+          if (!isSameMonth) return false;
+          
+          // Verificar se a transação corresponde à despesa recorrente
+          const transactionDueDate = t.dueDate ? new Date(t.dueDate) : transactionDate;
+          const isSameDay = transactionDueDate.getDate() === recurring.dueDay;
+          const isSameValue = Math.abs(t.value - recurring.value) < 0.01; // Tolerância para valores decimais
+          const isSameCategory = t.categoryId === recurring.categoryId;
+          
+          return isSameDay && isSameValue && isSameCategory;
+        });
+
+        if (!existingTransaction) {
+          // Calcular data de vencimento (dia do mês atual)
+          const dueDay = Math.min(recurring.dueDay, new Date(currentYear, currentMonth + 1, 0).getDate());
+          const dueDate = formatDate(currentYear, currentMonth, dueDay);
+          
+          // Data da transação (usar dia 1 do mês)
+          const transactionDate = formatDate(currentYear, currentMonth, 1);
+
+          const newTransaction: Transaction = {
+            id: crypto.randomUUID(),
+            value: recurring.value,
+            type: 'expense_fixed',
+            categoryId: recurring.categoryId,
+            date: transactionDate,
+            dueDate: dueDate,
+            notes: recurring.notes || recurring.name,
+            status: 'pending',
+            createdAt: Date.now(),
+          };
+
+          newTransactions.push(newTransaction);
+        }
+      });
+
+      if (newTransactions.length > 0 || lastGeneratedMonth !== currentMonth || lastGeneratedYear !== currentYear) {
+        return {
+          ...prev,
+          transactions: [...prev.transactions, ...newTransactions],
+          meta: {
+            ...prev.meta,
+            lastRecurringExpensesMonth: currentMonth,
+            lastRecurringExpensesYear: currentYear,
+          },
+        };
+      }
+
+      return prev;
+    });
+  }, []);
+
+  // Gerar despesas recorrentes automaticamente no início de cada mês
+  useEffect(() => {
+    if (isInitialized) {
+      generateMonthlyRecurringExpenses();
+    }
+  }, [isInitialized, generateMonthlyRecurringExpenses]);
+
   return (
     <FinanceContext.Provider
       value={{
@@ -646,6 +873,10 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         depositToVault,
         withdrawFromVault,
         investFromVault,
+        addRecurringExpense,
+        updateRecurringExpense,
+        removeRecurringExpense,
+        generateMonthlyRecurringExpenses,
       }}
     >
       {children}

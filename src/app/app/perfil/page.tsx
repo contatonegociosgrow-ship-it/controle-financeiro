@@ -6,15 +6,17 @@ import { calculateFinancialHealth } from '@/lib/financialHealthUtils';
 import { PremiumContentCard } from '@/components/finance/PremiumContentCard';
 import { PremiumCard } from '@/components/finance/PremiumCard';
 import { PageHeader } from '@/components/finance/PageHeader';
-import { User, UserCircle, HeartPulse, FolderOpen, Download, CheckCircle2, AlertTriangle, XCircle, TrendingUp } from 'lucide-react';
+import { User, UserCircle, HeartPulse, FolderOpen, Download, CheckCircle2, AlertTriangle, XCircle, TrendingUp, Receipt } from 'lucide-react';
 import { BalanceModal } from '@/components/finance/BalanceModal';
 import { GoalCard } from '@/components/finance/GoalCard';
 import { DataExportImport } from '@/components/finance/DataExportImport';
 import { AddCategorySheet } from '@/components/finance/AddCategorySheet';
+import { AddRecurringExpenseSheet } from '@/components/finance/AddRecurringExpenseSheet';
+import { AccordionItem } from '@/components/finance/AccordionItem';
 import { getCategoryColor } from '@/lib/categoryColors';
 
 export default function PerfilPage() {
-  const { state, isInitialized, setProfile, setMonthlyIncome, removeCategory } = useFinanceStore();
+  const { state, isInitialized, setProfile, setMonthlyIncome, removeCategory, updateRecurringExpense, removeRecurringExpense } = useFinanceStore();
   const [isBalanceOpen, setIsBalanceOpen] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingIncome, setIsEditingIncome] = useState(false);
@@ -24,6 +26,8 @@ export default function PerfilPage() {
   const [walletValue, setWalletValue] = useState('');
   const [isCategorySheetOpen, setIsCategorySheetOpen] = useState(false);
   const [editingCategoryId, setEditingCategoryId] = useState<string | undefined>(undefined);
+  const [isRecurringExpenseSheetOpen, setIsRecurringExpenseSheetOpen] = useState(false);
+  const [editingRecurringExpenseId, setEditingRecurringExpenseId] = useState<string | null>(null);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -120,13 +124,14 @@ export default function PerfilPage() {
       <div className="max-w-7xl mx-auto px-4 py-6">
         <PageHeader title="Meu Perfil" icon={User} />
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Informações Pessoais */}
-          <PremiumContentCard
+          <AccordionItem
             title="Informações Pessoais"
             icon={UserCircle}
             gradientFrom="from-blue-600"
             gradientTo="to-blue-700"
+            defaultOpen={true}
           >
             <div className="space-y-4">
               {/* Nome */}
@@ -303,54 +308,56 @@ export default function PerfilPage() {
                 )}
               </div>
             </div>
-          </PremiumContentCard>
+          </AccordionItem>
 
           {/* Saúde Financeira */}
-          <div className={`bg-gradient-to-r ${healthData.status === 'excellent' ? 'from-green-600 to-green-700' : healthData.status === 'good' ? 'from-blue-600 to-blue-700' : healthData.status === 'warning' ? 'from-yellow-600 to-yellow-700' : 'from-red-600 to-red-700'} rounded-2xl p-6 text-white relative overflow-hidden shadow-lg hover:shadow-xl transition-all`}>
-            {/* Decorative circles */}
-            <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10" />
-            <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/10 rounded-full -ml-8 -mb-8" />
-            
-            <div className="relative z-10">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-bold mb-2 text-white">Saúde Financeira</h3>
-                  <div className="flex items-center gap-2 mb-2">
-                    {(() => {
-                      const StatusIcon = getStatusIcon(healthData.status);
-                      return <StatusIcon size={24} strokeWidth={2} className="text-white" />;
-                    })()}
-                    <span className="text-sm font-semibold text-white">{getStatusLabel(healthData.status)}</span>
-                    <span className="text-sm text-white/80">• Score: {healthData.score}/100</span>
-                  </div>
-                  <p className="text-sm text-white/90">{healthData.message}</p>
-                </div>
+          <AccordionItem
+            title="Saúde Financeira"
+            icon={HeartPulse}
+            gradientFrom={healthData.status === 'excellent' ? 'from-green-600' : healthData.status === 'good' ? 'from-blue-600' : healthData.status === 'warning' ? 'from-yellow-600' : 'from-red-600'}
+            gradientTo={healthData.status === 'excellent' ? 'to-green-700' : healthData.status === 'good' ? 'to-blue-700' : healthData.status === 'warning' ? 'to-yellow-700' : 'to-red-700'}
+            defaultOpen={true}
+          >
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                {(() => {
+                  const StatusIcon = getStatusIcon(healthData.status);
+                  return <StatusIcon size={24} strokeWidth={2} className="text-gray-700 dark:text-gray-300" />;
+                })()}
+                <span className="text-sm font-semibold text-gray-900 dark:text-white">{getStatusLabel(healthData.status)}</span>
+                <span className="text-sm text-gray-600 dark:text-gray-400">• Score: {healthData.score}/100</span>
               </div>
+              <p className="text-sm text-gray-700 dark:text-gray-300">{healthData.message}</p>
 
               {/* Barra de progresso do score */}
-              <div className="mb-4">
-                <div className="w-full bg-white/20 rounded-full h-3 overflow-hidden">
+              <div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
                   <div
-                    className="h-full bg-white/40 rounded-full transition-all duration-500"
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      healthData.status === 'excellent' ? 'bg-green-500' : 
+                      healthData.status === 'good' ? 'bg-blue-500' : 
+                      healthData.status === 'warning' ? 'bg-yellow-500' : 
+                      'bg-red-500'
+                    }`}
                     style={{ width: `${healthData.score}%` }}
                   />
                 </div>
               </div>
 
               {/* Estatísticas */}
-              <div className="grid grid-cols-2 gap-4 mb-4">
-                <div className="bg-white/20 rounded-lg p-3">
-                  <p className="text-xs text-white/80 mb-1">Comprometido</p>
-                  <p className="text-lg font-bold text-white">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Comprometido</p>
+                  <p className="text-lg font-bold text-gray-900 dark:text-white">
                     {formatCurrency(healthData.totalCommitted)}
                   </p>
-                  <p className="text-xs text-white/70">
+                  <p className="text-xs text-gray-500 dark:text-gray-500">
                     {healthData.expensePercentage.toFixed(1)}% do salário
                   </p>
                 </div>
-                <div className="bg-white/20 rounded-lg p-3">
-                  <p className="text-xs text-white/80 mb-1">Disponível</p>
-                  <p className={`text-lg font-bold ${healthData.availableMoney >= 0 ? 'text-green-200' : 'text-red-200'}`}>
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">Disponível</p>
+                  <p className={`text-lg font-bold ${healthData.availableMoney >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                     {formatCurrency(healthData.availableMoney)}
                   </p>
                 </div>
@@ -358,11 +365,11 @@ export default function PerfilPage() {
 
               {/* Recomendações */}
               {healthData.recommendations.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-white/20">
-                  <h4 className="text-sm font-semibold text-white mb-2">Recomendações</h4>
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">Recomendações</h4>
                   <ul className="space-y-1">
                     {healthData.recommendations.map((rec, index) => (
-                      <li key={index} className="text-sm text-white/90 flex items-start gap-2">
+                      <li key={index} className="text-sm text-gray-700 dark:text-gray-300 flex items-start gap-2">
                         <span>•</span>
                         <span>{rec}</span>
                       </li>
@@ -372,45 +379,40 @@ export default function PerfilPage() {
               )}
 
               {/* Botão Balance */}
-              <div className="mt-4 pt-4 border-t border-white/20">
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button
                   onClick={() => setIsBalanceOpen(true)}
-                  className="w-full bg-white/20 hover:bg-white/30 text-white font-semibold py-3 rounded-lg transition-all shadow-sm hover:shadow-md"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-all shadow-sm hover:shadow-md"
                 >
                   Ver Saldo Detalhado
                 </button>
               </div>
             </div>
-          </div>
+          </AccordionItem>
 
-          {/* Metas Ativas */}
-          {activeGoals.length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Metas Ativas</h3>
+          {/* Metas */}
+          <AccordionItem
+            title={activeGoals.length > 0 ? `Metas Ativas (${activeGoals.length})` : 'Metas'}
+            icon={HeartPulse}
+            gradientFrom="from-pink-600"
+            gradientTo="to-pink-700"
+          >
+            {activeGoals.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {activeGoals.map((goal) => (
                   <GoalCard key={goal.id} goal={goal} />
                 ))}
               </div>
-            </div>
-          )}
-
-          {activeGoals.length === 0 && (
-            <PremiumContentCard
-              title="Nenhuma meta ativa"
-              icon={HeartPulse}
-              gradientFrom="from-gray-600"
-              gradientTo="to-gray-700"
-            >
+            ) : (
               <div className="text-center py-4">
                 <p className="text-gray-600 dark:text-gray-400 mb-2">Crie metas financeiras para acompanhar seus objetivos</p>
               </div>
-            </PremiumContentCard>
-          )}
+            )}
+          </AccordionItem>
 
           {/* Gerenciar Categorias */}
-          <PremiumContentCard
-            title="Categorias"
+          <AccordionItem
+            title={`Categorias (${state.categories.length})`}
             icon={FolderOpen}
             gradientFrom="from-purple-600"
             gradientTo="to-purple-700"
@@ -504,17 +506,126 @@ export default function PerfilPage() {
                 })}
               </div>
             )}
-          </PremiumContentCard>
+          </AccordionItem>
+
+          {/* Despesas Recorrentes */}
+          <AccordionItem
+            title={`Despesas Fixas Recorrentes (${state.recurringExpenses.length})`}
+            icon={Receipt}
+            gradientFrom="from-orange-600"
+            gradientTo="to-orange-700"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Configure despesas que serão criadas automaticamente todo mês
+              </p>
+              <button
+                onClick={() => {
+                  setEditingRecurringExpenseId(null);
+                  setIsRecurringExpenseSheetOpen(true);
+                }}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all text-sm shadow-sm hover:shadow-md"
+              >
+                + Nova Despesa Recorrente
+              </button>
+            </div>
+
+            {state.recurringExpenses.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-600 dark:text-gray-400 mb-2">Nenhuma despesa recorrente cadastrada</p>
+                <p className="text-sm text-gray-500 dark:text-gray-500">
+                  Configure despesas fixas que aparecerão automaticamente todo mês
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {state.recurringExpenses.map((expense) => {
+                  const category = state.categories.find((c) => c.id === expense.categoryId);
+                  const categoryName = category?.name || 'Sem categoria';
+                  
+                  return (
+                    <div
+                      key={expense.id}
+                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-semibold text-gray-900 dark:text-white truncate">
+                              {expense.name}
+                            </p>
+                            {!expense.isActive && (
+                              <span className="px-2 py-0.5 text-xs font-semibold bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
+                                Inativa
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {categoryName} • Vence no dia {expense.dueDay} • {formatCurrency(expense.value)}
+                          </p>
+                          {expense.notes && (
+                            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                              {expense.notes}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <button
+                          onClick={() => {
+                            updateRecurringExpense(expense.id, { isActive: !expense.isActive });
+                          }}
+                          className={`min-h-[44px] px-4 py-2.5 md:px-3 md:py-1.5 font-semibold rounded-lg transition-all text-sm touch-manipulation ${
+                            expense.isActive
+                              ? 'text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/20'
+                              : 'text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20'
+                          }`}
+                          title={expense.isActive ? 'Desativar' : 'Ativar'}
+                        >
+                          {expense.isActive ? '⏸️' : '▶️'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingRecurringExpenseId(expense.id);
+                            setIsRecurringExpenseSheetOpen(true);
+                          }}
+                          className="min-h-[44px] px-4 py-2.5 md:px-3 md:py-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 active:bg-blue-100 dark:active:bg-blue-900/30 font-semibold rounded-lg transition-all text-sm touch-manipulation"
+                          title="Editar despesa recorrente"
+                        >
+                          Editar
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (
+                              confirm(
+                                `Tem certeza que deseja excluir a despesa recorrente "${expense.name}"?`
+                              )
+                            ) {
+                              removeRecurringExpense(expense.id);
+                            }
+                          }}
+                          className="min-h-[44px] px-4 py-2.5 md:px-3 md:py-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 font-semibold rounded-lg transition-all text-sm touch-manipulation"
+                          title="Excluir despesa recorrente"
+                        >
+                          Excluir
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </AccordionItem>
 
           {/* Exportar/Importar Dados */}
-          <PremiumContentCard
+          <AccordionItem
             title="Exportar/Importar Dados"
             icon={Download}
             gradientFrom="from-teal-600"
             gradientTo="to-teal-700"
           >
             <DataExportImport />
-          </PremiumContentCard>
+          </AccordionItem>
         </div>
       </div>
 
@@ -526,6 +637,14 @@ export default function PerfilPage() {
           setEditingCategoryId(undefined);
         }}
         categoryId={editingCategoryId}
+      />
+      <AddRecurringExpenseSheet
+        isOpen={isRecurringExpenseSheetOpen}
+        onClose={() => {
+          setIsRecurringExpenseSheetOpen(false);
+          setEditingRecurringExpenseId(null);
+        }}
+        editingId={editingRecurringExpenseId}
       />
     </div>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import { useFinanceStore } from '@/lib/FinanceProvider';
 import { getCurrentMonthUnpaidInstallments } from '@/lib/debtUtils';
 
@@ -11,6 +12,7 @@ type BalanceModalProps = {
 
 export function BalanceModal({ isOpen, onClose }: BalanceModalProps) {
   const { state } = useFinanceStore();
+  const router = useRouter();
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -37,20 +39,36 @@ export function BalanceModal({ isOpen, onClose }: BalanceModalProps) {
       .filter((t) => ['expense_fixed', 'expense_variable', 'debt', 'savings'].includes(t.type))
       .reduce((sum, t) => sum + t.value, 0);
 
-    // Carteira atual = saldo inicial + ganhos - gastos
-    const currentWallet = initialWallet + totalIncome - totalExpenses;
+    // Total de investimentos (todos os investimentos)
+    const totalInvestments = state.investments.reduce((sum, inv) => sum + inv.value, 0);
 
-    // Despesas do mês atual
-    const monthlyExpenses = state.transactions
+    // Carteira atual = saldo inicial + ganhos - gastos - investimentos
+    const currentWallet = initialWallet + totalIncome - totalExpenses - totalInvestments;
+
+    // Despesas do mês atual (separadas por tipo)
+    const monthlyExpensesFixed = state.transactions
       .filter((t) => {
         const transactionDate = new Date(t.date);
         return (
-          ['expense_fixed', 'expense_variable', 'debt'].includes(t.type) &&
+          t.type === 'expense_fixed' &&
           transactionDate.getMonth() === currentMonth &&
           transactionDate.getFullYear() === currentYear
         );
       })
       .reduce((sum, t) => sum + t.value, 0);
+
+    const monthlyExpensesVariable = state.transactions
+      .filter((t) => {
+        const transactionDate = new Date(t.date);
+        return (
+          t.type === 'expense_variable' &&
+          transactionDate.getMonth() === currentMonth &&
+          transactionDate.getFullYear() === currentYear
+        );
+      })
+      .reduce((sum, t) => sum + t.value, 0);
+
+    const monthlyExpenses = monthlyExpensesFixed + monthlyExpensesVariable;
 
     // Metas ativas
     const monthlyGoals = state.goals
@@ -60,8 +78,19 @@ export function BalanceModal({ isOpen, onClose }: BalanceModalProps) {
     // Dívidas parceladas do mês
     const monthlyDebts = getCurrentMonthUnpaidInstallments(state.debts);
 
-    // Total comprometido
-    const totalCommitted = monthlyExpenses + monthlyGoals + monthlyDebts;
+    // Investimentos do mês atual
+    const monthlyInvestments = state.investments
+      .filter((inv) => {
+        const investmentDate = new Date(inv.applicationDate);
+        return (
+          investmentDate.getMonth() === currentMonth &&
+          investmentDate.getFullYear() === currentYear
+        );
+      })
+      .reduce((sum, inv) => sum + inv.value, 0);
+
+    // Total comprometido (incluindo investimentos)
+    const totalCommitted = monthlyExpenses + monthlyGoals + monthlyDebts + monthlyInvestments;
 
     // Saldo disponível do mês
     const availableBalance = monthlyIncome - totalCommitted;
@@ -73,8 +102,12 @@ export function BalanceModal({ isOpen, onClose }: BalanceModalProps) {
       totalIncome,
       totalExpenses,
       monthlyExpenses,
+      monthlyExpensesFixed,
+      monthlyExpensesVariable,
       monthlyGoals,
       monthlyDebts,
+      monthlyInvestments,
+      totalInvestments,
       totalCommitted,
       availableBalance,
     };
@@ -152,6 +185,10 @@ export function BalanceModal({ isOpen, onClose }: BalanceModalProps) {
                 <span className="text-red-600 dark:text-red-400">- Gastos totais:</span>
                 <span className="font-semibold text-red-600 dark:text-red-400">{formatCurrency(balanceData.totalExpenses)}</span>
               </div>
+              <div className="flex items-center justify-between text-xs md:text-sm">
+                <span className="text-purple-600 dark:text-purple-400">- Investimentos totais:</span>
+                <span className="font-semibold text-purple-600 dark:text-purple-400">{formatCurrency(balanceData.totalInvestments)}</span>
+              </div>
               <div className="pt-2 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
                 <span className="text-sm md:text-base font-bold text-gray-900 dark:text-white">Saldo atual:</span>
                 <span className={`text-xl md:text-2xl font-bold ${
@@ -193,20 +230,53 @@ export function BalanceModal({ isOpen, onClose }: BalanceModalProps) {
               Detalhamento
             </h3>
 
-            {/* Despesas */}
-            <div className="flex items-center justify-between p-2.5 md:p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-100 dark:border-red-800">
-              <div className="flex items-center gap-2">
-                <span className="text-lg md:text-xl">💸</span>
-                <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Despesas</span>
-              </div>
-              <span className="text-base md:text-lg font-bold text-red-600 dark:text-red-400">
-                {formatCurrency(balanceData.monthlyExpenses)}
-              </span>
-            </div>
+            {/* Despesas Fixas */}
+            {balanceData.monthlyExpensesFixed > 0 && (
+              <button
+                onClick={() => {
+                  onClose();
+                  router.push('/app/fixas');
+                }}
+                className="w-full flex items-center justify-between p-2.5 md:p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-100 dark:border-red-800 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-lg md:text-xl">📅</span>
+                  <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Despesas Fixas</span>
+                </div>
+                <span className="text-base md:text-lg font-bold text-red-600 dark:text-red-400">
+                  {formatCurrency(balanceData.monthlyExpensesFixed)}
+                </span>
+              </button>
+            )}
+
+            {/* Despesas Variáveis */}
+            {balanceData.monthlyExpensesVariable > 0 && (
+              <button
+                onClick={() => {
+                  onClose();
+                  router.push('/app/variaveis');
+                }}
+                className="w-full flex items-center justify-between p-2.5 md:p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-100 dark:border-orange-800 hover:bg-orange-100 dark:hover:bg-orange-900/30 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-lg md:text-xl">💸</span>
+                  <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Despesas Variáveis</span>
+                </div>
+                <span className="text-base md:text-lg font-bold text-orange-600 dark:text-orange-400">
+                  {formatCurrency(balanceData.monthlyExpensesVariable)}
+                </span>
+              </button>
+            )}
 
             {/* Metas */}
             {balanceData.monthlyGoals > 0 && (
-              <div className="flex items-center justify-between p-2.5 md:p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
+              <button
+                onClick={() => {
+                  onClose();
+                  router.push('/app/economias');
+                }}
+                className="w-full flex items-center justify-between p-2.5 md:p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
+              >
                 <div className="flex items-center gap-2">
                   <span className="text-lg md:text-xl">🎯</span>
                   <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Metas</span>
@@ -214,20 +284,45 @@ export function BalanceModal({ isOpen, onClose }: BalanceModalProps) {
                 <span className="text-base md:text-lg font-bold text-blue-600 dark:text-blue-400">
                   {formatCurrency(balanceData.monthlyGoals)}
                 </span>
-              </div>
+              </button>
             )}
 
             {/* Dívidas */}
             {balanceData.monthlyDebts > 0 && (
-              <div className="flex items-center justify-between p-2.5 md:p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-100 dark:border-orange-800">
+              <button
+                onClick={() => {
+                  onClose();
+                  router.push('/app/dividas');
+                }}
+                className="w-full flex items-center justify-between p-2.5 md:p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-100 dark:border-yellow-800 hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors cursor-pointer"
+              >
                 <div className="flex items-center gap-2">
                   <span className="text-lg md:text-xl">🔗</span>
                   <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Dívidas Parceladas</span>
                 </div>
-                <span className="text-base md:text-lg font-bold text-orange-600 dark:text-orange-400">
+                <span className="text-base md:text-lg font-bold text-yellow-600 dark:text-yellow-400">
                   {formatCurrency(balanceData.monthlyDebts)}
                 </span>
-              </div>
+              </button>
+            )}
+
+            {/* Investimentos */}
+            {balanceData.monthlyInvestments > 0 && (
+              <button
+                onClick={() => {
+                  onClose();
+                  router.push('/app/investimentos');
+                }}
+                className="w-full flex items-center justify-between p-2.5 md:p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-100 dark:border-purple-800 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-lg md:text-xl">📈</span>
+                  <span className="text-xs md:text-sm font-medium text-gray-700 dark:text-gray-300">Investimentos</span>
+                </div>
+                <span className="text-base md:text-lg font-bold text-purple-600 dark:text-purple-400">
+                  {formatCurrency(balanceData.monthlyInvestments)}
+                </span>
+              </button>
             )}
 
             {/* Total Comprometido */}
