@@ -104,6 +104,7 @@ export function importFromJSON(jsonData: string): FinanceState | null {
       debts: imported.debts || [],
       investments: imported.investments || [],
       vaults: imported.vaults || [],
+      recurringExpenses: imported.recurringExpenses || [],
       settings: {
         theme: imported.settings?.theme || 'light',
       },
