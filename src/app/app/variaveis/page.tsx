@@ -12,6 +12,7 @@ import { ShoppingCart, List } from 'lucide-react';
 export default function VariaveisPage() {
   const { isInitialized } = useFinanceStore();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [voiceMode, setVoiceMode] = useState(false);
   const [filter, setFilter] = useState('');
   const [dateStart, setDateStart] = useState<string | null>(null);
@@ -58,6 +59,11 @@ export default function VariaveisPage() {
             showCategory={true}
             showInstallments={true}
             columns={5}
+            onEdit={(id) => {
+              setEditingId(id);
+              setVoiceMode(false);
+              setIsSheetOpen(true);
+            }}
           />
         </PremiumContentCard>
       </div>
@@ -80,6 +86,7 @@ export default function VariaveisPage() {
         {/* Botão Adicionar */}
         <button
           onClick={() => {
+            setEditingId(null);
             setVoiceMode(false);
             setIsSheetOpen(true);
           }}
@@ -95,10 +102,12 @@ export default function VariaveisPage() {
         isOpen={isSheetOpen} 
         onClose={() => {
           setIsSheetOpen(false);
+          setEditingId(null);
           setVoiceMode(false);
         }}
         defaultType="expense_variable"
         startWithVoice={voiceMode}
+        editingId={editingId}
       />
     </div>
   );

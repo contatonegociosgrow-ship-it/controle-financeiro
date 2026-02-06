@@ -2,7 +2,7 @@
 
 import { useMemo, useCallback, useState } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Edit2 } from 'lucide-react';
 
 type TransactionListProps = {
   type?: 'income' | 'expense_fixed' | 'expense_variable' | 'debt' | 'savings' | 'all';
@@ -14,6 +14,7 @@ type TransactionListProps = {
   showInstallments?: boolean;
   showDueDate?: boolean;
   columns?: number;
+  onEdit?: (transactionId: string) => void;
 };
 
 import { getCategoryColor } from '@/lib/categoryColors';
@@ -42,6 +43,7 @@ export function TransactionList({
   showInstallments = false,
   showDueDate = false,
   columns = 5,
+  onEdit,
 }: TransactionListProps) {
   const { state, updateTransaction, addPerson, removeTransaction } = useFinanceStore();
   
@@ -170,7 +172,7 @@ export function TransactionList({
     else if (type === 'expense_variable') baseColumns = 5; // Descrição, Categoria, Data, Valor, Parcelas
     else if (type === 'debt') baseColumns = 4; // Data, Tipo, Valor, Status
     else baseColumns = columns;
-    return baseColumns + 1; // +1 para coluna de ações (remover)
+    return baseColumns + 1; // +1 para coluna de ações (editar/remover)
   }, [type, columns]);
 
   const handleRemove = useCallback((id: string) => {
@@ -201,7 +203,7 @@ export function TransactionList({
     } else if (type === 'debt') {
       headers = ['Data do Pagamento', 'Tipo de Lançamento', 'Valor', 'Status'];
     }
-    return [...headers, 'Ações'];
+    return [...headers, onEdit ? 'Ações' : 'Ação'];
   };
 
   const headers = getHeaders();
@@ -291,7 +293,17 @@ export function TransactionList({
                 <div className="text-gray-500 text-xs truncate px-3 border-l border-gray-200" title={currentTransaction.notes}>
                   {currentTransaction.notes || '-'}
                 </div>
-                <div className="px-3 border-l border-gray-200 flex items-center justify-center">
+                <div className="px-3 border-l border-gray-200 flex items-center justify-center gap-2">
+                  {onEdit && (
+                    <button
+                      onClick={() => onEdit(currentTransaction.id)}
+                      className="p-2 md:p-1.5 w-10 h-10 md:w-auto md:h-auto flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 active:bg-blue-100 dark:active:bg-blue-900/30 rounded transition-colors touch-manipulation"
+                      title="Editar transação"
+                      aria-label="Editar transação"
+                    >
+                      <Edit2 size={18} className="w-4 h-4" />
+                    </button>
+                  )}
                   <button
                     onClick={() => handleRemove(currentTransaction.id)}
                     className="p-2 md:p-1.5 w-10 h-10 md:w-auto md:h-auto flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 rounded transition-colors touch-manipulation"
@@ -354,7 +366,17 @@ export function TransactionList({
                     </span>
                   </div>
                 )}
-                <div className="px-3 border-l border-gray-200 flex items-center justify-center">
+                <div className="px-3 border-l border-gray-200 flex items-center justify-center gap-2">
+                  {onEdit && (
+                    <button
+                      onClick={() => onEdit(currentTransaction.id)}
+                      className="p-2 md:p-1.5 w-10 h-10 md:w-auto md:h-auto flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 active:bg-blue-100 dark:active:bg-blue-900/30 rounded transition-colors touch-manipulation"
+                      title="Editar transação"
+                      aria-label="Editar transação"
+                    >
+                      <Edit2 size={18} className="w-4 h-4" />
+                    </button>
+                  )}
                   <button
                     onClick={() => handleRemove(currentTransaction.id)}
                     className="p-2 md:p-1.5 w-10 h-10 md:w-auto md:h-auto flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 rounded transition-colors touch-manipulation"
@@ -446,7 +468,17 @@ export function TransactionList({
                     </span>
                   </div>
                 )}
-                <div className="px-3 border-l border-gray-200 flex items-center justify-center">
+                <div className="px-3 border-l border-gray-200 flex items-center justify-center gap-2">
+                  {onEdit && (
+                    <button
+                      onClick={() => onEdit(currentTransaction.id)}
+                      className="p-2 md:p-1.5 w-10 h-10 md:w-auto md:h-auto flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 active:bg-blue-100 dark:active:bg-blue-900/30 rounded transition-colors touch-manipulation"
+                      title="Editar transação"
+                      aria-label="Editar transação"
+                    >
+                      <Edit2 size={18} className="w-4 h-4" />
+                    </button>
+                  )}
                   <button
                     onClick={() => handleRemove(currentTransaction.id)}
                     className="p-2 md:p-1.5 w-10 h-10 md:w-auto md:h-auto flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 rounded transition-colors touch-manipulation"
@@ -462,15 +494,27 @@ export function TransactionList({
 
             {/* Mobile View - Cards */}
             <div className="md:hidden border-b border-gray-200 dark:border-gray-700 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 relative pr-14">
-              {/* Botão remover mobile */}
-              <button
-                onClick={() => handleRemove(currentTransaction.id)}
-                className="absolute top-3 right-3 w-10 h-10 flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 rounded-lg transition-colors touch-manipulation"
-                title="Remover transação"
-                aria-label="Remover transação"
-              >
-                <Trash2 size={18} />
-              </button>
+              {/* Botões de ação mobile */}
+              <div className="absolute top-3 right-3 flex gap-2">
+                {onEdit && (
+                  <button
+                    onClick={() => onEdit(currentTransaction.id)}
+                    className="w-10 h-10 flex items-center justify-center text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 active:bg-blue-100 dark:active:bg-blue-900/30 rounded-lg transition-colors touch-manipulation"
+                    title="Editar transação"
+                    aria-label="Editar transação"
+                  >
+                    <Edit2 size={18} />
+                  </button>
+                )}
+                <button
+                  onClick={() => handleRemove(currentTransaction.id)}
+                  className="w-10 h-10 flex items-center justify-center text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 active:bg-red-100 dark:active:bg-red-900/30 rounded-lg transition-colors touch-manipulation"
+                  title="Remover transação"
+                  aria-label="Remover transação"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
               {type === 'income' ? (
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-2">

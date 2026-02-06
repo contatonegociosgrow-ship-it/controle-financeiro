@@ -12,6 +12,7 @@ import { Receipt, List } from 'lucide-react';
 export default function FixasPage() {
   const { isInitialized } = useFinanceStore();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [voiceMode, setVoiceMode] = useState(false);
   const [filter, setFilter] = useState('');
   const [dateStart, setDateStart] = useState<string | null>(null);
@@ -59,6 +60,11 @@ export default function FixasPage() {
             showStatus={true}
             showDueDate={true}
             columns={5}
+            onEdit={(id) => {
+              setEditingId(id);
+              setVoiceMode(false);
+              setIsSheetOpen(true);
+            }}
           />
         </PremiumContentCard>
       </div>
@@ -81,6 +87,7 @@ export default function FixasPage() {
         {/* Botão Adicionar */}
         <button
           onClick={() => {
+            setEditingId(null);
             setVoiceMode(false);
             setIsSheetOpen(true);
           }}
@@ -96,10 +103,12 @@ export default function FixasPage() {
         isOpen={isSheetOpen} 
         onClose={() => {
           setIsSheetOpen(false);
+          setEditingId(null);
           setVoiceMode(false);
         }}
         defaultType="expense_fixed"
         startWithVoice={voiceMode}
+        editingId={editingId}
       />
     </div>
   );

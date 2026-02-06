@@ -13,6 +13,7 @@ type AddTransactionSheetProps = {
   defaultType?: 'income' | 'expense_fixed' | 'expense_variable' | 'debt' | 'savings';
   startWithVoice?: boolean;
   defaultCardId?: string; // ID do cartão para pré-selecionar
+  editingId?: string | null; // ID da transação para editar
 };
 
 export function AddTransactionSheet({
@@ -21,8 +22,9 @@ export function AddTransactionSheet({
   defaultType,
   startWithVoice = false,
   defaultCardId,
+  editingId,
 }: AddTransactionSheetProps) {
-  const { state, addTransaction, addPerson, addCategory } = useFinanceStore();
+  const { state, addTransaction, updateTransaction, addPerson, addCategory } = useFinanceStore();
   const pathname = usePathname();
 
   // Detectar tipo baseado na rota ou prop
@@ -119,46 +121,92 @@ export function AddTransactionSheet({
 
   // Categorias já são garantidas no FinanceProvider
 
+  // Buscar transação para edição
+  const editingTransaction = editingId ? state.transactions.find((t) => t.id === editingId) : null;
+
+  // Função helper para obter o título do formulário
+  const getFormTitle = () => {
+    if (editingTransaction) {
+      if (type === 'income') return 'Editar Ganho';
+      if (type === 'expense_fixed') return 'Editar Despesa Fixa';
+      if (type === 'expense_variable') return 'Editar Despesa Variável';
+      if (type === 'debt') return 'Editar Dívida';
+      if (type === 'savings') return 'Editar Economia';
+      return 'Editar Transação';
+    } else {
+      if (type === 'income') return 'Novo Ganho';
+      if (type === 'expense_fixed') return 'Nova Despesa Fixa';
+      if (type === 'expense_variable') return 'Nova Despesa Variável';
+      if (type === 'debt') return 'Nova Dívida';
+      if (type === 'savings') return 'Nova Economia';
+      return 'Nova Transação';
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
-      const detectedType = getDefaultType();
-      setType(detectedType);
-      setDescription('');
-      setValue('');
-      setCategoryId('');
-      // Pré-selecionar cartão se fornecido
-      setCardId(defaultCardId || '');
-      const today = new Date();
-      const todayBR = formatDateToBR(getTodayISO());
-      setDate(todayBR);
-      setDueDate(todayBR); // Pré-preencher data de vencimento com data atual
-      setStatus('pending');
-      setInstallments({ current: 1, total: 1 });
-      setHasInstallments(false);
-      setPersonId(null);
-      setPersonInput('');
-      setNotes('');
-      setTransactionType('Pagamento Mensal');
-      setMonthlyPaymentDate('');
-      setSaved(false);
-      // Se startWithVoice for true, mostrar apenas interface de voz
-      if (startWithVoice) {
-        setShowOnlyVoice(true);
-        setVoiceMode('idle');
-      } else {
+      if (editingTransaction) {
+        // Modo edição - preencher com dados da transação
+        setType(editingTransaction.type);
+        setDescription(editingTransaction.notes || '');
+        setValue(editingTransaction.value.toString());
+        setCategoryId(editingTransaction.categoryId || '');
+        setCardId(editingTransaction.cardId || defaultCardId || '');
+        setDate(formatDateToBR(editingTransaction.date));
+        setDueDate(editingTransaction.dueDate ? formatDateToBR(editingTransaction.dueDate) : formatDateToBR(editingTransaction.date));
+        setStatus(editingTransaction.status || 'pending');
+        setInstallments(editingTransaction.installments || { current: 1, total: 1 });
+        setHasInstallments(!!editingTransaction.installments);
+        setPersonId(editingTransaction.personId || null);
+        const person = editingTransaction.personId ? state.people.find((p) => p.id === editingTransaction.personId) : null;
+        setPersonInput(person?.name || '');
+        setNotes(editingTransaction.notes || '');
+        setTransactionType(editingTransaction.installments ? 'Parcela' : 'Pagamento Mensal');
+        setMonthlyPaymentDate(editingTransaction.monthlyPaymentDate?.toString() || '');
+        setSaved(false);
         setShowOnlyVoice(false);
         setVoiceMode('idle');
-        setVoiceText('');
-        setParsedTransactions([]);
-        setInterpretedItens([]);
-        setIsProcessingVoice(false);
-        setShowConfirmModal(false);
+      } else {
+        // Modo criação - resetar campos
+        const detectedType = getDefaultType();
+        setType(detectedType);
+        setDescription('');
+        setValue('');
+        setCategoryId('');
+        // Pré-selecionar cartão se fornecido
+        setCardId(defaultCardId || '');
+        const today = new Date();
+        const todayBR = formatDateToBR(getTodayISO());
+        setDate(todayBR);
+        setDueDate(todayBR); // Pré-preencher data de vencimento com data atual
+        setStatus('pending');
+        setInstallments({ current: 1, total: 1 });
+        setHasInstallments(false);
+        setPersonId(null);
+        setPersonInput('');
+        setNotes('');
+        setTransactionType('Pagamento Mensal');
+        setMonthlyPaymentDate('');
+        setSaved(false);
+        // Se startWithVoice for true, mostrar apenas interface de voz
+        if (startWithVoice) {
+          setShowOnlyVoice(true);
+          setVoiceMode('idle');
+        } else {
+          setShowOnlyVoice(false);
+          setVoiceMode('idle');
+          setVoiceText('');
+          setParsedTransactions([]);
+          setInterpretedItens([]);
+          setIsProcessingVoice(false);
+          setShowConfirmModal(false);
+        }
       }
     } else {
       // Resetar quando fechar
       setShowOnlyVoice(false);
     }
-  }, [isOpen, pathname, startWithVoice, defaultCardId]);
+  }, [isOpen, pathname, startWithVoice, defaultCardId, editingTransaction, state.people]);
 
   const handleExampleClick = (exampleDescription: string, categoryName: string) => {
     // Preencher descrição
@@ -281,7 +329,13 @@ export function AddTransactionSheet({
       }
     }
 
-    addTransaction(transactionData);
+    if (editingTransaction) {
+      // Modo edição
+      updateTransaction(editingTransaction.id, transactionData);
+    } else {
+      // Modo criação
+      addTransaction(transactionData);
+    }
 
     setSaved(true);
     
@@ -614,7 +668,7 @@ export function AddTransactionSheet({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-100">
-            <h2 className="text-sm font-bold text-gray-900">Nova Despesa Variável</h2>
+            <h2 className="text-sm font-bold text-gray-900">{getFormTitle()}</h2>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 text-2xl leading-none w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
@@ -779,7 +833,7 @@ export function AddTransactionSheet({
                 disabled={saved}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 md:py-3 rounded-lg transition-all disabled:bg-green-600 shadow-sm hover:shadow-md text-sm md:text-base"
               >
-                {saved ? '✓ Salvo!' : 'Salvar'}
+                {saved ? '✓ Salvo!' : editingTransaction ? 'Salvar Alterações' : 'Salvar'}
               </button>
             </form>
         </div>
@@ -797,7 +851,7 @@ export function AddTransactionSheet({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-4 md:mb-6 pb-3 border-b border-gray-100 dark:border-gray-700">
-            <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white">Novo Ganho</h2>
+            <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white">{getFormTitle()}</h2>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl leading-none w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
@@ -1122,7 +1176,7 @@ export function AddTransactionSheet({
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between mb-4 md:mb-6 pb-3 border-b border-gray-100 dark:border-gray-700">
-            <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white">Nova Despesa Fixa</h2>
+            <h2 className="text-base md:text-lg font-bold text-gray-900 dark:text-white">{getFormTitle()}</h2>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl leading-none w-8 h-8 md:w-10 md:h-10 flex items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"

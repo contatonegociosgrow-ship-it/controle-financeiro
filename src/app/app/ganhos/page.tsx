@@ -12,6 +12,7 @@ import { Wallet, List } from 'lucide-react';
 export default function GanhosPage() {
   const { isInitialized } = useFinanceStore();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [voiceMode, setVoiceMode] = useState(false);
   const [filter, setFilter] = useState('');
   const [dateStart, setDateStart] = useState<string | null>(null);
@@ -56,6 +57,11 @@ export default function GanhosPage() {
             startDate={dateStart}
             endDate={dateEnd}
             columns={5}
+            onEdit={(id) => {
+              setEditingId(id);
+              setVoiceMode(false);
+              setIsSheetOpen(true);
+            }}
           />
         </PremiumContentCard>
       </div>
@@ -78,6 +84,7 @@ export default function GanhosPage() {
         {/* Botão Adicionar */}
         <button
           onClick={() => {
+            setEditingId(null);
             setVoiceMode(false);
             setIsSheetOpen(true);
           }}
@@ -93,10 +100,12 @@ export default function GanhosPage() {
         isOpen={isSheetOpen} 
         onClose={() => {
           setIsSheetOpen(false);
+          setEditingId(null);
           setVoiceMode(false);
         }}
         defaultType="income"
         startWithVoice={voiceMode}
+        editingId={editingId}
       />
     </div>
   );

@@ -47,13 +47,25 @@ export function WalletCard() {
       })
       .reduce((sum, t) => sum + t.value, 0);
 
-    // Saldo do mês = Salário + Ganhos do mês - Gastos do mês
-    const currentBalance = monthlyIncome + monthlyIncomeTransactions - monthlyExpenses;
+    // Investimentos do mês atual (deduzir da carteira)
+    const monthlyInvestments = state.investments
+      .filter((inv) => {
+        const investmentDate = new Date(inv.applicationDate);
+        return (
+          investmentDate.getMonth() === currentMonth &&
+          investmentDate.getFullYear() === currentYear
+        );
+      })
+      .reduce((sum, inv) => sum + inv.value, 0);
+
+    // Saldo do mês = Salário + Ganhos do mês - Gastos do mês - Investimentos do mês
+    const currentBalance = monthlyIncome + monthlyIncomeTransactions - monthlyExpenses - monthlyInvestments;
 
     return {
       monthlyIncome,
       monthlyIncomeTransactions,
       monthlyExpenses,
+      monthlyInvestments,
       currentBalance,
     };
   }, [state]);
