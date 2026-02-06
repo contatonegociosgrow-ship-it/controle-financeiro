@@ -154,7 +154,9 @@ export function AddTransactionSheet({
         setCardId(editingTransaction.cardId || defaultCardId || '');
         setDate(formatDateToBR(editingTransaction.date));
         setDueDate(editingTransaction.dueDate ? formatDateToBR(editingTransaction.dueDate) : formatDateToBR(editingTransaction.date));
-        setStatus(editingTransaction.status || 'pending');
+        // Converter 'overdue' para 'pending' já que o formulário só suporta 'paid' e 'pending'
+        const transactionStatus = editingTransaction.status === 'overdue' ? 'pending' : (editingTransaction.status || 'pending');
+        setStatus(transactionStatus as 'paid' | 'pending');
         setInstallments(editingTransaction.installments || { current: 1, total: 1 });
         setHasInstallments(!!editingTransaction.installments);
         setPersonId(editingTransaction.personId || null);
