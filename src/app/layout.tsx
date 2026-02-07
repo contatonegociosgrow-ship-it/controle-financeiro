@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   themeColor: '#f5f7fa',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
@@ -32,6 +36,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
         <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" href="/logo.png" type="image/png" />
         <link rel="apple-touch-icon" href="/logo.png" />
       </head>
       <body>
