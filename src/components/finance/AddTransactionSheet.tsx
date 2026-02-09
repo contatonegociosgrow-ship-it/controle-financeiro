@@ -95,12 +95,12 @@ export function AddTransactionSheet({
   };
 
   const [date, setDate] = useState(() => {
-    return formatDateToBR(getTodayISO());
+    return getTodayISO(); // Armazenar em formato ISO para type="date"
   });
   const [saved, setSaved] = useState(false);
 
   // Campos específicos por tipo
-  const [dueDate, setDueDate] = useState('');
+  const [dueDate, setDueDate] = useState(''); // Armazenar em formato ISO para type="date"
   const [status, setStatus] = useState<'paid' | 'pending'>('pending');
   const [installments, setInstallments] = useState({ current: 1, total: 1 });
   const [hasInstallments, setHasInstallments] = useState(false);
@@ -152,8 +152,8 @@ export function AddTransactionSheet({
         setValue(editingTransaction.value.toString());
         setCategoryId(editingTransaction.categoryId || '');
         setCardId(editingTransaction.cardId || defaultCardId || '');
-        setDate(formatDateToBR(editingTransaction.date));
-        setDueDate(editingTransaction.dueDate ? formatDateToBR(editingTransaction.dueDate) : formatDateToBR(editingTransaction.date));
+        setDate(editingTransaction.date); // Já está em formato ISO
+        setDueDate(editingTransaction.dueDate || editingTransaction.date); // Já está em formato ISO
         // Converter 'overdue' para 'pending' já que o formulário só suporta 'paid' e 'pending'
         const transactionStatus = editingTransaction.status === 'overdue' ? 'pending' : (editingTransaction.status || 'pending');
         setStatus(transactionStatus as 'paid' | 'pending');
@@ -177,10 +177,9 @@ export function AddTransactionSheet({
         setCategoryId('');
         // Pré-selecionar cartão se fornecido
         setCardId(defaultCardId || '');
-        const today = new Date();
-        const todayBR = formatDateToBR(getTodayISO());
-        setDate(todayBR);
-        setDueDate(todayBR); // Pré-preencher data de vencimento com data atual
+        const todayISO = getTodayISO();
+        setDate(todayISO);
+        setDueDate(todayISO); // Pré-preencher data de vencimento com data atual
         setStatus('pending');
         setInstallments({ current: 1, total: 1 });
         setHasInstallments(false);
@@ -239,10 +238,10 @@ export function AddTransactionSheet({
       return;
     }
 
-    // Validar data
-    const isoDate = formatDateToISO(date);
-    if (!isoDate || isoDate.length !== 10) {
-      alert('Por favor, insira uma data válida no formato DD/MM/AAAA');
+    // Validar data (já está em formato ISO)
+    const isoDate = date;
+    if (!isoDate || !isoDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      alert('Por favor, insira uma data válida');
       return;
     }
 
@@ -251,11 +250,10 @@ export function AddTransactionSheet({
       return;
     }
 
-    // Validar data de vencimento se for despesa fixa
+    // Validar data de vencimento se for despesa fixa (já está em formato ISO)
     if (type === 'expense_fixed' && dueDate) {
-      const isoDueDate = formatDateToISO(dueDate);
-      if (!isoDueDate || isoDueDate.length !== 10) {
-        alert('Por favor, insira uma data de vencimento válida no formato DD/MM/AAAA');
+      if (!dueDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        alert('Por favor, insira uma data de vencimento válida');
         return;
       }
     }
@@ -295,7 +293,7 @@ export function AddTransactionSheet({
       transactionData.notes = notes || description;
     } else if (type === 'debt') {
       transactionData.categoryId = state.categories[0]?.id || '';
-      transactionData.dueDate = formatDateToISO(date);
+      transactionData.dueDate = date; // Já está em formato ISO
       transactionData.status = status;
       transactionData.notes = description || transactionType;
       
@@ -318,7 +316,7 @@ export function AddTransactionSheet({
       transactionData.notes = description;
       
       if (type === 'expense_fixed') {
-        transactionData.dueDate = dueDate ? formatDateToISO(dueDate) : formatDateToISO(date);
+        transactionData.dueDate = dueDate || date; // Já está em formato ISO
         transactionData.status = status;
       }
       
@@ -764,16 +762,9 @@ export function AddTransactionSheet({
               <div>
                 <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Data da compra</label>
               <input
-                type="text"
+                type="date"
                 value={date}
-                onChange={(e) => {
-                  const masked = applyDateMask(e.target.value);
-                  if (masked.length <= 10) {
-                    setDate(masked);
-                  }
-                }}
-                placeholder="DD/MM/AAAA"
-                maxLength={10}
+                onChange={(e) => setDate(e.target.value)}
                 className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 required
               />
@@ -898,16 +889,9 @@ export function AddTransactionSheet({
             <div>
               <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Recebido em</label>
               <input
-                type="text"
+                type="date"
                 value={date}
-                onChange={(e) => {
-                  const masked = applyDateMask(e.target.value);
-                  if (masked.length <= 10) {
-                    setDate(masked);
-                  }
-                }}
-                placeholder="DD/MM/AAAA"
-                maxLength={10}
+                onChange={(e) => setDate(e.target.value)}
                 className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 required
               />
@@ -1033,16 +1017,9 @@ export function AddTransactionSheet({
             <div>
               <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Data do pagamento</label>
               <input
-                type="text"
+                type="date"
                 value={date}
-                onChange={(e) => {
-                  const masked = applyDateMask(e.target.value);
-                  if (masked.length <= 10) {
-                    setDate(masked);
-                  }
-                }}
-                placeholder="DD/MM/AAAA"
-                maxLength={10}
+                onChange={(e) => setDate(e.target.value)}
                 className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 required
               />
@@ -1260,16 +1237,9 @@ export function AddTransactionSheet({
             <div>
               <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Vencimento</label>
               <input
-                type="text"
+                type="date"
                 value={dueDate}
-                onChange={(e) => {
-                  const masked = applyDateMask(e.target.value);
-                  if (masked.length <= 10) {
-                    setDueDate(masked);
-                  }
-                }}
-                placeholder="DD/MM/AAAA"
-                maxLength={10}
+                onChange={(e) => setDueDate(e.target.value)}
                 className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 required
               />
@@ -1379,16 +1349,9 @@ export function AddTransactionSheet({
             <div>
               <label className="block text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1.5 md:mb-2 font-semibold uppercase tracking-wide">Data</label>
               <input
-                type="text"
+                type="date"
                 value={date}
-                onChange={(e) => {
-                  const masked = applyDateMask(e.target.value);
-                  if (masked.length <= 10) {
-                    setDate(masked);
-                  }
-                }}
-                placeholder="DD/MM/AAAA"
-                maxLength={10}
+                onChange={(e) => setDate(e.target.value)}
                 className="w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 md:px-4 md:py-2.5 text-gray-900 dark:text-gray-200 text-sm focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
                 required
               />

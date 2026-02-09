@@ -109,14 +109,35 @@ export function TransactionList({
   };
 
   const formatDate = (dateStr: string) => {
-    // Usar formatDateToBR para evitar problemas de fuso horário
+    // Converter para formato brasileiro DD/MM/YYYY
     if (!dateStr) return '';
+    
     // Se já está no formato ISO (YYYY-MM-DD), converter diretamente
     if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
       const [year, month, day] = dateStr.split('-');
       return `${day}/${month}/${year}`;
     }
-    // Se não está no formato esperado, tentar converter
+    
+    // Se já está no formato brasileiro (DD/MM/YYYY), retornar como está
+    if (dateStr.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+      return dateStr;
+    }
+    
+    // Tentar converter de outros formatos
+    // Se tem barras mas não está no formato esperado, tentar parsear
+    if (dateStr.includes('/')) {
+      const parts = dateStr.split('/');
+      if (parts.length === 3) {
+        // Se o primeiro elemento tem 4 dígitos, é YYYY/MM/DD
+        if (parts[0].length === 4) {
+          return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        // Se não, assumir que já está em DD/MM/YYYY
+        return dateStr;
+      }
+    }
+    
+    // Se não conseguiu converter, retornar como está (mas isso não deveria acontecer)
     return dateStr;
   };
 

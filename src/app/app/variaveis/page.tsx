@@ -6,12 +6,14 @@ import { PremiumContentCard } from '@/components/finance/PremiumContentCard';
 import { PageHeader } from '@/components/finance/PageHeader';
 import { TransactionList } from '@/components/finance/TransactionList';
 import { AddTransactionSheet } from '@/components/finance/AddTransactionSheet';
+import { ImportExtractSheetVariaveis } from '@/components/finance/ImportExtractSheetVariaveis';
 import { DateFilter } from '@/components/finance/DateFilter';
-import { ShoppingCart, List } from 'lucide-react';
+import { ShoppingCart, List, Upload } from 'lucide-react';
 
 export default function VariaveisPage() {
   const { isInitialized } = useFinanceStore();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isImportSheetOpen, setIsImportSheetOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [voiceMode, setVoiceMode] = useState(false);
   const [filter, setFilter] = useState('');
@@ -69,7 +71,17 @@ export default function VariaveisPage() {
       </div>
 
       {/* Botões flutuantes */}
-      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 flex gap-2 z-40">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 flex flex-col gap-2 z-40">
+        {/* Botão Importar Extrato */}
+        <button
+          onClick={() => setIsImportSheetOpen(true)}
+          className="w-12 h-12 sm:w-14 sm:h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110"
+          aria-label="Importar extrato"
+          title="Importar extrato (CSV, PDF, TXT)"
+        >
+          <Upload size={20} className="sm:w-6 sm:h-6" />
+        </button>
+        
         {/* Botão Microfone */}
         <button
           onClick={() => {
@@ -108,6 +120,11 @@ export default function VariaveisPage() {
         defaultType="expense_variable"
         startWithVoice={voiceMode}
         editingId={editingId}
+      />
+
+      <ImportExtractSheetVariaveis
+        isOpen={isImportSheetOpen}
+        onClose={() => setIsImportSheetOpen(false)}
       />
     </div>
   );
