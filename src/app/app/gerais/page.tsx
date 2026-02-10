@@ -11,7 +11,7 @@ import { CategoryPieChart } from '@/components/finance/PieChart';
 import { DateFilter } from '@/components/finance/DateFilter';
 import { MonthlyInsight } from '@/components/finance/MonthlyInsight';
 import { getSalaryPercentage, getSalaryStatus } from '@/lib/salaryUtils';
-import { LayoutDashboard, Wallet, Receipt, ShoppingCart, Link as LinkIcon, PiggyBank, PieChart, List } from 'lucide-react';
+import { LayoutDashboard, Wallet, Receipt, ShoppingCart, Link as LinkIcon, PiggyBank, PieChart, List, Filter, Tag, Calendar, Layers } from 'lucide-react';
 import { PremiumCard } from '@/components/finance/PremiumCard';
 import { PremiumContentCard } from '@/components/finance/PremiumContentCard';
 
@@ -24,6 +24,7 @@ export default function GeraisPage() {
   const [isBalanceOpen, setIsBalanceOpen] = useState(false);
   const [filter, setFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState<FilterType>('all');
+  const [categoryId, setCategoryId] = useState<string | null>(null);
   const [dateStart, setDateStart] = useState<string | null>(null);
   const [dateEnd, setDateEnd] = useState<string | null>(null);
   
@@ -46,6 +47,11 @@ export default function GeraisPage() {
     // Filtrar por tipo
     if (typeFilter !== 'all') {
       filtered = filtered.filter((t) => t.type === typeFilter);
+    }
+
+    // Filtrar por categoria
+    if (categoryId) {
+      filtered = filtered.filter((t) => t.categoryId === categoryId);
     }
 
     // Filtrar por texto
@@ -92,7 +98,7 @@ export default function GeraisPage() {
     }
 
     return filtered;
-  }, [state.transactions, state.categories, state.people, filter, typeFilter, dateStart, dateEnd, selectedMonth, selectedYear]);
+  }, [state.transactions, state.categories, state.people, filter, typeFilter, categoryId, dateStart, dateEnd, selectedMonth, selectedYear]);
 
   // Calcular totais por tipo para o mês selecionado
   const totals = useMemo(() => {
@@ -180,6 +186,63 @@ export default function GeraisPage() {
       currency: state.profile.currency || 'BRL',
     }).format(value);
   };
+
+  // Calcular total gasto na categoria selecionada
+  const categoryTotal = useMemo(() => {
+    if (!categoryId) return null;
+
+    let filtered = state.transactions.filter((t) => t.categoryId === categoryId);
+
+    // Aplicar filtro de tipo
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter((t) => t.type === typeFilter);
+    }
+
+    // Aplicar filtro de data
+    if (dateStart || dateEnd) {
+      filtered = filtered.filter((t) => {
+        const transactionDate = t.date;
+        if (dateStart && transactionDate < dateStart) return false;
+        if (dateEnd && transactionDate > dateEnd) return false;
+        return true;
+      });
+    } else {
+      // Se não houver filtro de data manual, usar o mês selecionado
+      const firstDay = new Date(selectedYear, selectedMonth, 1);
+      const lastDay = new Date(selectedYear, selectedMonth + 1, 0);
+      const startDateStr = firstDay.toISOString().split('T')[0];
+      const endDateStr = lastDay.toISOString().split('T')[0];
+      
+      filtered = filtered.filter((t) => {
+        return t.date >= startDateStr && t.date <= endDateStr;
+      });
+    }
+
+    // Aplicar filtro de texto se houver
+    if (filter) {
+      const filterLower = filter.toLowerCase().trim();
+      filtered = filtered.filter((t) => {
+        const category = state.categories.find((c) => c.id === t.categoryId);
+        const categoryName = category?.name.toLowerCase() || '';
+        const notes = t.notes?.toLowerCase() || '';
+        const valueStr = t.value.toString().replace('.', ',');
+        const person = t.personId ? state.people.find((p) => p.id === t.personId) : null;
+        const personName = person?.name.toLowerCase() || '';
+        
+        return (
+          categoryName.includes(filterLower) ||
+          notes.includes(filterLower) ||
+          valueStr.includes(filterLower) ||
+          personName.includes(filterLower) ||
+          t.date.includes(filterLower)
+        );
+      });
+    }
+
+    return filtered.reduce((sum, t) => sum + t.value, 0);
+  }, [state.transactions, state.categories, state.people, categoryId, typeFilter, dateStart, dateEnd, selectedMonth, selectedYear, filter]);
+
+  const selectedCategory = categoryId ? state.categories.find((c) => c.id === categoryId) : null;
 
   // Função para navegar entre meses
   const handleMonthChange = (direction: 'prev' | 'next' | 'current') => {
@@ -474,39 +537,108 @@ export default function GeraisPage() {
           </div>
         </div>
 
-        {/* Filtros Section */}
-        <div className="mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-gray-200 dark:border-gray-700 space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-            <div className="flex-1">
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2 font-semibold">Filtrar por tipo:</label>
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value as FilterType)}
-                className="w-full sm:w-auto px-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm hover:border-gray-400 dark:hover:border-gray-500"
-              >
-                <option value="all">Todas</option>
-                <option value="income">Ganhos</option>
-                <option value="expense_fixed">Despesas Fixas</option>
-                <option value="expense_variable">Despesas Variáveis</option>
-                <option value="debt">Dívidas</option>
-                <option value="savings">Economias</option>
-              </select>
+        {/* Filtros Section - Design Moderno */}
+        <div className="mb-6 sm:mb-8">
+          <div className="bg-gradient-to-br from-white via-blue-50/30 to-white dark:from-gray-800 dark:via-blue-950/10 dark:to-gray-800 rounded-2xl shadow-lg border border-blue-100/50 dark:border-blue-900/30 p-5 sm:p-6 relative overflow-hidden">
+            {/* Efeito de brilho decorativo */}
+            <div className="absolute top-0 right-0 w-40 h-40 bg-blue-400/10 dark:bg-blue-500/5 rounded-full blur-3xl -mr-20 -mt-20"></div>
+            
+            {/* Header da seção */}
+            <div className="flex items-center gap-3 mb-6 relative z-10">
+              <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-md">
+                <Filter className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Filtros</h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Refine sua busca</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 relative z-10">
+              {/* Filtro por Tipo */}
+              <div className="bg-white/80 dark:bg-gray-700/50 backdrop-blur-sm rounded-xl p-5 border border-gray-200/50 dark:border-gray-600/50 shadow-sm hover:shadow-md transition-all">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                    <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                  </div>
+                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Tipo
+                  </label>
+                </div>
+                <select
+                  value={typeFilter}
+                  onChange={(e) => setTypeFilter(e.target.value as FilterType)}
+                  className="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-200 focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 transition-all hover:border-gray-300 dark:hover:border-gray-500 font-medium"
+                >
+                  <option value="all">Todas</option>
+                  <option value="income">Ganhos</option>
+                  <option value="expense_fixed">Despesas Fixas</option>
+                  <option value="expense_variable">Despesas Variáveis</option>
+                  <option value="debt">Dívidas</option>
+                  <option value="savings">Economias</option>
+                </select>
+              </div>
+
+              {/* Filtro por Categoria */}
+              <div className="bg-white/80 dark:bg-gray-700/50 backdrop-blur-sm rounded-xl p-5 border border-gray-200/50 dark:border-gray-600/50 shadow-sm hover:shadow-md transition-all">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                    <Tag className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                    Categoria
+                  </label>
+                </div>
+                <select
+                  value={categoryId || ''}
+                  onChange={(e) => setCategoryId(e.target.value || null)}
+                  className="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all hover:border-gray-300 dark:hover:border-gray-500 font-medium"
+                >
+                  <option value="">Todas as categorias</option>
+                  {state.categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+                {categoryTotal !== null && selectedCategory && (
+                  <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/30 dark:to-blue-800/20 border-2 border-blue-200 dark:border-blue-800/50 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium uppercase tracking-wide mb-1">
+                          Total em {selectedCategory.name}
+                        </div>
+                        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                          {formatCurrency(categoryTotal)}
+                        </div>
+                      </div>
+                      <div className="p-3 bg-blue-200/50 dark:bg-blue-900/30 rounded-lg">
+                        <Tag className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Filtro por Data */}
+              <div className="lg:col-span-3">
+                <DateFilter
+                  pageKey="gerais"
+                  onDateRangeChange={(start, end) => {
+                    setDateStart(start);
+                    setDateEnd(end);
+                    // Quando limpar o filtro de data manual, não resetar o mês selecionado
+                    // Apenas quando houver filtro ativo, manter o mês atual
+                    if (start || end) {
+                      // Manter o mês selecionado, não resetar
+                    } else {
+                      // Quando limpar o filtro, manter o mês selecionado
+                    }
+                  }}
+                />
+              </div>
             </div>
           </div>
-          <DateFilter
-            pageKey="gerais"
-            onDateRangeChange={(start, end) => {
-              setDateStart(start);
-              setDateEnd(end);
-              // Quando limpar o filtro de data manual, não resetar o mês selecionado
-              // Apenas quando houver filtro ativo, manter o mês atual
-              if (start || end) {
-                // Manter o mês selecionado, não resetar
-              } else {
-                // Quando limpar o filtro, manter o mês selecionado
-              }
-            }}
-          />
         </div>
 
         {/* Gráfico Section */}
@@ -535,7 +667,8 @@ export default function GeraisPage() {
           >
             <TransactionList 
               type={typeFilter} 
-              filter={filter} 
+              filter={filter}
+              categoryId={categoryId}
               startDate={dateStart || monthStartDate}
               endDate={dateEnd || monthEndDate}
               showCategory={true} 

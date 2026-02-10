@@ -11,7 +11,7 @@ import { getCurrentInvoice, getFutureInvoices, getAvailableLimit } from '@/lib/c
 import { getBankInfo } from '@/lib/bankColors';
 import { ImportExtractSheet } from '@/components/finance/ImportExtractSheet';
 import { AddTransactionSheet } from '@/components/finance/AddTransactionSheet';
-import { CreditCard } from 'lucide-react';
+import { CreditCard, Filter, Tag } from 'lucide-react';
 
 export default function CardDetailPage() {
   const params = useParams();
@@ -20,6 +20,7 @@ export default function CardDetailPage() {
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const [isImportSheetOpen, setIsImportSheetOpen] = useState(false);
   const [isAddTransactionOpen, setIsAddTransactionOpen] = useState(false);
+  const [categoryId, setCategoryId] = useState<string | null>(null);
 
   const cardId = params.cardId as string;
   const card = state.cards.find((c) => c.id === cardId);
@@ -62,6 +63,18 @@ export default function CardDetailPage() {
   const usagePercentage = card && card.limit > 0 
     ? ((card.limit - availableLimit) / card.limit) * 100 
     : 0;
+
+  // Calcular total por categoria para transações do cartão
+  const categoryTotal = useMemo(() => {
+    if (!categoryId || !card) return null;
+    
+    const allCardTransactions = state.transactions
+      .filter((t) => t.cardId === cardId && t.type === 'expense_variable' && t.categoryId === categoryId);
+    
+    return allCardTransactions.reduce((sum, t) => sum + t.value, 0);
+  }, [state.transactions, categoryId, cardId, card]);
+
+  const selectedCategory = categoryId ? state.categories.find((c) => c.id === categoryId) : null;
 
   if (!isInitialized) {
     return (
@@ -269,10 +282,59 @@ export default function CardDetailPage() {
               </button>
             </div>
 
+            {/* Filtro por Categoria */}
+            <div className="mb-4 p-4 bg-gradient-to-br from-purple-50/50 to-purple-100/30 dark:from-purple-950/20 dark:to-purple-900/10 rounded-xl border border-purple-200/50 dark:border-purple-800/30">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="p-1.5 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                  <Tag className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                </div>
+                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                  Filtrar por categoria:
+                </label>
+              </div>
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <select
+                  value={categoryId || ''}
+                  onChange={(e) => setCategoryId(e.target.value || null)}
+                  className="w-full sm:w-auto min-w-[200px] px-4 py-2.5 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-200 focus:outline-none focus:border-purple-500 dark:focus:border-purple-400 focus:ring-2 focus:ring-purple-500/20 transition-all hover:border-gray-300 dark:hover:border-gray-500 font-medium"
+                >
+                  <option value="">Todas as categorias</option>
+                  {state.categories
+                    .filter((c) => c.name !== 'Ganhos')
+                    .map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                </select>
+                {categoryTotal !== null && selectedCategory && (
+                  <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-50 to-purple-100/50 dark:from-purple-900/30 dark:to-purple-800/20 border-2 border-purple-200 dark:border-purple-800/50 rounded-lg">
+                    <div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 font-medium uppercase tracking-wide">
+                        Total em {selectedCategory.name}
+                      </div>
+                      <div className="text-xl font-bold text-purple-600 dark:text-purple-400">
+                        {formatCurrency(categoryTotal)}
+                      </div>
+                    </div>
+                    <div className="p-3 bg-purple-200/50 dark:bg-purple-900/30 rounded-lg">
+                      <Tag className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {(() => {
-              const allCardTransactions = state.transactions
-                .filter((t) => t.cardId === cardId && t.type === 'expense_variable')
-                .sort((a, b) => b.date.localeCompare(a.date));
+              let allCardTransactions = state.transactions
+                .filter((t) => t.cardId === cardId && t.type === 'expense_variable');
+              
+              // Filtrar por categoria se selecionada
+              if (categoryId) {
+                allCardTransactions = allCardTransactions.filter((t) => t.categoryId === categoryId);
+              }
+              
+              allCardTransactions = allCardTransactions.sort((a, b) => b.date.localeCompare(a.date));
 
               if (allCardTransactions.length === 0) {
                 return (

@@ -7,6 +7,7 @@ import { Trash2, Edit2 } from 'lucide-react';
 type TransactionListProps = {
   type?: 'income' | 'expense_fixed' | 'expense_variable' | 'debt' | 'savings' | 'all';
   filter?: string;
+  categoryId?: string | null;
   startDate?: string | null;
   endDate?: string | null;
   showCategory?: boolean;
@@ -36,6 +37,7 @@ const getCategoryColorClass = (category: { name: string; color?: string }) => {
 export function TransactionList({
   type = 'all',
   filter = '',
+  categoryId = null,
   startDate = null,
   endDate = null,
   showCategory = false,
@@ -62,6 +64,11 @@ export function TransactionList({
     // Filtrar por tipo - deve ser aplicado primeiro
     if (type && type !== 'all') {
       filtered = filtered.filter((t) => t.type === type);
+    }
+
+    // Filtrar por categoria
+    if (categoryId) {
+      filtered = filtered.filter((t) => t.categoryId === categoryId);
     }
 
     if (filter) {
@@ -99,7 +106,7 @@ export function TransactionList({
       const dateB = new Date(b.date).getTime();
       return dateB - dateA;
     });
-  }, [state.transactions, state.categories, state.people, type, filter, startDate, endDate]);
+  }, [state.transactions, state.categories, state.people, type, filter, categoryId, startDate, endDate]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -516,7 +523,7 @@ export function TransactionList({
             {/* Mobile View - Cards */}
             <div className="md:hidden border-b border-gray-200 dark:border-gray-700 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 relative pr-14">
               {/* Botões de ação mobile */}
-              <div className="absolute top-3 right-3 flex gap-2">
+              <div className="absolute top-1/2 -translate-y-1/2 right-3 flex gap-2">
                 {onEdit && (
                   <button
                     onClick={() => onEdit(currentTransaction.id)}

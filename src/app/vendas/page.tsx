@@ -10,9 +10,7 @@ export default function VendasPage() {
   };
 
   const handleCta = () => {
-    // Aqui você pode integrar com seu checkout externo
-    // Por exemplo: window.location.href = 'https://seu-checkout.com';
-    alert('Redirecionando para o checkout...');
+    window.location.href = 'https://lastlink.com/p/C6BE6D172/checkout-payment/';
   };
 
   return (
