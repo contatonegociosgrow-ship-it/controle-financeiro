@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 
 export const metadata: Metadata = {
   title: 'Meu Salário em Dia - Organize suas finanças em minutos',
@@ -16,5 +17,19 @@ export default function VendasLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <>
+      <Script id="utmfy-tiktok-pixel" strategy="afterInteractive">
+        {`
+          window.tikTokPixelId = "697ff98168ff9aa3b26477ce";
+          var a = document.createElement("script");
+          a.setAttribute("async", "");
+          a.setAttribute("defer", "");
+          a.setAttribute("src", "https://cdn.utmfy.com.br/scripts/pixel/pixel-tiktok.js");
+          document.head.appendChild(a);
+        `}
+      </Script>
+      {children}
+    </>
+  );
 }
