@@ -71,21 +71,21 @@ export function WalletCard() {
   }, [state]);
 
   return (
-    <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-2.5 sm:p-3 text-white relative overflow-hidden shadow-md w-full sm:w-fit sm:min-w-[240px] h-[130px] sm:h-[140px]">
+    <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-lg p-2 sm:p-2.5 text-white relative overflow-hidden shadow-md w-full sm:w-fit sm:min-w-[200px] h-[110px] sm:h-[120px]">
       {/* Decorative circles */}
-      <div className="absolute top-0 right-0 w-12 h-12 bg-white/10 rounded-full -mr-6 -mt-6" />
-      <div className="absolute bottom-0 left-0 w-10 h-10 bg-white/10 rounded-full -ml-5 -mb-5" />
+      <div className="absolute top-0 right-0 w-10 h-10 bg-white/10 rounded-full -mr-5 -mt-5" />
+      <div className="absolute bottom-0 left-0 w-8 h-8 bg-white/10 rounded-full -ml-4 -mb-4" />
       
       <div className="relative z-10 h-full flex flex-col justify-between">
         {/* Header compacto */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <span className="text-base sm:text-lg">💳</span>
-          <h2 className="text-[10px] sm:text-xs font-semibold opacity-90">Carteira</h2>
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm">💳</span>
+          <h2 className="text-[9px] sm:text-[10px] font-semibold opacity-90">Carteira</h2>
         </div>
 
         {/* Valor principal: Saldo atualizado (Salário + Ganhos - Gastos) */}
         <div className="flex items-center">
-          <p className={`text-lg sm:text-xl font-bold tracking-tight truncate ${
+          <p className={`text-base sm:text-lg font-bold tracking-tight truncate ${
             balanceData.currentBalance >= 0 ? 'text-white' : 'text-red-200'
           }`}>
             {formatCurrency(balanceData.currentBalance)}
@@ -93,9 +93,9 @@ export function WalletCard() {
         </div>
 
         {/* Informações do mês */}
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {/* Salário base */}
-          <div className="flex items-center justify-between text-[10px] sm:text-xs">
+          <div className="flex items-center justify-between text-[9px] sm:text-[10px]">
             <span className="opacity-90">Salário:</span>
             <span className="font-semibold truncate ml-2 text-white">
               {formatCurrency(balanceData.monthlyIncome)}
@@ -103,7 +103,7 @@ export function WalletCard() {
           </div>
 
           {/* Gastos do mês */}
-          <div className="flex items-center justify-between text-[10px] sm:text-xs">
+          <div className="flex items-center justify-between text-[9px] sm:text-[10px]">
             <span className="opacity-90">Gastos:</span>
             <span className="font-semibold truncate ml-2 text-red-200">
               {formatCurrency(balanceData.monthlyExpenses)}
@@ -111,7 +111,7 @@ export function WalletCard() {
           </div>
 
           {/* Ganhos do mês */}
-          <div className="flex items-center justify-between text-[10px] sm:text-xs">
+          <div className="flex items-center justify-between text-[9px] sm:text-[10px]">
             <span className="opacity-90">Ganhos:</span>
             <span className="font-semibold truncate ml-2 text-white">
               {formatCurrency(balanceData.monthlyIncomeTransactions)}

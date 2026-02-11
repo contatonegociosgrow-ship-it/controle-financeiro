@@ -8,6 +8,7 @@ type PageHeaderProps = {
   icon: LucideIcon;
   showFilter?: boolean;
   hideSearch?: boolean;
+  hideWallet?: boolean;
   onFilterChange?: (filter: string) => void;
 };
 
@@ -16,6 +17,7 @@ export function PageHeader({
   icon: Icon,
   showFilter = true,
   hideSearch = false,
+  hideWallet = false,
   onFilterChange,
 }: PageHeaderProps) {
 
@@ -29,9 +31,11 @@ export function PageHeader({
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">{title}</h1>
         </div>
-        <div className="flex items-center gap-3">
-          <WalletCard />
-        </div>
+        {!hideWallet && (
+          <div className="flex items-center gap-3">
+            <WalletCard />
+          </div>
+        )}
       </div>
 
       {/* Mobile Layout */}
@@ -42,7 +46,7 @@ export function PageHeader({
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{title}</h1>
         </div>
-        <WalletCard />
+        {!hideWallet && <WalletCard />}
       </div>
     </div>
   );

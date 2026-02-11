@@ -11,9 +11,12 @@ import { CategoryPieChart } from '@/components/finance/PieChart';
 import { DateFilter } from '@/components/finance/DateFilter';
 import { MonthlyInsight } from '@/components/finance/MonthlyInsight';
 import { getSalaryPercentage, getSalaryStatus } from '@/lib/salaryUtils';
+import { getBankInfo } from '@/lib/bankColors';
+import { getCurrentInvoice } from '@/lib/cardUtils';
 import { LayoutDashboard, Wallet, Receipt, ShoppingCart, Link as LinkIcon, PiggyBank, PieChart, List, Filter, Tag, Calendar, Layers } from 'lucide-react';
 import { PremiumCard } from '@/components/finance/PremiumCard';
 import { PremiumContentCard } from '@/components/finance/PremiumContentCard';
+import { WalletCard } from '@/components/finance/WalletCard';
 
 type FilterType = 'all' | 'income' | 'expense_fixed' | 'expense_variable' | 'debt' | 'savings';
 
@@ -22,6 +25,7 @@ export default function GeraisPage() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
   const [isBalanceOpen, setIsBalanceOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filter, setFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState<FilterType>('all');
   const [categoryId, setCategoryId] = useState<string | null>(null);
@@ -301,6 +305,18 @@ export default function GeraisPage() {
     return lastDay.toISOString().split('T')[0];
   }, [selectedYear, selectedMonth]);
 
+  // Calcular despesas totais para o gráfico
+  const expenseTransactions = useMemo(() => {
+    return filteredTransactions.filter((t) => 
+      ['expense_fixed', 'expense_variable', 'debt'].includes(t.type)
+    );
+  }, [filteredTransactions]);
+
+  // Calcular total de despesas
+  const totalExpenses = useMemo(() => {
+    return expenseTransactions.reduce((sum, t) => sum + t.value, 0);
+  }, [expenseTransactions]);
+
   if (!isInitialized) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -312,370 +328,203 @@ export default function GeraisPage() {
   return (
     <div className="min-h-screen pb-24">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        {/* Header Section */}
-        <div className="mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">
-          <PageHeader
-            title="Gerais"
-            icon={LayoutDashboard}
-            onFilterChange={setFilter}
-          />
-        </div>
-
-        {/* Seletor de Mês/Ano */}
-        <div className="mb-6 bg-gradient-to-r from-white to-blue-50/30 dark:from-gray-800 dark:to-blue-950/30 rounded-2xl shadow-lg border border-blue-100/50 dark:border-blue-900/50 p-5 backdrop-blur-sm relative overflow-hidden">
-          {/* Efeito de brilho decorativo */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 dark:bg-blue-500/5 rounded-full blur-2xl -mr-16 -mt-16"></div>
-          
-          <div className="flex items-center justify-between flex-wrap gap-4 relative z-10">
-            <div className="flex items-center gap-4">
+        {/* Banner Superior - Planejamento */}
+        <div className="mb-6 bg-[#0F172A] rounded-2xl shadow-lg p-6 relative overflow-hidden border border-gray-800">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+          <div className="relative z-10 flex items-center justify-between flex-wrap gap-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">
+                Planejamento de {state.profile.name || 'Usuário'}
+              </h1>
+              <p className="text-sm text-gray-300 mt-1">
+                {monthNames[selectedMonth]} {selectedYear}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => handleMonthChange('prev')}
-                className="p-2.5 bg-white/80 dark:bg-gray-700/80 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-gray-200 dark:border-gray-600 rounded-xl transition-all hover:scale-105 hover:shadow-md active:scale-95"
+                className="p-2 bg-gray-800/80 hover:bg-gray-700 rounded-lg transition-all shadow-sm border border-gray-700"
                 aria-label="Mês anterior"
-                title="Mês anterior"
               >
-                <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                <svg className="w-5 h-5 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              
-              <div className="flex items-center gap-4 text-center min-w-[220px]">
-                {/* Ícone SVG de Calendário Moderno */}
-                <div className="flex-shrink-0 relative">
-                  <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
-                    <svg 
-                      className="w-7 h-7 text-white drop-shadow-sm" 
-                      viewBox="0 0 24 24" 
-                      fill="none" 
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      {/* Corpo do calendário */}
-                      <rect 
-                        x="4" 
-                        y="5" 
-                        width="16" 
-                        height="16" 
-                        rx="2.5" 
-                        stroke="currentColor" 
-                        strokeWidth="1.8" 
-                        fill="none"
-                      />
-                      
-                      {/* Linha divisória do cabeçalho */}
-                      <path 
-                        d="M4 11h16" 
-                        stroke="currentColor" 
-                        strokeWidth="1.8" 
-                        strokeLinecap="round"
-                      />
-                      
-                      {/* Anéis de encadernação */}
-                      <path 
-                        d="M8 2v3M16 2v3" 
-                        stroke="currentColor" 
-                        strokeWidth="2" 
-                        strokeLinecap="round"
-                      />
-                      
-                      {/* Pontos representando dias */}
-                      <circle 
-                        cx="8" 
-                        cy="15.5" 
-                        r="1.2" 
-                        fill="currentColor"
-                        opacity="0.9"
-                      />
-                      <circle 
-                        cx="12" 
-                        cy="15.5" 
-                        r="1.2" 
-                        fill="currentColor"
-                        opacity="0.9"
-                      />
-                      <circle 
-                        cx="16" 
-                        cy="15.5" 
-                        r="1.2" 
-                        fill="currentColor"
-                        opacity="0.9"
-                      />
-                      <circle 
-                        cx="8" 
-                        cy="19" 
-                        r="1.2" 
-                        fill="currentColor"
-                        opacity="0.7"
-                      />
-                      <circle 
-                        cx="12" 
-                        cy="19" 
-                        r="1.2" 
-                        fill="currentColor"
-                        opacity="0.7"
-                      />
-                    </svg>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 bg-clip-text text-transparent">
-                    {monthNames[selectedMonth]} {selectedYear}
-                  </div>
-                  {!isCurrentMonth && (
-                    <button
-                      onClick={() => handleMonthChange('current')}
-                      className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 mt-1.5 transition-colors flex items-center gap-1 group"
-                    >
-                      <svg className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                      </svg>
-                      Voltar para mês atual
-                    </button>
-                  )}
-                </div>
-              </div>
-              
               <button
                 onClick={() => handleMonthChange('next')}
-                className="p-2.5 bg-white/80 dark:bg-gray-700/80 hover:bg-blue-50 dark:hover:bg-blue-900/30 border border-gray-200 dark:border-gray-600 rounded-xl transition-all hover:scale-105 hover:shadow-md active:scale-95"
+                className="p-2 bg-gray-800/80 hover:bg-gray-700 rounded-lg transition-all shadow-sm border border-gray-700"
                 aria-label="Próximo mês"
-                title="Próximo mês"
               >
-                <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                <svg className="w-5 h-5 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
               </button>
             </div>
-            
-            {!isCurrentMonth && (
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-                <svg className="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <span className="text-xs font-medium text-amber-700 dark:text-amber-300">
-                  Visualizando mês anterior
-                </span>
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Insight do Mês - apenas quando for o mês atual */}
-        {isCurrentMonth && <MonthlyInsight />}
+        {/* Cards de Resumo Financeiro */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-6">
+          {/* Carteira */}
+          <div className="col-span-2 md:col-span-1">
+            <WalletCard />
+          </div>
 
-        {/* Cards de Resumo por Tipo */}
-        <div className="mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-            {/* Card Ganhos */}
-            <PremiumCard
-              title="Ganhos"
-              value={totals.income}
-              percentage={state.profile.monthlyIncome > 0 ? totals.incomePercentage : undefined}
-              icon={Wallet}
-              gradientFrom="from-green-600"
-              gradientTo="to-green-700"
-              onClick={() => setTypeFilter('income')}
-              formatCurrency={formatCurrency}
-            />
+          {/* Ganhos */}
+          <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-3 sm:p-4 text-white relative overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -mr-8 -mt-8"></div>
+            <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/10 rounded-full -ml-6 -mb-6"></div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className="text-lg">💵</span>
+                <h4 className="text-xs font-semibold opacity-90">Ganhos</h4>
+              </div>
+              <p className="text-base sm:text-lg font-bold text-white">
+                {formatCurrency(totals.income)}
+              </p>
+            </div>
+          </div>
 
-            {/* Card Despesas Fixas */}
-            <PremiumCard
-              title="Fixas"
-              value={totals.expenseFixed}
-              percentage={state.profile.monthlyIncome > 0 ? totals.expenseFixedPercentage : undefined}
-              icon={Receipt}
-              gradientFrom="from-red-600"
-              gradientTo="to-red-700"
-              onClick={() => setTypeFilter('expense_fixed')}
-              formatCurrency={formatCurrency}
-              showProgress={state.profile.monthlyIncome > 0}
-              progressValue={totals.expenseFixedPercentage}
-            />
+          {/* Despesas Fixas */}
+          <div className="bg-gradient-to-br from-red-500 to-rose-600 rounded-xl p-3 sm:p-4 text-white relative overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -mr-8 -mt-8"></div>
+            <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/10 rounded-full -ml-6 -mb-6"></div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className="text-lg">📌</span>
+                <h4 className="text-xs font-semibold opacity-90">Fixas</h4>
+              </div>
+              <p className="text-base sm:text-lg font-bold text-white">
+                {formatCurrency(totals.expenseFixed)}
+              </p>
+            </div>
+          </div>
 
-            {/* Card Despesas Variáveis */}
-            <PremiumCard
-              title="Variáveis"
-              value={totals.expenseVariable}
-              percentage={state.profile.monthlyIncome > 0 ? totals.expenseVariablePercentage : undefined}
-              icon={ShoppingCart}
-              gradientFrom="from-orange-600"
-              gradientTo="to-orange-700"
-              onClick={() => setTypeFilter('expense_variable')}
-              formatCurrency={formatCurrency}
-              showProgress={state.profile.monthlyIncome > 0}
-              progressValue={totals.expenseVariablePercentage}
-            />
+          {/* Despesas Variáveis */}
+          <div className="bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl p-3 sm:p-4 text-white relative overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -mr-8 -mt-8"></div>
+            <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/10 rounded-full -ml-6 -mb-6"></div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className="text-lg">🛒</span>
+                <h4 className="text-xs font-semibold opacity-90">Variáveis</h4>
+              </div>
+              <p className="text-base sm:text-lg font-bold text-white">
+                {formatCurrency(totals.expenseVariable)}
+              </p>
+            </div>
+          </div>
 
-            {/* Card Dívidas */}
-            <PremiumCard
-              title="Dívidas"
-              value={totals.debt}
-              percentage={state.profile.monthlyIncome > 0 ? totals.debtPercentage : undefined}
-              icon={LinkIcon}
-              gradientFrom="from-red-700"
-              gradientTo="to-red-800"
-              onClick={() => setTypeFilter('debt')}
-              formatCurrency={formatCurrency}
-              showProgress={state.profile.monthlyIncome > 0}
-              progressValue={totals.debtPercentage}
-            />
+          {/* Dívidas */}
+          <div className="bg-gradient-to-br from-red-600 to-red-700 rounded-xl p-3 sm:p-4 text-white relative overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -mr-8 -mt-8"></div>
+            <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/10 rounded-full -ml-6 -mb-6"></div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className="text-lg">🔗</span>
+                <h4 className="text-xs font-semibold opacity-90">Dívidas</h4>
+              </div>
+              <p className="text-base sm:text-lg font-bold text-white">
+                {formatCurrency(totals.debt)}
+              </p>
+            </div>
+          </div>
+        </div>
 
-            {/* Card Economias */}
-            <div className="col-span-2 md:col-span-1">
-              <PremiumCard
-                title="Economias"
-                value={totals.savings}
-                percentage={state.profile.monthlyIncome > 0 ? totals.savingsPercentage : undefined}
-                icon={PiggyBank}
-                gradientFrom="from-blue-600"
-                gradientTo="to-blue-700"
-                onClick={() => setTypeFilter('savings')}
-                formatCurrency={formatCurrency}
-                showProgress={state.profile.monthlyIncome > 0}
-                progressValue={totals.savingsPercentage}
+        {/* Layout Principal: Gráfico à Esquerda, Informações à Direita */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          {/* Coluna Esquerda: Gráfico de Pizza */}
+          <div className="lg:col-span-2 space-y-6">
+            <CardUI className="shadow-lg p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
+                  Despesas por categoria
+                </h2>
+                <button
+                  onClick={() => setIsFilterOpen(true)}
+                  className="flex items-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all"
+                  aria-label="Abrir filtros"
+                >
+                  <Filter className="w-4 h-4" />
+                  <span className="text-sm font-medium">Filtros</span>
+                </button>
+              </div>
+              <CategoryPieChart
+                transactions={expenseTransactions}
+                categories={state.categories}
+                type="expense"
               />
-            </div>
+            </CardUI>
+
+            {/* Lista de Transações */}
+            <CardUI className="shadow-lg p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                  <List className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                </div>
+                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
+                  Transações
+                </h2>
+              </div>
+              <TransactionList 
+                type={typeFilter} 
+                filter={filter}
+                categoryId={categoryId}
+                startDate={dateStart || monthStartDate}
+                endDate={dateEnd || monthEndDate}
+                showCategory={true} 
+                columns={5} 
+              />
+            </CardUI>
+          </div>
+
+          {/* Coluna Direita: Cards de Bancos */}
+          <div className="space-y-6">
+            {/* Cards de Bancos */}
+            <CardUI className="shadow-lg p-6">
+              <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">
+                Cartões
+              </h3>
+              {state.cards.length > 0 ? (
+                <div className="space-y-3">
+                  {state.cards.slice(0, 3).map((card) => {
+                    const bankInfo = getBankInfo(card.name);
+                    const currentInvoice = getCurrentInvoice(card, state.transactions);
+                    
+                    return (
+                      <div
+                        key={card.id}
+                        className="p-4 rounded-xl shadow-md flex items-center gap-3"
+                        style={{ backgroundColor: bankInfo.color }}
+                      >
+                        <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                          {bankInfo.logoPath ? (
+                            <img
+                              src={bankInfo.logoPath}
+                              alt={bankInfo.name}
+                              className="w-8 h-8 object-contain"
+                            />
+                          ) : (
+                            <span className="text-xl">{bankInfo.icon}</span>
+                          )}
+                        </div>
+                        <div className="flex-1 text-white">
+                          <p className="font-semibold text-sm">{bankInfo.name}</p>
+                          <p className="text-xs opacity-90">{formatCurrency(currentInvoice.total)}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                  Nenhum cartão cadastrado
+                </p>
+              )}
+            </CardUI>
           </div>
         </div>
 
-        {/* Filtros Section - Design Moderno */}
-        <div className="mb-6 sm:mb-8">
-          <div className="bg-gradient-to-br from-white via-blue-50/30 to-white dark:from-gray-800 dark:via-blue-950/10 dark:to-gray-800 rounded-2xl shadow-lg border border-blue-100/50 dark:border-blue-900/30 p-5 sm:p-6 relative overflow-hidden">
-            {/* Efeito de brilho decorativo */}
-            <div className="absolute top-0 right-0 w-40 h-40 bg-blue-400/10 dark:bg-blue-500/5 rounded-full blur-3xl -mr-20 -mt-20"></div>
-            
-            {/* Header da seção */}
-            <div className="flex items-center gap-3 mb-6 relative z-10">
-              <div className="p-2.5 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-md">
-                <Filter className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Filtros</h2>
-                <p className="text-xs text-gray-500 dark:text-gray-400">Refine sua busca</p>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 relative z-10">
-              {/* Filtro por Tipo */}
-              <div className="bg-white/80 dark:bg-gray-700/50 backdrop-blur-sm rounded-xl p-5 border border-gray-200/50 dark:border-gray-600/50 shadow-sm hover:shadow-md transition-all">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                    <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                  </div>
-                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                    Tipo
-                  </label>
-                </div>
-                <select
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value as FilterType)}
-                  className="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-200 focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 transition-all hover:border-gray-300 dark:hover:border-gray-500 font-medium"
-                >
-                  <option value="all">Todas</option>
-                  <option value="income">Ganhos</option>
-                  <option value="expense_fixed">Despesas Fixas</option>
-                  <option value="expense_variable">Despesas Variáveis</option>
-                  <option value="debt">Dívidas</option>
-                  <option value="savings">Economias</option>
-                </select>
-              </div>
-
-              {/* Filtro por Categoria */}
-              <div className="bg-white/80 dark:bg-gray-700/50 backdrop-blur-sm rounded-xl p-5 border border-gray-200/50 dark:border-gray-600/50 shadow-sm hover:shadow-md transition-all">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                    <Tag className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                    Categoria
-                  </label>
-                </div>
-                <select
-                  value={categoryId || ''}
-                  onChange={(e) => setCategoryId(e.target.value || null)}
-                  className="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all hover:border-gray-300 dark:hover:border-gray-500 font-medium"
-                >
-                  <option value="">Todas as categorias</option>
-                  {state.categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-                {categoryTotal !== null && selectedCategory && (
-                  <div className="mt-4 p-4 bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/30 dark:to-blue-800/20 border-2 border-blue-200 dark:border-blue-800/50 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium uppercase tracking-wide mb-1">
-                          Total em {selectedCategory.name}
-                        </div>
-                        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                          {formatCurrency(categoryTotal)}
-                        </div>
-                      </div>
-                      <div className="p-3 bg-blue-200/50 dark:bg-blue-900/30 rounded-lg">
-                        <Tag className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Filtro por Data */}
-              <div className="lg:col-span-3">
-                <DateFilter
-                  pageKey="gerais"
-                  onDateRangeChange={(start, end) => {
-                    setDateStart(start);
-                    setDateEnd(end);
-                    // Quando limpar o filtro de data manual, não resetar o mês selecionado
-                    // Apenas quando houver filtro ativo, manter o mês atual
-                    if (start || end) {
-                      // Manter o mês selecionado, não resetar
-                    } else {
-                      // Quando limpar o filtro, manter o mês selecionado
-                    }
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Gráfico Section */}
-        <div className="mb-6 sm:mb-8 pb-6 sm:pb-8 border-b border-gray-200 dark:border-gray-700">
-          <PremiumContentCard
-            title="Distribuição por Categoria"
-            icon={PieChart}
-            gradientFrom="from-purple-600"
-            gradientTo="to-purple-700"
-          >
-            <CategoryPieChart
-              transactions={filteredTransactions}
-              categories={state.categories}
-              type="all"
-            />
-          </PremiumContentCard>
-        </div>
-
-        {/* Lista de Transações Section */}
-        <div>
-          <PremiumContentCard
-            title="Transações"
-            icon={List}
-            gradientFrom="from-indigo-600"
-            gradientTo="to-indigo-700"
-          >
-            <TransactionList 
-              type={typeFilter} 
-              filter={filter}
-              categoryId={categoryId}
-              startDate={dateStart || monthStartDate}
-              endDate={dateEnd || monthEndDate}
-              showCategory={true} 
-              columns={5} 
-            />
-          </PremiumContentCard>
-        </div>
       </div>
 
       {/* Botões flutuantes */}
@@ -726,6 +575,110 @@ export default function GeraisPage() {
         startWithVoice={voiceMode}
       />
       <BalanceModal isOpen={isBalanceOpen} onClose={() => setIsBalanceOpen(false)} />
+
+      {/* Modal de Filtros */}
+      {isFilterOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setIsFilterOpen(false)}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">
+                Filtros por categoria
+              </h3>
+              <button
+                onClick={() => setIsFilterOpen(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                aria-label="Fechar filtros"
+              >
+                <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Filtro por Período */}
+              <div>
+                <DateFilter
+                  pageKey="gerais"
+                  onDateRangeChange={(start, end) => {
+                    setDateStart(start);
+                    setDateEnd(end);
+                  }}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Filtro por Tipo */}
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                      <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Tipo
+                    </label>
+                  </div>
+                  <select
+                    value={typeFilter}
+                    onChange={(e) => setTypeFilter(e.target.value as FilterType)}
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                  >
+                    <option value="all">Todas</option>
+                    <option value="income">Ganhos</option>
+                    <option value="expense_fixed">Despesas Fixas</option>
+                    <option value="expense_variable">Despesas Variáveis</option>
+                    <option value="debt">Dívidas</option>
+                    <option value="savings">Economias</option>
+                  </select>
+                </div>
+
+                {/* Filtro por Categoria */}
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                      <Tag className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      Categoria
+                    </label>
+                  </div>
+                  <select
+                    value={categoryId || ''}
+                    onChange={(e) => setCategoryId(e.target.value || null)}
+                    className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                  >
+                    <option value="">Todas as categorias</option>
+                    {state.categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Total da categoria selecionada */}
+              {categoryTotal !== null && selectedCategory && (
+                <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/30 dark:to-blue-800/20 border-2 border-blue-200 dark:border-blue-800/50 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs text-gray-600 dark:text-gray-400 font-medium uppercase tracking-wide mb-1">
+                        Total em {selectedCategory.name}
+                      </div>
+                      <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                        {formatCurrency(categoryTotal)}
+                      </div>
+                    </div>
+                    <div className="p-2 bg-blue-200/50 dark:bg-blue-900/30 rounded-lg">
+                      <Tag className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

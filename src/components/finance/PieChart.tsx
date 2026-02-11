@@ -181,43 +181,41 @@ export function CategoryPieChart({
     return data;
   }, [transactions, categories, type]);
 
-  if (chartData.length === 0) {
-    return null;
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex justify-center">
         <PieChart data={chartData} size={200} strokeWidth={24} />
       </div>
       
-      {/* Legenda */}
-      <div className="space-y-2">
-        {chartData.slice(0, 6).map((item, index) => {
-          const emoji = CATEGORY_EMOJIS[item.label] || '📋';
-          return (
-            <div key={index} className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2 min-w-0">
-                <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
-                  style={{ backgroundColor: item.color }}
-                >
-                  <span className="text-base">{emoji}</span>
+      {/* Legenda - só mostra se houver dados */}
+      {chartData.length > 0 && (
+        <div className="space-y-2">
+          {chartData.slice(0, 6).map((item, index) => {
+            const emoji = CATEGORY_EMOJIS[item.label] || '📋';
+            return (
+              <div key={index} className="flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div
+                    className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
+                    style={{ backgroundColor: item.color }}
+                  >
+                    <span className="text-base">{emoji}</span>
+                  </div>
+                  <span className="text-gray-700 font-medium truncate">{item.label}</span>
                 </div>
-                <span className="text-gray-700 font-medium truncate">{item.label}</span>
+                <span className="text-gray-600 font-semibold ml-2">
+                  {item.percentage.toFixed(1)}%
+                </span>
               </div>
-              <span className="text-gray-600 font-semibold ml-2">
-                {item.percentage.toFixed(1)}%
-              </span>
+            );
+          })}
+          {chartData.length > 6 && (
+            <div className="text-xs text-gray-500 text-center pt-1">
+              +{chartData.length - 6} mais
             </div>
-          );
-        })}
-        {chartData.length > 6 && (
-          <div className="text-xs text-gray-500 text-center pt-1">
-            +{chartData.length - 6} mais
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
