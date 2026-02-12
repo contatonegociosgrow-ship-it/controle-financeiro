@@ -17,11 +17,14 @@ import { LayoutDashboard, Wallet, Receipt, ShoppingCart, Link as LinkIcon, Piggy
 import { PremiumCard } from '@/components/finance/PremiumCard';
 import { PremiumContentCard } from '@/components/finance/PremiumContentCard';
 import { WalletCard } from '@/components/finance/WalletCard';
+import { PWAInstallPrompt } from '@/components/finance/PWAInstallPrompt';
+import { usePWAInstall } from '@/hooks/usePWAInstall';
 
 type FilterType = 'all' | 'income' | 'expense_fixed' | 'expense_variable' | 'debt' | 'savings';
 
 export default function GeraisPage() {
   const { state, isInitialized } = useFinanceStore();
+  const { shouldBlock, isChecking } = usePWAInstall();
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
   const [isBalanceOpen, setIsBalanceOpen] = useState(false);
@@ -317,7 +320,7 @@ export default function GeraisPage() {
     return expenseTransactions.reduce((sum, t) => sum + t.value, 0);
   }, [expenseTransactions]);
 
-  if (!isInitialized) {
+  if (!isInitialized || isChecking) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-gray-600">Carregando...</div>
@@ -327,7 +330,13 @@ export default function GeraisPage() {
 
   return (
     <div className="min-h-screen pb-24">
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+      <PWAInstallPrompt />
+      {shouldBlock ? (
+        <div className="hidden" aria-hidden="true">
+          {/* Conteúdo oculto quando PWA não está instalado */}
+        </div>
+      ) : (
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Banner Superior - Planejamento */}
         <div className="mb-6 bg-[#0F172A] rounded-2xl shadow-lg p-6 relative overflow-hidden border border-gray-800">
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
@@ -525,159 +534,164 @@ export default function GeraisPage() {
           </div>
         </div>
 
-      </div>
+        </div>
+      )}
 
       {/* Botões flutuantes */}
-      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 flex flex-col gap-3 z-40">
-        {/* Botão Balance */}
-        <button
-          onClick={() => setIsBalanceOpen(true)}
-          className="w-14 h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-2xl flex items-center justify-center text-xl font-semibold transition-all hover:scale-110 active:scale-95"
-          aria-label="Ver carteira"
-          title="Ver carteira e saldo"
-        >
-          💰
-        </button>
-        
-        {/* Botão Microfone */}
-        <button
-          onClick={() => {
-            setVoiceMode(true);
-            setIsSheetOpen(true);
-          }}
-          className="w-14 h-14 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all hover:scale-110 active:scale-95"
-          aria-label="Falar e registrar"
-          title="Falar e registrar transação"
-        >
-          🎙️
-        </button>
-        
-        {/* Botão Adicionar */}
-        <button
-          onClick={() => {
-            setVoiceMode(false);
-            setIsSheetOpen(true);
-          }}
-          className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center text-3xl font-light transition-all hover:scale-110 active:scale-95"
-          aria-label="Adicionar transação"
-          title="Adicionar transação manualmente"
-        >
-          +
-        </button>
-      </div>
-
-      <AddTransactionSheet 
-        isOpen={isSheetOpen} 
-        onClose={() => {
-          setIsSheetOpen(false);
-          setVoiceMode(false);
-        }}
-        startWithVoice={voiceMode}
-      />
-      <BalanceModal isOpen={isBalanceOpen} onClose={() => setIsBalanceOpen(false)} />
-
-      {/* Modal de Filtros */}
-      {isFilterOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setIsFilterOpen(false)}>
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">
-                Filtros por categoria
-              </h3>
-              <button
-                onClick={() => setIsFilterOpen(false)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                aria-label="Fechar filtros"
-              >
-                <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
+      {!shouldBlock && (
+        <>
+          <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 flex flex-col gap-3 z-40">
+            {/* Botão Balance */}
+            <button
+              onClick={() => setIsBalanceOpen(true)}
+              className="w-14 h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-2xl flex items-center justify-center text-xl font-semibold transition-all hover:scale-110 active:scale-95"
+              aria-label="Ver carteira"
+              title="Ver carteira e saldo"
+            >
+              💰
+            </button>
             
-            <div className="p-6 space-y-6">
-              {/* Filtro por Período */}
-              <div>
-                <DateFilter
-                  pageKey="gerais"
-                  onDateRangeChange={(start, end) => {
-                    setDateStart(start);
-                    setDateEnd(end);
-                  }}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Filtro por Tipo */}
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                      <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                    </div>
-                    <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Tipo
-                    </label>
-                  </div>
-                  <select
-                    value={typeFilter}
-                    onChange={(e) => setTypeFilter(e.target.value as FilterType)}
-                    className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 transition-all"
-                  >
-                    <option value="all">Todas</option>
-                    <option value="income">Ganhos</option>
-                    <option value="expense_fixed">Despesas Fixas</option>
-                    <option value="expense_variable">Despesas Variáveis</option>
-                    <option value="debt">Dívidas</option>
-                    <option value="savings">Economias</option>
-                  </select>
-                </div>
-
-                {/* Filtro por Categoria */}
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                      <Tag className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                      Categoria
-                    </label>
-                  </div>
-                  <select
-                    value={categoryId || ''}
-                    onChange={(e) => setCategoryId(e.target.value || null)}
-                    className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
-                  >
-                    <option value="">Todas as categorias</option>
-                    {state.categories.map((category) => (
-                      <option key={category.id} value={category.id}>
-                        {category.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Total da categoria selecionada */}
-              {categoryTotal !== null && selectedCategory && (
-                <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/30 dark:to-blue-800/20 border-2 border-blue-200 dark:border-blue-800/50 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="text-xs text-gray-600 dark:text-gray-400 font-medium uppercase tracking-wide mb-1">
-                        Total em {selectedCategory.name}
-                      </div>
-                      <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                        {formatCurrency(categoryTotal)}
-                      </div>
-                    </div>
-                    <div className="p-2 bg-blue-200/50 dark:bg-blue-900/30 rounded-lg">
-                      <Tag className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* Botão Microfone */}
+            <button
+              onClick={() => {
+                setVoiceMode(true);
+                setIsSheetOpen(true);
+              }}
+              className="w-14 h-14 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all hover:scale-110 active:scale-95"
+              aria-label="Falar e registrar"
+              title="Falar e registrar transação"
+            >
+              🎙️
+            </button>
+            
+            {/* Botão Adicionar */}
+            <button
+              onClick={() => {
+                setVoiceMode(false);
+                setIsSheetOpen(true);
+              }}
+              className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center text-3xl font-light transition-all hover:scale-110 active:scale-95"
+              aria-label="Adicionar transação"
+              title="Adicionar transação manualmente"
+            >
+              +
+            </button>
           </div>
-        </div>
+
+          <AddTransactionSheet 
+            isOpen={isSheetOpen} 
+            onClose={() => {
+              setIsSheetOpen(false);
+              setVoiceMode(false);
+            }}
+            startWithVoice={voiceMode}
+          />
+          <BalanceModal isOpen={isBalanceOpen} onClose={() => setIsBalanceOpen(false)} />
+
+          {/* Modal de Filtros */}
+          {isFilterOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setIsFilterOpen(false)}>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                  <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">
+                    Filtros por categoria
+                  </h3>
+                  <button
+                    onClick={() => setIsFilterOpen(false)}
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    aria-label="Fechar filtros"
+                  >
+                    <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                <div className="p-6 space-y-6">
+                  {/* Filtro por Período */}
+                  <div>
+                    <DateFilter
+                      pageKey="gerais"
+                      onDateRangeChange={(start, end) => {
+                        setDateStart(start);
+                        setDateEnd(end);
+                      }}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Filtro por Tipo */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
+                          <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                          Tipo
+                        </label>
+                      </div>
+                      <select
+                        value={typeFilter}
+                        onChange={(e) => setTypeFilter(e.target.value as FilterType)}
+                        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                      >
+                        <option value="all">Todas</option>
+                        <option value="income">Ganhos</option>
+                        <option value="expense_fixed">Despesas Fixas</option>
+                        <option value="expense_variable">Despesas Variáveis</option>
+                        <option value="debt">Dívidas</option>
+                        <option value="savings">Economias</option>
+                      </select>
+                    </div>
+
+                    {/* Filtro por Categoria */}
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                          <Tag className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        </div>
+                        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                          Categoria
+                        </label>
+                      </div>
+                      <select
+                        value={categoryId || ''}
+                        onChange={(e) => setCategoryId(e.target.value || null)}
+                        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                      >
+                        <option value="">Todas as categorias</option>
+                        {state.categories.map((category) => (
+                          <option key={category.id} value={category.id}>
+                            {category.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Total da categoria selecionada */}
+                  {categoryTotal !== null && selectedCategory && (
+                    <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/30 dark:to-blue-800/20 border-2 border-blue-200 dark:border-blue-800/50 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-xs text-gray-600 dark:text-gray-400 font-medium uppercase tracking-wide mb-1">
+                            Total em {selectedCategory.name}
+                          </div>
+                          <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                            {formatCurrency(categoryTotal)}
+                          </div>
+                        </div>
+                        <div className="p-2 bg-blue-200/50 dark:bg-blue-900/30 rounded-lg">
+                          <Tag className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
