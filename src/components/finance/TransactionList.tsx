@@ -350,9 +350,9 @@ export function TransactionList({
                 <div className="text-gray-900 font-medium px-3 border-l border-gray-200">Pagamento Mensal</div>
                 <div className="text-gray-900 font-semibold text-base px-3 border-l border-gray-200">{formatCurrency(currentTransaction.value)}</div>
                 {showStatus && currentTransaction.status && (
-                  <div className={`px-4 py-2.5 border-l border-gray-200 dark:border-gray-700 flex items-center gap-3 rounded-lg ${getStatusColor(currentTransaction.status)}`}>
+                  <div className={`px-4 py-2.5 border-l border-gray-200 dark:border-gray-700 flex items-center gap-3 rounded-lg transition-all duration-200 ${getStatusColor(currentTransaction.status)}`}>
                     <label 
-                      className="relative inline-flex items-center cursor-pointer"
+                      className="relative inline-flex items-center cursor-pointer group"
                       onClick={(e) => {
                         e.stopPropagation();
                         const newStatus = currentTransaction.status === 'paid' ? 'pending' : 'paid';
@@ -374,22 +374,26 @@ export function TransactionList({
                         className="sr-only"
                         title={currentTransaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
                       />
-                      <div className="relative w-5 h-5 flex items-center justify-center pointer-events-none">
-                        <div className={`absolute inset-0 w-5 h-5 border-2 rounded-md transition-all duration-300 ease-out shadow-sm hover:shadow-md hover:scale-110 ${
+                      <div className="relative w-6 h-6 flex items-center justify-center">
+                        <div className={`absolute inset-0 w-6 h-6 border-2 rounded-md transition-all duration-200 ease-out shadow-sm group-hover:shadow-md group-active:scale-95 ${
                           currentTransaction.status === 'paid' 
-                            ? 'border-[#22C55E] bg-[#22C55E] hover:border-[#16A34A] hover:bg-[#16A34A]' 
-                            : 'bg-white dark:bg-gray-800 border-gray-400 dark:border-gray-500 hover:border-[#22C55E]/70'
+                            ? 'border-[#22C55E] bg-[#22C55E] group-hover:border-[#16A34A] group-hover:bg-[#16A34A]' 
+                            : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-500 group-hover:border-[#22C55E] group-hover:bg-green-50 dark:group-hover:bg-green-900/20'
                         }`}></div>
-                        <svg className={`relative w-3.5 h-3.5 transition-all duration-300 ease-out pointer-events-none z-10 ${
+                        <svg className={`relative w-4 h-4 transition-all duration-200 ease-out pointer-events-none z-10 ${
                           currentTransaction.status === 'paid' 
                             ? 'opacity-100 transform scale-100 text-white' 
-                            : 'opacity-0 transform scale-0 text-white'
-                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                            : 'opacity-0 transform scale-75 text-[#22C55E]'
+                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                       </div>
                     </label>
-                    <span className="text-sm font-semibold tracking-wide">
+                    <span className={`text-sm font-semibold tracking-wide transition-colors duration-200 ${
+                      currentTransaction.status === 'paid' 
+                        ? 'text-gray-900 dark:text-gray-100' 
+                        : 'text-gray-700 dark:text-gray-300'
+                    }`}>
                       {getStatusLabel(currentTransaction.status)}
                     </span>
                   </div>
@@ -452,9 +456,9 @@ export function TransactionList({
                   </div>
                 )}
                 {showStatus && currentTransaction.status && (
-                  <div className={`px-4 py-2.5 border-l border-gray-200 dark:border-gray-700 flex items-center gap-3 rounded-lg ${getStatusColor(currentTransaction.status)}`}>
+                  <div className={`px-4 py-2.5 border-l border-gray-200 dark:border-gray-700 flex items-center gap-3 rounded-lg transition-all duration-200 ${getStatusColor(currentTransaction.status)}`}>
                     <label 
-                      className="relative inline-flex items-center cursor-pointer"
+                      className="relative inline-flex items-center cursor-pointer group"
                       onClick={(e) => {
                         e.stopPropagation();
                         const newStatus = currentTransaction.status === 'paid' ? 'pending' : 'paid';
@@ -476,22 +480,26 @@ export function TransactionList({
                         className="sr-only"
                         title={currentTransaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
                       />
-                      <div className="relative w-5 h-5 flex items-center justify-center pointer-events-none">
-                        <div className={`absolute inset-0 w-5 h-5 border-2 rounded-md transition-all duration-300 ease-out shadow-sm hover:shadow-md hover:scale-110 ${
+                      <div className="relative w-6 h-6 flex items-center justify-center">
+                        <div className={`absolute inset-0 w-6 h-6 border-2 rounded-md transition-all duration-200 ease-out shadow-sm group-hover:shadow-md group-active:scale-95 ${
                           currentTransaction.status === 'paid' 
-                            ? 'border-[#22C55E] bg-[#22C55E] hover:border-[#16A34A] hover:bg-[#16A34A]' 
-                            : 'bg-white dark:bg-gray-800 border-gray-400 dark:border-gray-500 hover:border-[#22C55E]/70'
+                            ? 'border-[#22C55E] bg-[#22C55E] group-hover:border-[#16A34A] group-hover:bg-[#16A34A]' 
+                            : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-500 group-hover:border-[#22C55E] group-hover:bg-green-50 dark:group-hover:bg-green-900/20'
                         }`}></div>
-                        <svg className={`relative w-3.5 h-3.5 transition-all duration-300 ease-out pointer-events-none z-10 ${
+                        <svg className={`relative w-4 h-4 transition-all duration-200 ease-out pointer-events-none z-10 ${
                           currentTransaction.status === 'paid' 
                             ? 'opacity-100 transform scale-100 text-white' 
-                            : 'opacity-0 transform scale-0 text-white'
-                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                            : 'opacity-0 transform scale-75 text-[#22C55E]'
+                        }`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                         </svg>
                       </div>
                     </label>
-                    <span className="text-sm font-semibold tracking-wide">
+                    <span className={`text-sm font-semibold tracking-wide transition-colors duration-200 ${
+                      currentTransaction.status === 'paid' 
+                        ? 'text-gray-900 dark:text-gray-100' 
+                        : 'text-gray-700 dark:text-gray-300'
+                    }`}>
                       {getStatusLabel(currentTransaction.status)}
                     </span>
                   </div>
@@ -617,9 +625,9 @@ export function TransactionList({
                     </div>
                   </div>
                   {showStatus && currentTransaction.status && (
-                    <div className={`flex items-center gap-3 pt-2 border-t border-gray-100 dark:border-gray-700 px-3 py-2.5 rounded-lg ${getStatusColor(currentTransaction.status)}`}>
+                    <div className={`flex items-center gap-3 pt-2 border-t border-gray-100 dark:border-gray-700 px-3 py-2.5 rounded-lg transition-all duration-200 ${getStatusColor(currentTransaction.status)}`}>
                       <label 
-                        className="relative inline-flex items-center cursor-pointer"
+                        className="relative inline-flex items-center cursor-pointer group"
                         onClick={(e) => {
                           e.stopPropagation();
                           const newStatus = currentTransaction.status === 'paid' ? 'pending' : 'paid';
@@ -640,22 +648,26 @@ export function TransactionList({
                           className="sr-only"
                           title={currentTransaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
                         />
-                        <div className={`relative w-5 h-5 flex items-center justify-center pointer-events-none ${currentTransaction.status === 'paid' ? 'border-[#22C55E] bg-[#22C55E]' : ''}`}>
-                          <div className={`absolute inset-0 w-5 h-5 bg-white dark:bg-gray-800 border-2 rounded-md transition-all duration-300 ease-out shadow-sm hover:shadow-md hover:scale-110 ${
+                        <div className="relative w-6 h-6 flex items-center justify-center">
+                          <div className={`absolute inset-0 w-6 h-6 border-2 rounded-md transition-all duration-200 ease-out shadow-sm group-hover:shadow-md group-active:scale-95 ${
                             currentTransaction.status === 'paid' 
-                              ? 'border-[#22C55E] bg-[#22C55E] hover:border-[#16A34A] hover:bg-[#16A34A]' 
-                              : 'border-gray-400 dark:border-gray-500 hover:border-[#22C55E]/70'
+                              ? 'border-[#22C55E] bg-[#22C55E] group-hover:border-[#16A34A] group-hover:bg-[#16A34A]' 
+                              : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-500 group-hover:border-[#22C55E] group-hover:bg-green-50 dark:group-hover:bg-green-900/20'
                           }`}></div>
-                          <svg className={`relative w-3.5 h-3.5 text-white transition-all duration-300 ease-out pointer-events-none ${
+                          <svg className={`relative w-4 h-4 transition-all duration-200 ease-out pointer-events-none z-10 ${
                             currentTransaction.status === 'paid' 
-                              ? 'opacity-100 transform scale-100' 
-                              : 'opacity-0 transform scale-0'
-                          }`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                              ? 'opacity-100 transform scale-100 text-white' 
+                              : 'opacity-0 transform scale-75 text-[#22C55E]'
+                          }`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
                       </label>
-                      <span className="text-sm font-semibold tracking-wide">
+                      <span className={`text-sm font-semibold tracking-wide transition-colors duration-200 ${
+                        currentTransaction.status === 'paid' 
+                          ? 'text-gray-900 dark:text-gray-100' 
+                          : 'text-gray-700 dark:text-gray-300'
+                      }`}>
                         {getStatusLabel(currentTransaction.status)}
                       </span>
                     </div>
@@ -696,9 +708,9 @@ export function TransactionList({
                     </div>
                   </div>
                   {showStatus && currentTransaction.status && (
-                    <div className={`flex items-center gap-3 pt-2 border-t border-gray-100 dark:border-gray-700 px-3 py-2.5 rounded-lg ${getStatusColor(currentTransaction.status)}`}>
+                    <div className={`flex items-center gap-3 pt-2 border-t border-gray-100 dark:border-gray-700 px-3 py-2.5 rounded-lg transition-all duration-200 ${getStatusColor(currentTransaction.status)}`}>
                       <label 
-                        className="relative inline-flex items-center cursor-pointer"
+                        className="relative inline-flex items-center cursor-pointer group"
                         onClick={(e) => {
                           e.stopPropagation();
                           const newStatus = currentTransaction.status === 'paid' ? 'pending' : 'paid';
@@ -719,22 +731,26 @@ export function TransactionList({
                           className="sr-only"
                           title={currentTransaction.status === 'paid' ? 'Marcar como não pago' : 'Marcar como pago'}
                         />
-                        <div className={`relative w-5 h-5 flex items-center justify-center pointer-events-none ${currentTransaction.status === 'paid' ? 'border-[#22C55E] bg-[#22C55E]' : ''}`}>
-                          <div className={`absolute inset-0 w-5 h-5 bg-white dark:bg-gray-800 border-2 rounded-md transition-all duration-300 ease-out shadow-sm hover:shadow-md hover:scale-110 ${
+                        <div className="relative w-6 h-6 flex items-center justify-center">
+                          <div className={`absolute inset-0 w-6 h-6 border-2 rounded-md transition-all duration-200 ease-out shadow-sm group-hover:shadow-md group-active:scale-95 ${
                             currentTransaction.status === 'paid' 
-                              ? 'border-[#22C55E] bg-[#22C55E] hover:border-[#16A34A] hover:bg-[#16A34A]' 
-                              : 'border-gray-400 dark:border-gray-500 hover:border-[#22C55E]/70'
+                              ? 'border-[#22C55E] bg-[#22C55E] group-hover:border-[#16A34A] group-hover:bg-[#16A34A]' 
+                              : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-500 group-hover:border-[#22C55E] group-hover:bg-green-50 dark:group-hover:bg-green-900/20'
                           }`}></div>
-                          <svg className={`relative w-3.5 h-3.5 text-white transition-all duration-300 ease-out pointer-events-none ${
+                          <svg className={`relative w-4 h-4 transition-all duration-200 ease-out pointer-events-none z-10 ${
                             currentTransaction.status === 'paid' 
-                              ? 'opacity-100 transform scale-100' 
-                              : 'opacity-0 transform scale-0'
-                          }`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                              ? 'opacity-100 transform scale-100 text-white' 
+                              : 'opacity-0 transform scale-75 text-[#22C55E]'
+                          }`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
                       </label>
-                      <span className="text-sm font-semibold tracking-wide">
+                      <span className={`text-sm font-semibold tracking-wide transition-colors duration-200 ${
+                        currentTransaction.status === 'paid' 
+                          ? 'text-gray-900 dark:text-gray-100' 
+                          : 'text-gray-700 dark:text-gray-300'
+                      }`}>
                         {getStatusLabel(currentTransaction.status)}
                       </span>
                     </div>
