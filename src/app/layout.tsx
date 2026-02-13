@@ -11,8 +11,8 @@ export const metadata: Metadata = {
   themeColor: '#f5f7fa',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
   icons: {
-    icon: '/logo.png',
-    apple: '/logo.png',
+    icon: '/logonovo.png',
+    apple: '/logonovo.png',
   },
   appleWebApp: {
     capable: true,
@@ -36,8 +36,8 @@ export default function RootLayout({
           rel="stylesheet"
         />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/logo.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/logo.png" />
+        <link rel="icon" href="/logonovo.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/logonovo.png" />
       </head>
       <body>
         <FinanceProvider>

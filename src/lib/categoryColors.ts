@@ -1,10 +1,11 @@
 // Utilitário para gerenciar cores de categorias
 
 // Cores padrão para categorias conhecidas
+// Usa a cor primária do logo (#80c040) para categorias de ganhos
 export const DEFAULT_CATEGORY_COLORS: Record<string, string> = {
-  'Ganhos': '#22c55e',       // green-500 (verde)
+  'Ganhos': '#80c040',       // Cor primária do logo (verde)
   'Moradia': '#f97316',      // orange-500 (laranja)
-  'Alimentação': '#22c55e',  // green-500 (verde)
+  'Alimentação': '#80c040',  // Cor primária do logo (verde)
   'Transporte': '#3b82f6',   // blue-500 (azul)
   'Compras': '#c084fc',      // purple-400 (roxo)
   'Educação': '#ec4899',     // pink-500 (rosa)
@@ -14,21 +15,23 @@ export const DEFAULT_CATEGORY_COLORS: Record<string, string> = {
   'Outros': '#94a3b8',       // slate-400 (cinza)
   // Categorias antigas (mantidas para migração)
   'Casa': '#f97316',         // orange-500
-  'Restaurante': '#22c55e',  // green-500
+  'Restaurante': '#80c040',  // Cor primária do logo
   'Carro': '#3b82f6',        // blue-500
   'Presente': '#94a3b8',     // slate-400
   'Farmácia': '#eab308',     // yellow-500
   'Seguro': '#94a3b8',       // slate-400
-  'Mercado': '#22c55e',      // green-500
+  'Mercado': '#80c040',      // Cor primária do logo
   'Assinatura': '#94a3b8',   // slate-400
 };
 
 // Paleta de cores predefinidas para escolha do usuário
+// Inclui a cor primária do logo
 export const COLOR_PALETTE = [
   '#ef4444', // red-500
   '#f97316', // orange-500
   '#eab308', // yellow-500
-  '#22c55e', // green-500
+  '#80c040', // Cor primária do logo (verde)
+  '#90d040', // Cor secundária do logo (verde claro)
   '#06b6d4', // cyan-500
   '#3b82f6', // blue-500
   '#6366f1', // indigo-500

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { Logo } from '@/components/Logo';
 
 export default function VendasPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -18,10 +19,12 @@ export default function VendasPage() {
       {/* Header com Logo */}
       <header className="px-4 bg-gray-900 py-3">
         <div className="max-w-7xl mx-auto flex justify-center items-center">
-          <img 
-            src="/logo.png" 
-            alt="Meu Salário em Dia" 
-            className="h-16 sm:h-20 md:h-24 lg:h-28 w-auto"
+          <Logo
+            useImgTag
+            alt="Meu Salário em Dia"
+            imgClassName="h-16 sm:h-20 md:h-24 lg:h-28 w-auto"
+            width={112}
+            height={112}
           />
         </div>
       </header>

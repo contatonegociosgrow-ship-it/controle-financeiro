@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import Image from 'next/image';
 import {
   LayoutDashboard,
   HeartPulse,
@@ -20,6 +19,7 @@ import {
   Target,
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import { Logo } from '@/components/Logo';
 
 type TabType = 'gerais' | 'ganhos' | 'fixas' | 'variaveis' | 'dividas' | 'economias' | 'cartoes' | 'mensal' | 'manual' | 'perfil' | 'saude-financeira' | 'investimentos' | 'cofre';
 
@@ -81,9 +81,7 @@ export function Sidebar() {
         {/* Logo */}
         <div className="w-full flex justify-center py-3 border-b border-gray-800 mb-2">
           <Link href="/app" className="flex items-center justify-center">
-            <Image
-              src="/logo.png"
-              alt="Meu Salário em dia"
+            <Logo
               width={80}
               height={80}
               className="rounded-lg"
@@ -101,14 +99,14 @@ export function Sidebar() {
                 href={tab.path}
                 className={`w-full flex flex-col items-center justify-center py-2 px-2 transition-all relative group ${
                   active
-                    ? 'bg-[#22C55E] text-white shadow-lg'
+                    ? 'bg-primary text-white shadow-lg'
                     : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
                 }`}
                 title={tab.label}
               >
                 {/* Indicador ativo */}
                 {active && (
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#22C55E] rounded-r-full shadow-lg" />
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full shadow-lg" />
                 )}
                 
                 {/* Ícone */}
@@ -179,9 +177,7 @@ export function Sidebar() {
           <div className="absolute top-full left-0 mt-2 w-64 bg-[#0F172A] border border-gray-800 rounded-lg shadow-xl overflow-hidden z-50">
             {/* Logo no Mobile */}
             <div className="px-4 py-3 border-b border-gray-800 flex items-center gap-3">
-              <Image
-                src="/logo.png"
-                alt="Meu Salário em dia"
+              <Logo
                 width={40}
                 height={40}
                 className="rounded-lg"
@@ -199,7 +195,7 @@ export function Sidebar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`flex items-center gap-3 px-4 py-3 transition-colors ${
                       active
-                        ? 'bg-[#22C55E]'
+                        ? 'bg-primary'
                         : 'hover:bg-gray-800'
                     }`}
                   >

@@ -24,6 +24,21 @@ module.exports = {
         tight: '-0.01em',
         normal: '0',
       },
+      colors: {
+        // Cores do tema baseadas no logo (extraídas automaticamente)
+        primary: {
+          DEFAULT: '#80c040', // Cor primária do logo (verde claro)
+          dark: '#70b030',    // Versão escura
+          darker: '#309060',  // Versão mais escura
+          light: '#90d040',   // Versão clara
+          lighter: '#a0c020', // Versão mais clara
+        },
+        brand: {
+          dark: '#202020',    // Cor escura do logo (fundo)
+          green: '#80c040',   // Verde principal
+          'green-light': '#90d040', // Verde claro
+        },
+      },
     },
   },
   plugins: [],

@@ -171,13 +171,13 @@ export function DebtInstallmentsCard({ debt }: DebtInstallmentsCardProps) {
                   <div className="relative w-6 h-6 flex items-center justify-center">
                     <div className={`absolute inset-0 w-6 h-6 border-2 rounded-md transition-all duration-200 ease-out shadow-sm group-hover:shadow-md group-active:scale-95 ${
                       installment.isPaid
-                        ? 'border-[#22C55E] bg-[#22C55E] group-hover:border-[#16A34A] group-hover:bg-[#16A34A]'
-                        : 'bg-white border-gray-300 group-hover:border-[#22C55E] group-hover:bg-green-50'
+                        ? 'border-primary bg-primary group-hover:border-primary-dark group-hover:bg-primary-dark'
+                        : 'bg-white border-gray-300 group-hover:border-primary group-hover:bg-primary/10'
                     }`}></div>
                     <svg className={`relative w-4 h-4 transition-all duration-200 ease-out pointer-events-none z-10 ${
                       installment.isPaid
                         ? 'opacity-100 transform scale-100 text-white'
-                        : 'opacity-0 transform scale-75 text-[#22C55E]'
+                        : 'opacity-0 transform scale-75 text-primary'
                     }`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
