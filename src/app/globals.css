@@ -15,8 +15,8 @@ body {
 }
 
 body {
-  /* Gradiente baseado nas cores do logo */
-  background: linear-gradient(135deg, #f0f8e8 0%, #e0f0d0 50%, #d0e8c0 100%);
+  /* Background off-white */
+  background: #fafafa;
   color: #1a202c;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -57,45 +57,45 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  /* Cor do scrollbar baseada no verde do logo */
-  background: linear-gradient(180deg, #90d040 0%, #80c040 100%);
+  /* Cor do scrollbar azul */
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
   border-radius: 10px;
   border: 2px solid #f8fafc;
   transition: all 0.3s ease;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #80c040 0%, #70b030 100%);
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
   border-color: #0f172a;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #80c040 0%, #70b030 100%);
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
   border-color: #e2e8f0;
   transform: scale(1.1);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #90d040 0%, #80c040 100%);
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
   border-color: #1e293b;
 }
 
 ::-webkit-scrollbar-thumb:active {
-  background: linear-gradient(180deg, #70b030 0%, #309060 100%);
+  background: linear-gradient(180deg, #1d4ed8 0%, #1e40af 100%);
 }
 
 .dark ::-webkit-scrollbar-thumb:active {
-  background: linear-gradient(180deg, #80c040 0%, #70b030 100%);
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
 }
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #80c040 #f8fafc;
+  scrollbar-color: #2563eb #f8fafc;
 }
 
 .dark * {
-  scrollbar-color: #80c040 #0f172a;
+  scrollbar-color: #2563eb #0f172a;
 }
 
 /* Scrollbar para elementos específicos (modais, cards com scroll) */
@@ -106,15 +106,15 @@ body {
 
 .overflow-y-auto::-webkit-scrollbar-thumb,
 .overflow-y-scroll::-webkit-scrollbar-thumb {
-  /* Cor do scrollbar baseada no verde do logo */
-  background: linear-gradient(180deg, #90d040 0%, #80c040 100%);
+  /* Cor do scrollbar azul */
+  background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
   border-radius: 8px;
   border: 1px solid transparent;
 }
 
 .dark .overflow-y-auto::-webkit-scrollbar-thumb,
 .dark .overflow-y-scroll::-webkit-scrollbar-thumb {
-  background: linear-gradient(180deg, #80c040 0%, #70b030 100%);
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
 }
 
 /* Inputs e selects */

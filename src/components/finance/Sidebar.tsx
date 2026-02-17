@@ -99,14 +99,14 @@ export function Sidebar() {
                 href={tab.path}
                 className={`w-full flex flex-col items-center justify-center py-2 px-2 transition-all relative group ${
                   active
-                    ? 'bg-primary text-white shadow-lg'
+                    ? 'bg-blue-600 text-white shadow-lg'
                     : 'text-gray-400 hover:bg-gray-800 hover:text-gray-200'
                 }`}
                 title={tab.label}
               >
                 {/* Indicador ativo */}
                 {active && (
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full shadow-lg" />
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-600 rounded-r-full shadow-lg" />
                 )}
                 
                 {/* Ícone */}
@@ -195,7 +195,7 @@ export function Sidebar() {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`flex items-center gap-3 px-4 py-3 transition-colors ${
                       active
-                        ? 'bg-primary'
+                        ? 'bg-blue-600'
                         : 'hover:bg-gray-800'
                     }`}
                   >

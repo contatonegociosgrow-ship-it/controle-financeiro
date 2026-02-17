@@ -11,7 +11,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const logoPath = path.join(__dirname, '..', 'public', 'logonovo.png');
+const logoPath = path.join(__dirname, '..', 'public', 'logo.png');
 
 console.log('📸 Analisando logo:', logoPath);
 console.log('');

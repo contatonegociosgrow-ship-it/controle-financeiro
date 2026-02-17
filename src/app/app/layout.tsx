@@ -12,7 +12,7 @@ export default function AppLayout({
   return (
     <>
       <ThemeInitializer />
-      <div className="flex min-h-screen bg-gradient-to-br from-[#f0f8e8] via-[#e0f0d0] to-[#d0e8c0] dark:from-[#202020] dark:via-[#252525] dark:to-[#2a2a2a] relative overflow-hidden">
+      <div className="flex min-h-screen bg-gray-50 dark:from-[#202020] dark:via-[#252525] dark:to-[#2a2a2a] relative overflow-hidden">
         {/* Efeito de brilho decorativo baseado nas cores do logo */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/20 dark:bg-primary/10 rounded-full blur-3xl"></div>

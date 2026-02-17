@@ -239,7 +239,7 @@ export default function InvestimentosPage() {
   }
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-24 bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Header */}
         <div className="mb-8 pb-6 border-b border-gray-200 dark:border-gray-700">

@@ -22,9 +22,9 @@ export default function VendasPage() {
           <Logo
             useImgTag
             alt="Meu Salário em Dia"
-            imgClassName="h-16 sm:h-20 md:h-24 lg:h-28 w-auto"
-            width={112}
-            height={112}
+            imgClassName="h-24 sm:h-28 md:h-36 lg:h-44 w-auto"
+            width={176}
+            height={176}
           />
         </div>
       </header>

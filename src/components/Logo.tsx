@@ -25,7 +25,7 @@ export function Logo({
   if (useImgTag) {
     return (
       <img
-        src="/logonovo.png"
+        src="/logo.png"
         alt={alt}
         className={imgClassName || className}
         width={width}
@@ -36,7 +36,7 @@ export function Logo({
 
   return (
     <Image
-      src="/logonovo.png"
+      src="/logo.png"
       alt={alt}
       width={width}
       height={height}

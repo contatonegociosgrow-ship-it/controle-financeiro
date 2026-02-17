@@ -329,7 +329,7 @@ export default function GeraisPage() {
   }
 
   return (
-    <div className="min-h-screen pb-24">
+    <div className="min-h-screen pb-24 bg-gray-50 dark:bg-gray-900">
       <PWAInstallPrompt />
       {shouldBlock ? (
         <div className="hidden" aria-hidden="true">
