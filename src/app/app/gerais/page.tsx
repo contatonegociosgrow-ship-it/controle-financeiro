@@ -13,7 +13,7 @@ import { MonthlyInsight } from '@/components/finance/MonthlyInsight';
 import { getSalaryPercentage, getSalaryStatus } from '@/lib/salaryUtils';
 import { getBankInfo } from '@/lib/bankColors';
 import { getCurrentInvoice } from '@/lib/cardUtils';
-import { LayoutDashboard, Wallet, Receipt, ShoppingCart, Link as LinkIcon, PiggyBank, PieChart, List, Filter, Tag, Calendar, Layers } from 'lucide-react';
+import { LayoutDashboard, Wallet, Receipt, ShoppingCart, Link as LinkIcon, PiggyBank, PieChart, List, Filter, Tag, Calendar, Layers, Mic, Plus } from 'lucide-react';
 import { PremiumCard } from '@/components/finance/PremiumCard';
 import { PremiumContentCard } from '@/components/finance/PremiumContentCard';
 import { WalletCard } from '@/components/finance/WalletCard';
@@ -338,34 +338,33 @@ export default function GeraisPage() {
       ) : (
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Banner Superior - Planejamento */}
-        <div className="mb-6 bg-[#0F172A] rounded-2xl shadow-lg p-6 relative overflow-hidden border border-gray-800">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
+        <div className="mb-6 glassmorphism rounded-2xl p-6 relative overflow-hidden">
           <div className="relative z-10 flex items-center justify-between flex-wrap gap-4">
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl sm:text-3xl font-bold text-white">
                 Planejamento de {state.profile.name || 'Usuário'}
               </h1>
-              <p className="text-sm text-gray-300 mt-1">
+              <p className="text-sm text-white/70 mt-1.5 font-medium">
                 {monthNames[selectedMonth]} {selectedYear}
               </p>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handleMonthChange('prev')}
-                className="p-2 bg-gray-800/80 hover:bg-gray-700 rounded-lg transition-all shadow-sm border border-gray-700"
+                className="p-2.5 glassmorphism rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
                 aria-label="Mês anterior"
               >
-                <svg className="w-5 h-5 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
               <button
                 onClick={() => handleMonthChange('next')}
-                className="p-2 bg-gray-800/80 hover:bg-gray-700 rounded-lg transition-all shadow-sm border border-gray-700"
+                className="p-2.5 glassmorphism rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
                 aria-label="Próximo mês"
               >
-                <svg className="w-5 h-5 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </button>
             </div>
@@ -380,60 +379,60 @@ export default function GeraisPage() {
           </div>
 
           {/* Ganhos */}
-          <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-3 sm:p-4 text-white relative overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -mr-8 -mt-8"></div>
-            <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/10 rounded-full -ml-6 -mb-6"></div>
+          <div className="glassmorphism rounded-2xl p-4 sm:p-5 relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-[0.98]">
             <div className="relative z-10">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-lg">💵</span>
-                <h4 className="text-xs font-semibold opacity-90">Ganhos</h4>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg">
+                  <Wallet size={28} className="text-white" strokeWidth={2} />
+                </div>
+                <h4 className="text-xs sm:text-sm font-bold text-white tracking-wide">Ganhos</h4>
               </div>
-              <p className="text-base sm:text-lg font-bold text-white">
+              <p className="text-xl sm:text-2xl font-extrabold text-pastel-green tracking-tight">
                 {formatCurrency(totals.income)}
               </p>
             </div>
           </div>
 
           {/* Despesas Fixas */}
-          <div className="bg-gradient-to-br from-red-500 to-rose-600 rounded-xl p-3 sm:p-4 text-white relative overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -mr-8 -mt-8"></div>
-            <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/10 rounded-full -ml-6 -mb-6"></div>
+          <div className="glassmorphism rounded-2xl p-4 sm:p-5 relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-[0.98]">
             <div className="relative z-10">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-lg">📌</span>
-                <h4 className="text-xs font-semibold opacity-90">Fixas</h4>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg">
+                  <Receipt size={28} className="text-white" strokeWidth={2} />
+                </div>
+                <h4 className="text-xs sm:text-sm font-bold text-white tracking-wide">Fixas</h4>
               </div>
-              <p className="text-base sm:text-lg font-bold text-white">
+              <p className="text-xl sm:text-2xl font-extrabold text-pastel-red tracking-tight">
                 {formatCurrency(totals.expenseFixed)}
               </p>
             </div>
           </div>
 
           {/* Despesas Variáveis */}
-          <div className="bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl p-3 sm:p-4 text-white relative overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -mr-8 -mt-8"></div>
-            <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/10 rounded-full -ml-6 -mb-6"></div>
+          <div className="glassmorphism rounded-2xl p-4 sm:p-5 relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-[0.98]">
             <div className="relative z-10">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-lg">🛒</span>
-                <h4 className="text-xs font-semibold opacity-90">Variáveis</h4>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg">
+                  <ShoppingCart size={28} className="text-white" strokeWidth={2} />
+                </div>
+                <h4 className="text-xs sm:text-sm font-bold text-white tracking-wide">Variáveis</h4>
               </div>
-              <p className="text-base sm:text-lg font-bold text-white">
+              <p className="text-xl sm:text-2xl font-extrabold text-pastel-red tracking-tight">
                 {formatCurrency(totals.expenseVariable)}
               </p>
             </div>
           </div>
 
           {/* Dívidas */}
-          <div className="bg-gradient-to-br from-red-600 to-red-700 rounded-xl p-3 sm:p-4 text-white relative overflow-hidden shadow-md hover:shadow-lg transition-shadow">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-white/10 rounded-full -mr-8 -mt-8"></div>
-            <div className="absolute bottom-0 left-0 w-12 h-12 bg-white/10 rounded-full -ml-6 -mb-6"></div>
+          <div className="glassmorphism rounded-2xl p-4 sm:p-5 relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-[0.98]">
             <div className="relative z-10">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <span className="text-lg">🔗</span>
-                <h4 className="text-xs font-semibold opacity-90">Dívidas</h4>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg">
+                  <LinkIcon size={28} className="text-white" strokeWidth={2} />
+                </div>
+                <h4 className="text-xs sm:text-sm font-bold text-white tracking-wide">Dívidas</h4>
               </div>
-              <p className="text-base sm:text-lg font-bold text-white">
+              <p className="text-xl sm:text-2xl font-extrabold text-pastel-red tracking-tight">
                 {formatCurrency(totals.debt)}
               </p>
             </div>
@@ -444,18 +443,23 @@ export default function GeraisPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Coluna Esquerda: Gráfico de Pizza */}
           <div className="lg:col-span-2 space-y-6">
-            <CardUI className="shadow-lg p-6">
+            <CardUI className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
-                  Despesas por categoria
-                </h2>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg">
+                    <PieChart size={28} className="text-white" strokeWidth={2} />
+                  </div>
+                  <h2 className="text-xl font-bold text-white">
+                    Despesas por categoria
+                  </h2>
+                </div>
                 <button
                   onClick={() => setIsFilterOpen(true)}
-                  className="flex items-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-md hover:shadow-lg transition-all"
+                  className="flex items-center gap-2 px-4 py-2.5 glassmorphism text-white rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
                   aria-label="Abrir filtros"
                 >
-                  <Filter className="w-4 h-4" />
-                  <span className="text-sm font-medium">Filtros</span>
+                  <Filter className="w-4 h-4" strokeWidth={2.5} />
+                  <span className="text-sm font-semibold">Filtros</span>
                 </button>
               </div>
               <CategoryPieChart
@@ -466,12 +470,12 @@ export default function GeraisPage() {
             </CardUI>
 
             {/* Lista de Transações */}
-            <CardUI className="shadow-lg p-6">
+            <CardUI className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                  <List className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg">
+                  <List size={28} className="text-white" strokeWidth={2} />
                 </div>
-                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">
+                <h2 className="text-xl font-bold text-white">
                   Transações
                 </h2>
               </div>
@@ -490,10 +494,15 @@ export default function GeraisPage() {
           {/* Coluna Direita: Cards de Bancos */}
           <div className="space-y-6">
             {/* Cards de Bancos */}
-            <CardUI className="shadow-lg p-6">
-              <h3 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">
-                Cartões
-              </h3>
+            <CardUI className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg">
+                  <LayoutDashboard size={28} className="text-white" strokeWidth={2} />
+                </div>
+                <h3 className="text-lg font-bold text-white">
+                  Cartões
+                </h3>
+              </div>
               {state.cards.length > 0 ? (
                 <div className="space-y-3">
                   {state.cards.slice(0, 3).map((card) => {
@@ -544,11 +553,11 @@ export default function GeraisPage() {
             {/* Botão Balance */}
             <button
               onClick={() => setIsBalanceOpen(true)}
-              className="w-14 h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-2xl flex items-center justify-center text-xl font-semibold transition-all hover:scale-110 active:scale-95"
+              className="fab-blue w-14 h-14 rounded-full flex items-center justify-center text-xl font-semibold text-white"
               aria-label="Ver carteira"
               title="Ver carteira e saldo"
             >
-              💰
+              <Wallet size={22} strokeWidth={2.5} className="text-white" />
             </button>
             
             {/* Botão Microfone */}
@@ -557,24 +566,24 @@ export default function GeraisPage() {
                 setVoiceMode(true);
                 setIsSheetOpen(true);
               }}
-              className="w-14 h-14 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl transition-all hover:scale-110 active:scale-95"
+              className="fab-blue w-14 h-14 rounded-full flex items-center justify-center text-2xl text-white"
               aria-label="Falar e registrar"
               title="Falar e registrar transação"
             >
-              🎙️
+              <Mic size={22} strokeWidth={2.5} className="text-white" />
             </button>
             
-            {/* Botão Adicionar */}
+            {/* Botão Adicionar - Principal */}
             <button
               onClick={() => {
                 setVoiceMode(false);
                 setIsSheetOpen(true);
               }}
-              className="w-14 h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center text-3xl font-light transition-all hover:scale-110 active:scale-95"
+              className="fab-blue w-16 h-16 rounded-full flex items-center justify-center text-3xl font-light text-white"
               aria-label="Adicionar transação"
               title="Adicionar transação manualmente"
             >
-              +
+              <Plus size={28} strokeWidth={2.5} className="text-white" />
             </button>
           </div>
 
@@ -590,24 +599,29 @@ export default function GeraisPage() {
 
           {/* Modal de Filtros */}
           {isFilterOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setIsFilterOpen(false)}>
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                  <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">
-                    Filtros por categoria
-                  </h3>
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200" onClick={() => setIsFilterOpen(false)}>
+              <div className="glassmorphism-strong rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom-4 duration-300" onClick={(e) => e.stopPropagation()}>
+                <div className="p-6 border-b border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400/30 to-indigo-600/30 flex items-center justify-center neomorphic">
+                      <Filter className="w-5 h-5 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white">
+                      Filtros por categoria
+                    </h3>
+                  </div>
                   <button
                     onClick={() => setIsFilterOpen(false)}
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    className="p-2 glassmorphism rounded-xl transition-all duration-200 hover:scale-110 active:scale-95"
                     aria-label="Fechar filtros"
                   >
-                    <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                   </button>
                 </div>
                 
-                <div className="p-6 space-y-6">
+                <div className="p-6 space-y-6 bg-white rounded-b-3xl">
                   {/* Filtro por Período */}
                   <div>
                     <DateFilter
@@ -623,17 +637,17 @@ export default function GeraisPage() {
                     {/* Filtro por Tipo */}
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                          <Layers className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400/30 to-indigo-600/30 flex items-center justify-center neomorphic">
+                          <Layers className="w-4 h-4 text-white" />
                         </div>
-                        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        <label className="text-sm font-semibold text-gray-700">
                           Tipo
                         </label>
                       </div>
                       <select
                         value={typeFilter}
                         onChange={(e) => setTypeFilter(e.target.value as FilterType)}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 transition-all"
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all"
                       >
                         <option value="all">Todas</option>
                         <option value="income">Ganhos</option>
@@ -647,17 +661,17 @@ export default function GeraisPage() {
                     {/* Filtro por Categoria */}
                     <div>
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                          <Tag className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400/30 to-blue-600/30 flex items-center justify-center neomorphic">
+                          <Tag className="w-4 h-4 text-white" />
                         </div>
-                        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        <label className="text-sm font-semibold text-gray-700">
                           Categoria
                         </label>
                       </div>
                       <select
                         value={categoryId || ''}
                         onChange={(e) => setCategoryId(e.target.value || null)}
-                        className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all"
+                        className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all"
                       >
                         <option value="">Todas as categorias</option>
                         {state.categories.map((category) => (
@@ -671,18 +685,18 @@ export default function GeraisPage() {
 
                   {/* Total da categoria selecionada */}
                   {categoryTotal !== null && selectedCategory && (
-                    <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/30 dark:to-blue-800/20 border-2 border-blue-200 dark:border-blue-800/50 rounded-lg">
+                    <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100/50 border-2 border-blue-200 rounded-lg">
                       <div className="flex items-center justify-between">
                         <div>
-                          <div className="text-xs text-gray-600 dark:text-gray-400 font-medium uppercase tracking-wide mb-1">
+                          <div className="text-xs text-gray-600 font-medium uppercase tracking-wide mb-1">
                             Total em {selectedCategory.name}
                           </div>
-                          <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                          <div className="text-xl font-bold text-blue-600">
                             {formatCurrency(categoryTotal)}
                           </div>
                         </div>
-                        <div className="p-2 bg-blue-200/50 dark:bg-blue-900/30 rounded-lg">
-                          <Tag className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        <div className="p-2 bg-blue-200/50 rounded-lg">
+                          <Tag className="w-5 h-5 text-blue-600" />
                         </div>
                       </div>
                     </div>

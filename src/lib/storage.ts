@@ -12,7 +12,7 @@ type FinanceState = {
     wallet: number; // Carteira/Saldo atual
   };
   categories: { id: string; name: string; limit?: number | null; color?: string }[];
-  people: { id: string; name: string }[];
+  people: { id: string; name: string; photoUrl?: string }[];
   cards: { id: string; name: string; limit: number; closingDay: number; dueDay: number; createdAt: number }[];
   transactions: {
     id: string;
@@ -46,6 +46,7 @@ type FinanceState = {
     startDate: string;
     deadline?: string;
     status: 'active' | 'completed';
+    photoUrl?: string;
   }[];
   debts: {
     id: string;

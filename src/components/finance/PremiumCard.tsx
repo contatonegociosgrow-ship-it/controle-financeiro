@@ -31,7 +31,7 @@ export function PremiumCard({
   return (
     <div
       onClick={onClick}
-      className={`bg-gradient-to-r ${gradientFrom} ${gradientTo} rounded-2xl p-4 sm:p-5 text-white relative overflow-hidden shadow-lg hover:shadow-xl transition-all cursor-pointer h-[120px] sm:h-[140px] ${
+      className={`bg-gradient-to-r ${gradientFrom} ${gradientTo} rounded-3xl p-5 sm:p-6 text-white relative overflow-hidden shadow-lg hover:shadow-xl transition-all cursor-pointer h-[130px] sm:h-[150px] ${
         onClick ? 'hover:scale-[1.02]' : ''
       }`}
     >

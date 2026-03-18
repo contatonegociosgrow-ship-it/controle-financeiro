@@ -14,6 +14,7 @@ type Goal = {
   startDate: string;
   deadline?: string;
   status: 'active' | 'completed';
+  photoUrl?: string;
 };
 type Debt = {
   id: string;
@@ -27,7 +28,7 @@ type Debt = {
   createdAt: number;
 };
 type Category = { id: string; name: string; limit?: number | null; color?: string };
-type Person = { id: string; name: string };
+type Person = { id: string; name: string; photoUrl?: string };
 type Card = { id: string; name: string; limit: number; closingDay: number; dueDay: number; createdAt: number };
 type Transaction = {
   id: string;
@@ -73,7 +74,8 @@ type FinanceContextType = {
   addCategory: (name: string, limit?: number | null, color?: string) => string;
   updateCategory: (id: string, updates: Partial<Category>) => void;
   removeCategory: (id: string) => void;
-  addPerson: (name: string) => string;
+  addPerson: (name: string, photoUrl?: string) => string;
+  updatePerson: (id: string, updates: Partial<Person>) => void;
   addCard: (card: { name: string; limit: number; closingDay: number; dueDay: number }) => string;
   updateCard: (id: string, updates: Partial<Card>) => void;
   removeCard: (id: string) => void;
@@ -99,6 +101,7 @@ type FinanceContextType = {
     monthlyContribution: number;
     startDate: string;
     deadline?: string;
+    photoUrl?: string;
   }) => string;
   updateGoal: (id: string, updates: Partial<Goal>) => void;
   removeGoal: (id: string) => void;
@@ -229,16 +232,26 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  const addPerson = useCallback((name: string) => {
+  const addPerson = useCallback((name: string, photoUrl?: string) => {
     const person: Person = {
       id: crypto.randomUUID(),
       name,
+      photoUrl,
     };
     setState((prev) => ({
       ...prev,
       people: [...prev.people, person],
     }));
     return person.id;
+  }, []);
+
+  const updatePerson = useCallback((id: string, updates: Partial<Person>) => {
+    setState((prev) => ({
+      ...prev,
+      people: prev.people.map((p) =>
+        p.id === id ? { ...p, ...updates } : p
+      ),
+    }));
   }, []);
 
   const addCard = useCallback(
@@ -327,6 +340,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
     monthlyContribution: number;
     startDate: string;
     deadline?: string;
+    photoUrl?: string;
   }) => {
     const newGoal: Goal = {
       id: crypto.randomUUID(),
@@ -846,6 +860,7 @@ export function FinanceProvider({ children }: { children: ReactNode }) {
         updateCategory,
         removeCategory,
         addPerson,
+        updatePerson,
         addCard,
         updateCard,
         removeCard,

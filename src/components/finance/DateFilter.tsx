@@ -24,6 +24,7 @@ export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
   const [filterType, setFilterType] = useState<DateFilterType>('month');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
   
   // Estado para controlar o mês/ano quando usar filtro de mês
   const [selectedMonth, setSelectedMonth] = useState<number>(() => {
@@ -198,33 +199,90 @@ export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
 
   const isCurrentMonth = selectedMonth === new Date().getMonth() && selectedYear === new Date().getFullYear();
 
+  // Calcular período atual para exibir no botão
+  const getCurrentPeriodLabel = () => {
+    switch (filterType) {
+      case 'today':
+        return 'Hoje';
+      case 'week':
+        return 'Esta Semana';
+      case 'lastWeek':
+        return 'Semana Passada';
+      case 'month':
+        return `${monthNames[selectedMonth]} ${selectedYear}`;
+      case 'year':
+        return `Ano ${new Date().getFullYear()}`;
+      case 'custom':
+        if (customStartDate && customEndDate) {
+          return `${customStartDate} - ${customEndDate}`;
+        }
+        return 'Personalizado';
+      default:
+        return 'Selecione um período';
+    }
+  };
+
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 shadow-sm h-full">
-      <div className="flex items-center gap-2 mb-2.5">
-        <div className="p-1.5 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-          <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+    <div className="h-full">
+      {/* Botão para mostrar/ocultar */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-4 glassmorphism rounded-2xl transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400/30 to-blue-600/30 flex items-center justify-center neomorphic">
+            <Calendar size={18} strokeWidth={2.5} className="text-white" />
+          </div>
+          <div className="text-left">
+            <div className="text-sm font-semibold text-white">
+              Período
+            </div>
+            <div className="text-xs text-white/70">
+              {getCurrentPeriodLabel()}
+            </div>
+          </div>
         </div>
-        <label className="text-xs text-gray-600 dark:text-gray-400 font-semibold uppercase tracking-wide">
-          Filtrar por Período
-        </label>
-      </div>
-      
-      {/* Botões de Período */}
-      <div className="flex flex-wrap gap-1.5">
+        <div className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
+          <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </button>
+
+      {/* Conteúdo do Filtro - Oculto por padrão */}
+      {isOpen && (
+        <div className="mt-3 glassmorphism rounded-2xl p-4 animate-in slide-in-from-top-2 duration-300">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400/30 to-blue-600/30 flex items-center justify-center neomorphic">
+              <Calendar className="w-4 h-4 text-white" />
+            </div>
+            <label className="text-xs text-white/80 font-semibold uppercase tracking-wide">
+              Filtrar por Período
+            </label>
+          </div>
+          
+          {/* Botões de Período */}
+          <div className="flex flex-wrap gap-1.5">
         <button
           type="button"
-          onClick={() => setFilterType('today')}
+          onClick={() => {
+            setFilterType('today');
+            setIsOpen(false);
+          }}
           className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
             filterType === 'today'
-              ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
-              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+              ? 'bg-blue-500/50 text-white shadow-sm hover:bg-blue-500/60'
+              : 'glassmorphism text-white/80 hover:bg-white/20'
           }`}
         >
           Hoje
         </button>
         <button
           type="button"
-          onClick={() => setFilterType('week')}
+          onClick={() => {
+            setFilterType('week');
+            setIsOpen(false);
+          }}
           className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
             filterType === 'week'
               ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
@@ -235,7 +293,10 @@ export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
         </button>
         <button
           type="button"
-          onClick={() => setFilterType('lastWeek')}
+          onClick={() => {
+            setFilterType('lastWeek');
+            setIsOpen(false);
+          }}
           className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
             filterType === 'lastWeek'
               ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
@@ -251,6 +312,7 @@ export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
             setSelectedMonth(now.getMonth());
             setSelectedYear(now.getFullYear());
             setFilterType('month');
+            setIsOpen(false);
           }}
           className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
             filterType === 'month'
@@ -262,7 +324,10 @@ export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
         </button>
         <button
           type="button"
-          onClick={() => setFilterType('year')}
+          onClick={() => {
+            setFilterType('year');
+            setIsOpen(false);
+          }}
           className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
             filterType === 'year'
               ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
@@ -384,6 +449,8 @@ export function DateFilter({ pageKey, onDateRangeChange }: DateFilterProps) {
               />
             </div>
           </div>
+        </div>
+      )}
         </div>
       )}
     </div>

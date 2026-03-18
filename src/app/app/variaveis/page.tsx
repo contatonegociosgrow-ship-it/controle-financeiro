@@ -8,7 +8,7 @@ import { TransactionList } from '@/components/finance/TransactionList';
 import { AddTransactionSheet } from '@/components/finance/AddTransactionSheet';
 import { ImportExtractSheetVariaveis } from '@/components/finance/ImportExtractSheetVariaveis';
 import { DateFilter } from '@/components/finance/DateFilter';
-import { ShoppingCart, List, Upload, Filter, Tag, Calendar } from 'lucide-react';
+import { ShoppingCart, List, Upload, Filter, Tag, Calendar, Mic, Plus } from 'lucide-react';
 
 export default function VariaveisPage() {
   const { isInitialized, state } = useFinanceStore();
@@ -18,8 +18,10 @@ export default function VariaveisPage() {
   const [voiceMode, setVoiceMode] = useState(false);
   const [filter, setFilter] = useState('');
   const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [personId, setPersonId] = useState<string | null>(null);
   const [dateStart, setDateStart] = useState<string | null>(null);
   const [dateEnd, setDateEnd] = useState<string | null>(null);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -84,41 +86,72 @@ export default function VariaveisPage() {
         <PageHeader
           title="Despesas Variáveis"
           icon={ShoppingCart}
+          headerAccent="green"
+          walletPlacement="below"
+          walletVariant="expense"
           onFilterChange={setFilter}
         />
 
-        {/* Seção de Filtros - Design Moderno */}
-        <div className="mb-6 bg-gradient-to-br from-white via-orange-50/30 to-white dark:from-gray-800 dark:via-orange-950/10 dark:to-gray-800 rounded-2xl shadow-lg border border-orange-100/50 dark:border-orange-900/30 p-5 sm:p-6 relative overflow-hidden">
-          {/* Efeito de brilho decorativo */}
-          <div className="absolute top-0 right-0 w-40 h-40 bg-orange-400/10 dark:bg-orange-500/5 rounded-full blur-3xl -mr-20 -mt-20"></div>
-          
-          {/* Header da seção */}
-          <div className="flex items-center gap-3 mb-6 relative z-10">
-            <div className="p-2.5 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-md">
-              <Filter className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white">Filtros</h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Refine sua busca</p>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 relative z-10">
-            {/* Filtro por Categoria */}
-            <div className="bg-white/80 dark:bg-gray-700/50 backdrop-blur-sm rounded-xl p-5 border border-gray-200/50 dark:border-gray-600/50 shadow-sm hover:shadow-md transition-all">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="p-1.5 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-                  <Tag className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-                </div>
-                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                  Categoria
-                </label>
+        {/* Botão para mostrar/ocultar filtros */}
+        <div className="mb-6">
+          <button
+            onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+            className="w-full flex items-center justify-between p-4 glassmorphism rounded-2xl transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400/30 to-orange-600/30 flex items-center justify-center neomorphic">
+                <Filter size={20} strokeWidth={2.5} className="text-white" />
               </div>
-              <select
-                value={categoryId || ''}
-                onChange={(e) => setCategoryId(e.target.value || null)}
-                className="w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-lg text-gray-800 dark:text-gray-200 focus:outline-none focus:border-orange-500 dark:focus:border-orange-400 focus:ring-2 focus:ring-orange-500/20 transition-all hover:border-gray-300 dark:hover:border-gray-500 font-medium"
-              >
+              <div className="text-left">
+                <div className="text-sm font-semibold text-white">
+                  Filtros
+                </div>
+                <div className="text-xs text-white/70">
+                  {categoryId || personId || dateStart || dateEnd 
+                    ? `${categoryId ? 'Categoria' : ''}${categoryId && personId ? ', ' : ''}${personId ? 'Pessoa' : ''}${(categoryId || personId) && (dateStart || dateEnd) ? ', ' : ''}${dateStart || dateEnd ? 'Período' : ''}`
+                    : 'Nenhum filtro aplicado'
+                  }
+                </div>
+              </div>
+            </div>
+            <div className={`transition-transform duration-200 ${isFiltersOpen ? 'rotate-180' : ''}`}>
+              <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </button>
+        </div>
+
+        {/* Seção de Filtros - Oculto por padrão */}
+        {isFiltersOpen && (
+          <div className="mb-6 glassmorphism rounded-2xl p-5 sm:p-6 relative overflow-hidden animate-in slide-in-from-top-2 duration-300">
+            {/* Header da seção */}
+            <div className="flex items-center gap-3 mb-6 relative z-10">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400/30 to-orange-600/30 flex items-center justify-center neomorphic">
+                <Filter className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">Filtros</h2>
+                <p className="text-xs text-white/70">Refine sua busca</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 relative z-10">
+              {/* Filtro por Categoria */}
+              <div className="glassmorphism rounded-xl p-5 transition-all">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400/30 to-orange-600/30 flex items-center justify-center neomorphic">
+                    <Tag className="w-4 h-4 text-white" />
+                  </div>
+                  <label className="text-sm font-semibold text-white">
+                    Categoria
+                  </label>
+                </div>
+                <select
+                  value={categoryId || ''}
+                  onChange={(e) => setCategoryId(e.target.value || null)}
+                  className="w-full px-4 py-3 glassmorphism rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/30 transition-all font-medium"
+                >
                 <option value="">Todas as categorias</option>
                 {state.categories
                   .filter((c) => c.name !== 'Ganhos')
@@ -147,6 +180,32 @@ export default function VariaveisPage() {
               )}
             </div>
 
+            {/* Filtro por Pessoa */}
+            <div className="glassmorphism rounded-xl p-5 transition-all">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400/30 to-orange-600/30 flex items-center justify-center neomorphic">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <label className="text-sm font-semibold text-white">
+                  Quem corresponde
+                </label>
+              </div>
+              <select
+                value={personId || ''}
+                onChange={(e) => setPersonId(e.target.value || null)}
+                className="w-full px-4 py-3 glassmorphism rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/30 transition-all font-medium"
+              >
+                <option value="">Todas as pessoas</option>
+                {state.people.map((person) => (
+                  <option key={person.id} value={person.id}>
+                    {person.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {/* Filtro por Data */}
             <div className="lg:col-span-1">
               <DateFilter
@@ -158,42 +217,37 @@ export default function VariaveisPage() {
               />
             </div>
           </div>
-        </div>
+          </div>
+        )}
 
-        <PremiumContentCard
-          title="Despesas Variáveis"
-          icon={List}
-          gradientFrom="from-orange-600"
-          gradientTo="to-orange-700"
-        >
-          <TransactionList
-            type="expense_variable"
-            filter={filter}
-            categoryId={categoryId}
-            startDate={dateStart}
-            endDate={dateEnd}
-            showCategory={true}
-            showInstallments={true}
-            columns={5}
-            onEdit={(id) => {
-              setEditingId(id);
-              setVoiceMode(false);
-              setIsSheetOpen(true);
-            }}
-          />
-        </PremiumContentCard>
+        <TransactionList
+          type="expense_variable"
+          filter={filter}
+          categoryId={categoryId}
+          personId={personId}
+          startDate={dateStart}
+          endDate={dateEnd}
+          showCategory={true}
+          showInstallments={true}
+          columns={5}
+          onEdit={(id) => {
+            setEditingId(id);
+            setVoiceMode(false);
+            setIsSheetOpen(true);
+          }}
+        />
       </div>
 
       {/* Botões flutuantes */}
-      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 flex flex-col gap-2 z-40">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 flex flex-col gap-3 z-40">
         {/* Botão Importar Extrato */}
         <button
           onClick={() => setIsImportSheetOpen(true)}
-          className="w-12 h-12 sm:w-14 sm:h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-2xl flex items-center justify-center transition-all hover:scale-110"
+          className="fab-blue w-14 h-14 rounded-full flex items-center justify-center text-white"
           aria-label="Importar extrato"
           title="Importar extrato (CSV, PDF, TXT)"
         >
-          <Upload size={20} className="sm:w-6 sm:h-6" />
+          <Upload size={20} />
         </button>
         
         {/* Botão Microfone */}
@@ -202,11 +256,11 @@ export default function VariaveisPage() {
             setVoiceMode(true);
             setIsSheetOpen(true);
           }}
-          className="w-12 h-12 sm:w-14 sm:h-14 bg-purple-600 hover:bg-purple-700 text-white rounded-full shadow-2xl flex items-center justify-center text-xl sm:text-2xl transition-all hover:scale-110"
+          className="fab-blue w-14 h-14 rounded-full flex items-center justify-center text-2xl text-white"
           aria-label="Falar e registrar"
           title="Falar e registrar transação"
         >
-          🎙️
+          <Mic size={22} strokeWidth={2.5} className="text-white" />
         </button>
         
         {/* Botão Adicionar */}
@@ -216,11 +270,11 @@ export default function VariaveisPage() {
             setVoiceMode(false);
             setIsSheetOpen(true);
           }}
-          className="w-12 h-12 sm:w-14 sm:h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-2xl flex items-center justify-center text-2xl sm:text-3xl font-light transition-all hover:scale-110"
+          className="fab-blue w-16 h-16 rounded-full flex items-center justify-center text-3xl font-light text-white"
           aria-label="Adicionar transação"
           title="Adicionar transação manualmente"
         >
-          +
+          <Plus size={26} strokeWidth={2.5} className="text-white" />
         </button>
       </div>
 

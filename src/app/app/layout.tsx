@@ -12,19 +12,16 @@ export default function AppLayout({
   return (
     <>
       <ThemeInitializer />
-      <div className="flex min-h-screen bg-gradient-to-br from-[#f0f8e8] via-[#e0f0d0] to-[#d0e8c0] dark:from-[#202020] dark:via-[#252525] dark:to-[#2a2a2a] relative overflow-hidden">
-        {/* Efeito de brilho decorativo baseado nas cores do logo */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/20 dark:bg-primary/10 rounded-full blur-3xl"></div>
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary-light/20 dark:bg-primary-light/10 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/10 dark:bg-primary/5 rounded-full blur-3xl"></div>
-        </div>
+      <div className="flex min-h-screen relative overflow-hidden transition-colors duration-300">
+        
         {/* Sidebar */}
         <Sidebar />
         
-        {/* Conteúdo principal */}
-        <main className="flex-1 md:ml-20 min-h-screen relative z-10">
-          {children}
+        {/* Conteúdo principal - Ajustado para nova largura da sidebar */}
+        <main className="flex-1 md:ml-24 min-h-screen relative z-10 transition-all duration-300">
+          <div className="w-full h-full">
+            {children}
+          </div>
         </main>
         <OnboardingQuiz />
       </div>

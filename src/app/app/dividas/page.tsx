@@ -10,7 +10,10 @@ import { AddTransactionSheet } from '@/components/finance/AddTransactionSheet';
 import { DebtCard } from '@/components/finance/DebtCard';
 import { AddDebtSheet } from '@/components/finance/AddDebtSheet';
 import { DateFilter } from '@/components/finance/DateFilter';
-import { Link as LinkIcon, BarChart3, List, TrendingDown } from 'lucide-react';
+import { LineChart } from '@/components/finance/LineChart';
+import { Link as LinkIcon, BarChart3, List, TrendingDown, TrendingUp, LayoutDashboard, CheckCircle2, Clock, Mic, Plus } from 'lucide-react';
+
+type TabType = 'overview' | 'active' | 'completed' | 'payments';
 
 export default function DividasPage() {
   const { state, isInitialized } = useFinanceStore();
@@ -20,6 +23,7 @@ export default function DividasPage() {
   const [filter, setFilter] = useState('');
   const [dateStart, setDateStart] = useState<string | null>(null);
   const [dateEnd, setDateEnd] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabType>('overview');
 
   // Calcular meses dinamicamente baseado na data atual
   const getCurrentDateInfo = () => {
@@ -135,18 +139,58 @@ export default function DividasPage() {
     );
   }
 
+  // Definir abas
+  const tabs = [
+    { id: 'overview' as TabType, label: 'Visão Geral', icon: LayoutDashboard },
+    { id: 'active' as TabType, label: 'Dívidas Ativas', icon: Clock },
+    { id: 'completed' as TabType, label: 'Concluídas', icon: CheckCircle2 },
+    { id: 'payments' as TabType, label: 'Próximos Pagamentos', icon: List },
+  ];
+
   return (
     <div className="min-h-screen pb-24">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
         <PageHeader
           title="Dívidas"
           icon={LinkIcon}
+          headerAccent="green"
+          walletPlacement="below"
           onFilterChange={setFilter}
         />
 
+        {/* Sistema de Abas */}
+        <div className="mb-6">
+          <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-1.5 border border-gray-200/60 dark:border-gray-700/40 shadow-lg">
+            <div className="flex gap-1 overflow-x-auto scrollbar-hide">
+              {tabs.map((tab) => {
+                const isActive = activeTab === tab.id;
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex items-center gap-2 px-4 py-3 rounded-xl font-semibold text-sm transition-all duration-200 whitespace-nowrap ${
+                      isActive
+                        ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/30 scale-105'
+                        : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/50'
+                    }`}
+                  >
+                    <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Conteúdo das Abas */}
         <div className="space-y-6">
-          {/* Gráfico de Pagamentos */}
-          <PremiumContentCard
+          {/* Aba: Visão Geral */}
+          {activeTab === 'overview' && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              {/* Gráfico de Pagamentos */}
+              <PremiumContentCard
             title="Gráfico de Pagamentos"
             icon={BarChart3}
             gradientFrom="from-red-600"
@@ -227,6 +271,49 @@ export default function DividasPage() {
             </div>
           </PremiumContentCard>
 
+          {/* Gráfico de Linhas - Cada linha uma dívida */}
+          {state.debts.filter((d) => d.status === 'active').length > 0 && (() => {
+            const activeDebts = state.debts.filter((d) => d.status === 'active');
+            const lineChartData = activeDebts.map((debt, index) => {
+              const colors = ['#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'];
+              const color = colors[index % colors.length];
+              
+              const series = displayMonths.map(({ month, monthNum, year, key }) => {
+                // Calcular valor restante da dívida neste mês
+                const paidCount = debt.paidInstallments.length;
+                const remainingInstallments = debt.installments - paidCount;
+                const remainingValue = remainingInstallments * debt.installmentValue;
+                
+                return {
+                  label: month,
+                  value: remainingValue,
+                };
+              });
+
+              return {
+                label: debt.title,
+                series,
+                color,
+              };
+            });
+
+            return (
+              <PremiumContentCard
+                title="Evolução das Dívidas"
+                icon={TrendingUp}
+                gradientFrom="from-purple-600"
+                gradientTo="to-purple-700"
+              >
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Valor restante por mês</p>
+                <LineChart
+                  data={lineChartData}
+                  height={250}
+                  formatValue={formatCurrency}
+                />
+              </PremiumContentCard>
+            );
+          })()}
+
           {/* Resumo do Ano */}
           <PremiumCard
             title="Resumo do Ano"
@@ -254,91 +341,116 @@ export default function DividasPage() {
               </div>
             </div>
           </PremiumContentCard>
+            </div>
+          )}
 
-          {/* Dívidas Parceladas */}
-          {state.debts.filter((d) => d.status === 'active').length > 0 && (
-            <div>
+          {/* Aba: Dívidas Ativas */}
+          {activeTab === 'active' && (
+            <div className="space-y-6 animate-in fade-in duration-300">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900">Dívidas Parceladas</h3>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Dívidas Ativas</h2>
                 <button
                   onClick={() => setIsDebtSheetOpen(true)}
-                  className="text-sm text-blue-600 hover:text-blue-700 font-semibold"
+                  className="px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 flex items-center gap-2"
                 >
-                  + Adicionar
+                  <span className="text-xl">+</span>
+                  <span>Adicionar Dívida</span>
                 </button>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {state.debts
-                  .filter((d) => d.status === 'active')
-                  .map((debt) => (
-                    <DebtCard key={debt.id} debt={debt} />
-                  ))}
-              </div>
+
+              {state.debts.filter((d) => d.status === 'active').length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {state.debts
+                    .filter((d) => d.status === 'active')
+                    .map((debt) => (
+                      <DebtCard key={debt.id} debt={debt} />
+                    ))}
+                </div>
+              ) : (
+                <PremiumContentCard
+                  title="Nenhuma dívida ativa"
+                  icon={Clock}
+                  gradientFrom="from-gray-600"
+                  gradientTo="to-gray-700"
+                >
+                  <div className="text-center py-8">
+                    <div className="text-5xl mb-4 opacity-50">📋</div>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6">Você não possui dívidas ativas no momento</p>
+                    <button
+                      onClick={() => setIsDebtSheetOpen(true)}
+                      className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95"
+                    >
+                      Adicionar Dívida Parcelada
+                    </button>
+                  </div>
+                </PremiumContentCard>
+              )}
             </div>
           )}
 
-          {/* Dívidas Concluídas */}
-          {state.debts.filter((d) => d.status === 'completed').length > 0 && (
-            <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Dívidas Concluídas</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {state.debts
-                  .filter((d) => d.status === 'completed')
-                  .map((debt) => (
-                    <DebtCard key={debt.id} debt={debt} />
-                  ))}
-              </div>
+          {/* Aba: Dívidas Concluídas */}
+          {activeTab === 'completed' && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Dívidas Concluídas</h2>
+
+              {state.debts.filter((d) => d.status === 'completed').length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {state.debts
+                    .filter((d) => d.status === 'completed')
+                    .map((debt) => (
+                      <DebtCard key={debt.id} debt={debt} />
+                    ))}
+                </div>
+              ) : (
+                <PremiumContentCard
+                  title="Nenhuma dívida concluída"
+                  icon={CheckCircle2}
+                  gradientFrom="from-green-600"
+                  gradientTo="to-green-700"
+                >
+                  <div className="text-center py-8">
+                    <div className="text-5xl mb-4 opacity-50">✅</div>
+                    <p className="text-gray-600 dark:text-gray-400">Você ainda não concluiu nenhuma dívida</p>
+                  </div>
+                </PremiumContentCard>
+              )}
             </div>
           )}
 
-          {/* Botão para adicionar dívida se não houver nenhuma */}
-          {state.debts.length === 0 && (
-            <PremiumContentCard
-              title="Nenhuma dívida cadastrada"
-              icon={LinkIcon}
-              gradientFrom="from-gray-600"
-              gradientTo="to-gray-700"
-            >
-              <div className="text-center py-4">
-                <p className="text-gray-600 dark:text-gray-400 mb-4">Comece adicionando uma dívida parcelada</p>
-                <button
-                  onClick={() => setIsDebtSheetOpen(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg transition-all shadow-sm hover:shadow-md"
-                >
-                  Adicionar Dívida Parcelada
-                </button>
+          {/* Aba: Próximos Pagamentos */}
+          {activeTab === 'payments' && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Próximos Pagamentos</h2>
+                <div className="flex items-center gap-3">
+                  <DateFilter
+                    pageKey="dividas"
+                    onDateRangeChange={(start, end) => {
+                      setDateStart(start);
+                      setDateEnd(end);
+                    }}
+                  />
+                </div>
               </div>
-            </PremiumContentCard>
+
+              <PremiumContentCard
+                title="Lista de Pagamentos"
+                icon={List}
+                gradientFrom="from-red-600"
+                gradientTo="to-red-700"
+              >
+                <TransactionList
+                  type="debt"
+                  filter={filter}
+                  startDate={dateStart}
+                  endDate={dateEnd}
+                  showStatus={true}
+                  showDueDate={true}
+                  columns={4}
+                />
+              </PremiumContentCard>
+            </div>
           )}
-
-          {/* Filtro de Data */}
-          <div className="mb-4">
-            <DateFilter
-              pageKey="dividas"
-              onDateRangeChange={(start, end) => {
-                setDateStart(start);
-                setDateEnd(end);
-              }}
-            />
-          </div>
-
-          {/* Lista de Dívidas */}
-          <PremiumContentCard
-            title="Próximos Pagamentos"
-            icon={List}
-            gradientFrom="from-red-600"
-            gradientTo="to-red-700"
-          >
-            <TransactionList
-              type="debt"
-              filter={filter}
-              startDate={dateStart}
-              endDate={dateEnd}
-              showStatus={true}
-              showDueDate={true}
-              columns={4}
-            />
-          </PremiumContentCard>
         </div>
       </div>
 
@@ -354,7 +466,7 @@ export default function DividasPage() {
           aria-label="Falar e registrar"
           title="Falar e registrar transação"
         >
-          🎙️
+          <Mic size={22} strokeWidth={2.5} className="text-white" />
         </button>
         
         {/* Botão Adicionar */}
@@ -367,7 +479,7 @@ export default function DividasPage() {
           aria-label="Adicionar transação"
           title="Adicionar transação manualmente"
         >
-          +
+          <Plus size={26} strokeWidth={2.5} className="text-white" />
         </button>
       </div>
 

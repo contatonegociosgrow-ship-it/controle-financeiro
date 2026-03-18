@@ -11,9 +11,10 @@ import { PieChart as PieChartIcon, BarChart3, TrendingUp } from 'lucide-react';
 type ManualViewProps = {
   startDate: string; // YYYY-MM-DD
   endDate: string; // YYYY-MM-DD
+  activeTab?: 'overview' | 'byDay' | 'byType' | 'byCategory' | 'chronological';
 };
 
-export function ManualView({ startDate, endDate }: ManualViewProps) {
+export function ManualView({ startDate, endDate, activeTab = 'overview' }: ManualViewProps) {
   const { state } = useFinanceStore();
 
   const periodTransactions = useMemo(() => {
@@ -147,150 +148,204 @@ export function ManualView({ startDate, endDate }: ManualViewProps) {
 
   return (
     <div className="space-y-6">
-      {/* Resumo Geral */}
-      <CardUI className="shadow-md">
-        <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
-          <div className="w-1 h-6 bg-blue-600 rounded-full"></div>
-          <h3 className="text-lg font-semibold text-gray-900">
-            Resumo do Período
-          </h3>
-        </div>
-        
-        <div className="mb-4 text-sm text-gray-600">
-          {formatDate(startDate)} até {formatDate(endDate)}
-        </div>
-        
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <div className="text-sm text-green-700 font-medium mb-1">Ganhos</div>
-            <div className="text-2xl font-bold text-green-600">{formatCurrency(totals.income)}</div>
-          </div>
-          
-          <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-            <div className="text-sm text-red-700 font-medium mb-1">Despesas</div>
-            <div className="text-2xl font-bold text-red-600">{formatCurrency(totals.expenses)}</div>
-          </div>
-          
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <div className="text-sm text-blue-700 font-medium mb-1">Economias</div>
-            <div className="text-2xl font-bold text-blue-600">{formatCurrency(totals.savings)}</div>
-          </div>
-          
-          <div className={`p-4 rounded-lg border ${
-            totals.balance >= 0 
-              ? 'bg-green-50 border-green-200' 
-              : 'bg-red-50 border-red-200'
-          }`}>
-            <div className={`text-sm font-medium mb-1 ${
-              totals.balance >= 0 ? 'text-green-700' : 'text-red-700'
-            }`}>
-              Saldo
+      {/* Aba: Visão Geral */}
+      {activeTab === 'overview' && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          {/* Resumo do Período - Cards Modernos */}
+          <div>
+            <div className="mb-4">
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Resumo do Período</h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {formatDate(startDate)} até {formatDate(endDate)}
+              </p>
             </div>
-            <div className={`text-2xl font-bold ${
-              totals.balance >= 0 ? 'text-green-600' : 'text-red-600'
-            }`}>
-              {formatCurrency(totals.balance)}
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Ganhos */}
+              <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-5 text-white relative overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-xl group-hover:bg-white/15 transition-all"></div>
+                <div className="relative z-10">
+                  <div className="text-sm font-semibold opacity-90 mb-2">Ganhos</div>
+                  <div className="text-2xl md:text-3xl font-extrabold tracking-tight drop-shadow-sm">
+                    {formatCurrency(totals.income)}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Despesas */}
+              <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-5 text-white relative overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-xl group-hover:bg-white/15 transition-all"></div>
+                <div className="relative z-10">
+                  <div className="text-sm font-semibold opacity-90 mb-2">Despesas</div>
+                  <div className="text-2xl md:text-3xl font-extrabold tracking-tight drop-shadow-sm">
+                    {formatCurrency(totals.expenses)}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Economias */}
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-5 text-white relative overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-xl group-hover:bg-white/15 transition-all"></div>
+                <div className="relative z-10">
+                  <div className="text-sm font-semibold opacity-90 mb-2">Economias</div>
+                  <div className="text-2xl md:text-3xl font-extrabold tracking-tight drop-shadow-sm">
+                    {formatCurrency(totals.savings)}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Saldo */}
+              <div className={`rounded-2xl p-5 text-white relative overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group ${
+                totals.balance >= 0 
+                  ? 'bg-gradient-to-br from-green-500 to-green-600' 
+                  : 'bg-gradient-to-br from-red-500 to-red-600'
+              }`}>
+                <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -mr-12 -mt-12 blur-xl group-hover:bg-white/15 transition-all"></div>
+                <div className="relative z-10">
+                  <div className="text-sm font-semibold opacity-90 mb-2">Saldo</div>
+                  <div className="text-2xl md:text-3xl font-extrabold tracking-tight drop-shadow-sm">
+                    {formatCurrency(totals.balance)}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </CardUI>
 
-      {/* Gráficos */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Gráfico de Pizza por Categoria */}
-        <CardUI className="shadow-md">
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
-            <div className="w-1 h-6 bg-pink-600 rounded-full"></div>
-            <h3 className="text-lg font-semibold text-gray-900">Distribuição por Categoria</h3>
+          {/* Gráficos Principais */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Gráfico de Pizza por Categoria */}
+            <PremiumContentCard
+              title="Distribuição por Categoria"
+              icon={PieChartIcon}
+              gradientFrom="from-pink-600"
+              gradientTo="to-pink-700"
+            >
+              <CategoryPieChart
+                transactions={periodTransactions}
+                categories={state.categories}
+                type="all"
+              />
+            </PremiumContentCard>
+
+            {/* Gráfico de Barras por Tipo */}
+            <PremiumContentCard
+              title="Por Tipo de Transação"
+              icon={BarChart3}
+              gradientFrom="from-indigo-600"
+              gradientTo="to-indigo-700"
+            >
+              <BarChart
+                data={byType.map(([type, data]) => {
+                  const isIncome = type === 'Ganhos';
+                  const isExpense = ['Despesas Fixas', 'Despesas Variáveis', 'Dívidas'].includes(type);
+                  return {
+                    label: type.length > 12 ? type.substring(0, 12) + '...' : type,
+                    value: data.total,
+                    color: isIncome ? '#22c55e' : isExpense ? '#ef4444' : '#3b82f6',
+                  };
+                })}
+                height={220}
+                formatValue={formatCurrency}
+              />
+            </PremiumContentCard>
           </div>
-          <CategoryPieChart
-            transactions={periodTransactions}
-            categories={state.categories}
-            type="all"
-          />
-        </CardUI>
 
-        {/* Gráfico de Barras por Tipo */}
-        <CardUI className="shadow-md">
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
-            <div className="w-1 h-6 bg-indigo-600 rounded-full"></div>
-            <h3 className="text-lg font-semibold text-gray-900">Por Tipo de Transação</h3>
-          </div>
-          <BarChart
-            data={byType.map(([type, data]) => {
-              const isIncome = type === 'Ganhos';
-              const isExpense = ['Despesas Fixas', 'Despesas Variáveis', 'Dívidas'].includes(type);
-              return {
-                label: type.length > 8 ? type.substring(0, 8) + '...' : type,
-                value: data.total,
-                color: isIncome ? '#22c55e' : isExpense ? '#ef4444' : '#3b82f6',
-              };
-            })}
-            height={200}
-            formatValue={formatCurrency}
-          />
-        </CardUI>
-      </div>
+          {/* Gráfico de Evolução Diária */}
+          {byDay.length > 0 && byDay.length <= 31 && (
+            <PremiumContentCard
+              title="Evolução Diária do Saldo"
+              icon={TrendingUp}
+              gradientFrom="from-teal-600"
+              gradientTo="to-teal-700"
+            >
+              <div className="mb-4">
+                <BarChart
+                  data={byDay.map((day) => ({
+                    label: formatDate(day.date).split('/')[0],
+                    value: Math.abs(day.net),
+                    color: day.net >= 0 ? '#22c55e' : '#ef4444',
+                  }))}
+                  height={220}
+                  formatValue={formatCurrency}
+                />
+              </div>
+              <div className="flex gap-6 justify-center pt-4 border-t border-gray-200/50 dark:border-gray-700/50">
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-green-500 shadow-sm"></div>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Saldo Positivo</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-red-500 shadow-sm"></div>
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Saldo Negativo</span>
+                </div>
+              </div>
+            </PremiumContentCard>
+          )}
 
-      {/* Gráfico de Barras por Dia */}
-      {byDay.length > 0 && byDay.length <= 31 && (
-        <CardUI className="shadow-md">
-          <div className="mb-4">
-            <BarChart
-              data={byDay.map((day) => ({
-                label: formatDate(day.date).split('/')[0],
-                value: Math.abs(day.net),
-                color: day.net >= 0 ? '#22c55e' : '#ef4444',
-              }))}
-              height={200}
+          {/* Top Categorias */}
+          <PremiumContentCard
+            title="Top Categorias de Despesas"
+            icon={BarChart3}
+            gradientFrom="from-amber-600"
+            gradientTo="to-amber-700"
+          >
+            <HorizontalBarChart
+              data={byCategory
+                .filter(([_, data]) => {
+                  const expensesOnly = data.transactions.filter((t) => 
+                    ['expense_fixed', 'expense_variable', 'debt'].includes(t.type)
+                  );
+                  return expensesOnly.length > 0;
+                })
+                .map(([category, data]) => {
+                  const expensesOnly = data.transactions.filter((t) => 
+                    ['expense_fixed', 'expense_variable', 'debt'].includes(t.type)
+                  );
+                  const totalExpenses = expensesOnly.reduce((sum, t) => sum + t.value, 0);
+                  return {
+                    label: category,
+                    value: totalExpenses,
+                    color: '#ef4444',
+                  };
+                })}
               formatValue={formatCurrency}
+              maxBars={8}
             />
-          </div>
-          <div className="flex gap-4 justify-center text-xs">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
-              <span className="text-gray-600">Saldo Positivo</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500"></div>
-              <span className="text-gray-600">Saldo Negativo</span>
-            </div>
-          </div>
-        </CardUI>
+          </PremiumContentCard>
+        </div>
       )}
 
-      {/* Gráfico de Barras Horizontal por Categoria */}
-      <CardUI className="shadow-md">
-        <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
-          <div className="w-1 h-6 bg-amber-600 rounded-full"></div>
-          <h3 className="text-lg font-semibold text-gray-900">Top Categorias (Despesas)</h3>
-        </div>
-        <HorizontalBarChart
-          data={byCategory
-            .filter(([_, data]) => {
-              const expensesOnly = data.transactions.filter((t) => 
-                ['expense_fixed', 'expense_variable', 'debt'].includes(t.type)
-              );
-              return expensesOnly.length > 0;
-            })
-            .map(([category, data]) => {
-              const expensesOnly = data.transactions.filter((t) => 
-                ['expense_fixed', 'expense_variable', 'debt'].includes(t.type)
-              );
-              const totalExpenses = expensesOnly.reduce((sum, t) => sum + t.value, 0);
-              return {
-                label: category,
-                value: totalExpenses,
-                color: '#ef4444',
-              };
-            })}
-          formatValue={formatCurrency}
-          maxBars={8}
-        />
-      </CardUI>
+      {/* Aba: Por Dia */}
+      {activeTab === 'byDay' && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          {/* Gráfico de Barras por Dia */}
+          {byDay.length > 0 && byDay.length <= 31 && (
+            <CardUI className="shadow-md">
+              <div className="mb-4">
+                <BarChart
+                  data={byDay.map((day) => ({
+                    label: formatDate(day.date).split('/')[0],
+                    value: Math.abs(day.net),
+                    color: day.net >= 0 ? '#22c55e' : '#ef4444',
+                  }))}
+                  height={200}
+                  formatValue={formatCurrency}
+                />
+              </div>
+              <div className="flex gap-4 justify-center text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span className="text-gray-600">Saldo Positivo</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                  <span className="text-gray-600">Saldo Negativo</span>
+                </div>
+              </div>
+            </CardUI>
+          )}
 
-      {/* Por Dia */}
-      <CardUI className="shadow-md">
+          <CardUI className="shadow-md">
         <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
           <div className="w-1 h-6 bg-indigo-600 rounded-full"></div>
           <h3 className="text-lg font-semibold text-gray-900">Por Dia</h3>
@@ -357,9 +412,13 @@ export function ManualView({ startDate, endDate }: ManualViewProps) {
           })}
         </div>
       </CardUI>
+        </div>
+      )}
 
-      {/* Por Tipo */}
-      <CardUI className="shadow-md">
+      {/* Aba: Por Tipo */}
+      {activeTab === 'byType' && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          <CardUI className="shadow-md">
         <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
           <div className="w-1 h-6 bg-purple-600 rounded-full"></div>
           <h3 className="text-lg font-semibold text-gray-900">Por Tipo de Transação</h3>
@@ -411,9 +470,13 @@ export function ManualView({ startDate, endDate }: ManualViewProps) {
           })}
         </div>
       </CardUI>
+        </div>
+      )}
 
-      {/* Por Categoria */}
-      <CardUI className="shadow-md">
+      {/* Aba: Por Categoria */}
+      {activeTab === 'byCategory' && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          <CardUI className="shadow-md">
         <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
           <div className="w-1 h-6 bg-orange-600 rounded-full"></div>
           <h3 className="text-lg font-semibold text-gray-900">Por Categoria</h3>
@@ -465,9 +528,13 @@ export function ManualView({ startDate, endDate }: ManualViewProps) {
           })}
         </div>
       </CardUI>
+        </div>
+      )}
 
-      {/* Lista Completa Cronológica */}
-      <CardUI className="shadow-md">
+      {/* Aba: Cronológica */}
+      {activeTab === 'chronological' && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          <CardUI className="shadow-md">
         <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-200">
           <div className="w-1 h-6 bg-gray-600 rounded-full"></div>
           <h3 className="text-lg font-semibold text-gray-900">Todas as Transações (Cronológica)</h3>
@@ -513,6 +580,8 @@ export function ManualView({ startDate, endDate }: ManualViewProps) {
             })}
         </div>
       </CardUI>
+        </div>
+      )}
     </div>
   );
 }

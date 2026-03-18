@@ -4,9 +4,10 @@ import { useState, useMemo } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
 import { PremiumContentCard } from '@/components/finance/PremiumContentCard';
 import { PremiumCard } from '@/components/finance/PremiumCard';
-import { DollarSign, Target, Calendar, Plus, Edit, Trash2, ArrowDownCircle, ArrowUpCircle, Lock } from 'lucide-react';
+import { DollarSign, Target, Calendar, Plus, Edit, Trash2, ArrowDownCircle, ArrowUpCircle, Lock, PieChart as PieChartIcon } from 'lucide-react';
 import { AddVaultSheet } from '@/components/finance/AddVaultSheet';
 import { VaultDepositWithdrawSheet } from '@/components/finance/VaultDepositWithdrawSheet';
+import { PieChart } from '@/components/finance/PieChart';
 
 export default function CofrePage() {
   const { isInitialized, state, removeVault } = useFinanceStore();
@@ -364,6 +365,77 @@ export default function CofrePage() {
             />
           </div>
         </div>
+
+        {/* Gráfico de Pizza - Distribuição dos Cofres */}
+        {state.vaults.length > 0 && (
+          <div className="mb-6">
+            <PremiumContentCard
+              title="Distribuição dos Cofres"
+              icon={PieChartIcon}
+              gradientFrom="from-amber-600"
+              gradientTo="to-amber-700"
+            >
+              {(() => {
+                const totalValue = state.vaults.reduce((sum, v) => sum + v.currentValue, 0);
+                const chartData = state.vaults
+                  .filter((v) => v.currentValue > 0)
+                  .map((vault) => {
+                    const percentage = totalValue > 0 ? (vault.currentValue / totalValue) * 100 : 0;
+                    // Gerar cor baseada no nome do cofre
+                    const colors = [
+                      '#F59E0B', '#EF4444', '#10B981', '#3B82F6', '#8B5CF6', 
+                      '#EC4899', '#14B8A6', '#F97316', '#6366F1', '#84CC16'
+                    ];
+                    const colorIndex = vault.name.charCodeAt(0) % colors.length;
+                    return {
+                      label: vault.name,
+                      value: vault.currentValue,
+                      color: colors[colorIndex],
+                      percentage,
+                    };
+                  })
+                  .sort((a, b) => b.value - a.value);
+
+                return (
+                  <div className="space-y-4">
+                    <div className="flex justify-center">
+                      <PieChart data={chartData} size={200} strokeWidth={24} />
+                    </div>
+                    {chartData.length > 0 && (
+                      <div className="space-y-2">
+                        {chartData.map((item, index) => (
+                          <div key={index} className="flex items-center justify-between text-sm">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div
+                                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
+                                style={{ backgroundColor: item.color }}
+                              >
+                                <span className="text-base">
+                                  {state.vaults.find((v) => v.name === item.label)?.emoji || '💰'}
+                                </span>
+                              </div>
+                              <span className="text-gray-700 dark:text-gray-300 font-medium truncate">
+                                {item.label}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 ml-2">
+                              <span className="text-gray-600 dark:text-gray-400 font-semibold">
+                                {formatCurrency(item.value)}
+                              </span>
+                              <span className="text-gray-500 dark:text-gray-500 text-xs">
+                                ({item.percentage.toFixed(1)}%)
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </PremiumContentCard>
+          </div>
+        )}
 
         {/* Lista de Cofres */}
         <div>

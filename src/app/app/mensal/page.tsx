@@ -9,6 +9,7 @@ import { BarChart3, Calendar } from 'lucide-react';
 
 export default function MensalPage() {
   const { isInitialized } = useFinanceStore();
+  const [isMonthSelectorOpen, setIsMonthSelectorOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState(() => {
     if (typeof window === 'undefined') return 2024;
     return new Date().getFullYear();
@@ -104,47 +105,81 @@ export default function MensalPage() {
           />
         </div>
 
-        {/* Seletor de Mês/Ano */}
-        <div className="mb-8">
-          <PremiumContentCard
-            title="Selecionar Período"
-            icon={Calendar}
-            gradientFrom="from-blue-600"
-            gradientTo="to-blue-700"
+        {/* Seletor de Mês/Ano - Oculto por padrão */}
+        <div className="mb-6">
+          <button
+            onClick={() => setIsMonthSelectorOpen(!isMonthSelectorOpen)}
+            className="w-full flex items-center justify-between p-4 glassmorphism rounded-2xl transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]"
           >
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              <div className="flex-1">
-                <label className="block text-sm text-gray-700 mb-2 font-semibold">Mês:</label>
-                <select
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                  className="w-full sm:w-auto px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm hover:border-gray-400"
-                >
-                  {monthNames.map((name, index) => (
-                    <option key={index} value={index}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400/30 to-blue-600/30 flex items-center justify-center neomorphic">
+                <Calendar size={20} strokeWidth={2.5} className="text-white" />
               </div>
-              
-              <div className="flex-1">
-                <label className="block text-sm text-gray-700 mb-2 font-semibold">Ano:</label>
-                <select
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(Number(e.target.value))}
-                  className="w-full sm:w-auto px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm hover:border-gray-400"
-                >
-                  {availableYears.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
+              <div className="text-left">
+                <div className="text-sm font-semibold text-white">
+                  Período Selecionado
+                </div>
+                <div className="text-xs text-white/70">
+                  {monthNames[selectedMonth]} {selectedYear}
+                </div>
               </div>
             </div>
-          </PremiumContentCard>
+            <div className={`transition-transform duration-200 ${isMonthSelectorOpen ? 'rotate-180' : ''}`}>
+              <svg className="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </button>
         </div>
+
+        {isMonthSelectorOpen && (
+          <div className="mb-8 animate-in slide-in-from-top-2 duration-300">
+            <PremiumContentCard
+              title="Selecionar Período"
+              icon={Calendar}
+              gradientFrom="from-blue-600"
+              gradientTo="to-blue-700"
+            >
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <div className="flex-1">
+                  <label className="block text-sm text-gray-700 mb-2 font-semibold">Mês:</label>
+                  <select
+                    value={selectedMonth}
+                    onChange={(e) => {
+                      setSelectedMonth(Number(e.target.value));
+                      setIsMonthSelectorOpen(false);
+                    }}
+                    className="w-full sm:w-auto px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm hover:border-gray-400"
+                  >
+                    {monthNames.map((name, index) => (
+                      <option key={index} value={index}>
+                        {name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="flex-1">
+                  <label className="block text-sm text-gray-700 mb-2 font-semibold">Ano:</label>
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => {
+                      setSelectedYear(Number(e.target.value));
+                      setIsMonthSelectorOpen(false);
+                    }}
+                    className="w-full sm:w-auto px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm hover:border-gray-400"
+                  >
+                    {availableYears.map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </PremiumContentCard>
+          </div>
+        )}
 
         {/* Visão Mensal */}
         <MonthlyView year={selectedYear} month={selectedMonth} />

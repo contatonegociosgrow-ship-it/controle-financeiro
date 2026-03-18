@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { useFinanceStore } from '@/lib/FinanceProvider';
 import { CardUI } from './CardUI';
 import { PremiumContentCard } from './PremiumContentCard';
-import { CategoryPieChart } from './PieChart';
+import { CategoryPieChart, PieChart } from './PieChart';
 import { BarChart, HorizontalBarChart } from './BarChart';
 import { PieChart as PieChartIcon, BarChart3, TrendingUp } from 'lucide-react';
 
@@ -127,8 +127,33 @@ export function MonthlyView({ year, month }: MonthlyViewProps) {
       .filter((t) => t.type === 'savings')
       .reduce((sum, t) => sum + t.value, 0);
 
-    return { income, expenses, savings, balance: income - expenses - savings };
-  }, [monthTransactions]);
+    // Calcular cofre (transações de savings na categoria de cofre)
+    const vaultCategory = state.categories.find(c => c.name === '🔐 Cofre');
+    const vault = monthTransactions
+      .filter((t) => t.type === 'savings' && t.categoryId === vaultCategory?.id)
+      .reduce((sum, t) => sum + t.value, 0);
+
+    // Calcular investimentos do mês
+    const investments = state.investments
+      .filter((inv) => {
+        const invDate = new Date(inv.applicationDate);
+        return invDate.getFullYear() === year && invDate.getMonth() === month;
+      })
+      .reduce((sum, inv) => sum + inv.value, 0);
+
+    // Saldo da carteira (saldo inicial + ganhos - despesas - economias)
+    const walletBalance = (state.profile.wallet || 0) + income - expenses - savings;
+
+    return { 
+      income, 
+      expenses, 
+      savings, 
+      vault,
+      investments,
+      walletBalance,
+      balance: income - expenses - savings 
+    };
+  }, [monthTransactions, state.investments, state.categories, state.profile.wallet, year, month]);
 
   const monthNames = [
     'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
@@ -157,7 +182,7 @@ export function MonthlyView({ year, month }: MonthlyViewProps) {
           </h3>
         </div>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <div className="bg-green-50 p-4 rounded-lg border border-green-200">
             <div className="text-sm text-green-700 font-medium mb-1">Ganhos</div>
             <div className="text-2xl font-bold text-green-600">{formatCurrency(totals.income)}</div>
@@ -168,25 +193,30 @@ export function MonthlyView({ year, month }: MonthlyViewProps) {
             <div className="text-2xl font-bold text-red-600">{formatCurrency(totals.expenses)}</div>
           </div>
           
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <div className="text-sm text-blue-700 font-medium mb-1">Economias</div>
-            <div className="text-2xl font-bold text-blue-600">{formatCurrency(totals.savings)}</div>
+          <div className="bg-amber-50 p-4 rounded-lg border border-amber-200">
+            <div className="text-sm text-amber-700 font-medium mb-1">Cofre</div>
+            <div className="text-2xl font-bold text-amber-600">{formatCurrency(totals.vault)}</div>
+          </div>
+          
+          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+            <div className="text-sm text-purple-700 font-medium mb-1">Investimentos</div>
+            <div className="text-2xl font-bold text-purple-600">{formatCurrency(totals.investments)}</div>
           </div>
           
           <div className={`p-4 rounded-lg border ${
-            totals.balance >= 0 
-              ? 'bg-green-50 border-green-200' 
+            totals.walletBalance >= 0 
+              ? 'bg-blue-50 border-blue-200' 
               : 'bg-red-50 border-red-200'
           }`}>
             <div className={`text-sm font-medium mb-1 ${
-              totals.balance >= 0 ? 'text-green-700' : 'text-red-700'
+              totals.walletBalance >= 0 ? 'text-blue-700' : 'text-red-700'
             }`}>
-              Saldo
+              Saldo Carteira
             </div>
             <div className={`text-2xl font-bold ${
-              totals.balance >= 0 ? 'text-green-600' : 'text-red-600'
+              totals.walletBalance >= 0 ? 'text-blue-600' : 'text-red-600'
             }`}>
-              {formatCurrency(totals.balance)}
+              {formatCurrency(totals.walletBalance)}
             </div>
           </div>
         </div>
@@ -230,6 +260,80 @@ export function MonthlyView({ year, month }: MonthlyViewProps) {
           />
         </PremiumContentCard>
       </div>
+
+      {/* Gráfico de Distribuição de Investimentos */}
+      {(() => {
+        const monthInvestments = state.investments.filter((inv) => {
+          const invDate = new Date(inv.applicationDate);
+          return invDate.getFullYear() === year && invDate.getMonth() === month;
+        });
+
+        if (monthInvestments.length === 0) return null;
+
+        const investmentByType = useMemo(() => {
+          const grouped: Record<string, number> = {};
+          monthInvestments.forEach((inv) => {
+            const typeLabels: Record<string, string> = {
+              fixed_income: 'Renda Fixa',
+              variable_income: 'Renda Variável',
+              crypto: 'Criptomoedas',
+              monthly: 'Mensal',
+              goal_based: 'Baseado em Meta',
+            };
+            const typeLabel = typeLabels[inv.type] || inv.type;
+            grouped[typeLabel] = (grouped[typeLabel] || 0) + inv.value;
+          });
+          return Object.entries(grouped).map(([label, value]) => ({ label, value }));
+        }, [monthInvestments]);
+
+        const colors = ['#8B5CF6', '#3B82F6', '#10B981', '#F59E0B', '#EC4899'];
+
+        return (
+          <PremiumContentCard
+            title="Distribuição de Investimentos"
+            icon={PieChartIcon}
+            gradientFrom="from-purple-600"
+            gradientTo="to-purple-700"
+          >
+            <div className="space-y-4">
+              <div className="flex justify-center">
+                <PieChart
+                  data={investmentByType.map((item, index) => ({
+                    label: item.label,
+                    value: item.value,
+                    color: colors[index % colors.length],
+                    percentage: (item.value / investmentByType.reduce((sum, i) => sum + i.value, 0)) * 100,
+                  }))}
+                  size={200}
+                  strokeWidth={24}
+                />
+              </div>
+              {investmentByType.length > 0 && (
+                <div className="space-y-2">
+                  {investmentByType.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div
+                          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm"
+                          style={{ backgroundColor: colors[index % colors.length] }}
+                        >
+                          <span className="text-base">📈</span>
+                        </div>
+                        <span className="text-gray-700 dark:text-gray-300 font-medium truncate">
+                          {item.label}
+                        </span>
+                      </div>
+                      <span className="text-gray-600 dark:text-gray-400 font-semibold ml-2">
+                        {formatCurrency(item.value)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </PremiumContentCard>
+        );
+      })()}
 
       {/* Gráfico de Barras por Dia */}
       {byDay.length > 0 && (
