@@ -15,9 +15,8 @@ body {
 }
 
 body {
-  /* Gradiente azul-petróleo escuro (em cima) para verde-mar claro (em baixo) */
-  background: linear-gradient(180deg, #0a3d3d 0%, #1a5a5a 30%, #2d7a7a 60%, #4a9a9a 100%);
-  color: #ffffff;
+  background: #ffffff;
+  color: #0f172a;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -30,27 +29,13 @@ body {
   min-height: 100vh;
 }
 
-/* Padrão de fundo com gráficos de barras crescentes e pilhas de moedas (linha-arte) */
 body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: 
-    /* Gráficos de barras crescentes */
-    url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1.5' fill-opacity='0.08'%3E%3Crect x='10' y='60' width='8' height='30'/%3E%3Crect x='25' y='50' width='8' height='40'/%3E%3Crect x='40' y='40' width='8' height='50'/%3E%3Crect x='55' y='30' width='8' height='60'/%3E%3Crect x='70' y='20' width='8' height='70'/%3E%3Crect x='85' y='15' width='8' height='75'/%3E%3C/g%3E%3C/svg%3E"),
-    /* Pilhas de moedas */
-    url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23ffffff' stroke-width='1' fill-opacity='0.06'%3E%3Ccircle cx='40' cy='30' r='12'/%3E%3Ccircle cx='40' cy='40' r='12'/%3E%3Ccircle cx='40' cy='50' r='12'/%3E%3Cpath d='M28 30 Q40 25 52 30'/%3E%3Cpath d='M28 40 Q40 35 52 40'/%3E%3Cpath d='M28 50 Q40 45 52 50'/%3E%3C/g%3E%3C/svg%3E");
-  background-size: 200px 200px, 160px 160px;
-  background-position: 0 0, 100px 100px;
-  opacity: 0.08;
-  pointer-events: none;
-  z-index: 0;
+  content: none;
 }
 
 .dark body {
-  /* Mesmo gradiente para dark mode */
-  background: linear-gradient(180deg, #0a3d3d 0%, #1a5a5a 30%, #2d7a7a 60%, #4a9a9a 100%);
-  color: #ffffff;
+  background: #ffffff;
+  color: #0f172a;
 }
 
 #__next {
@@ -384,37 +369,37 @@ select:focus-visible {
 
 /* Glassmorphism - Efeito de vidro jateado (backdrop-filter: blur(12px), fundo branco 10-15% opacidade, borda 1px branca quase transparente) */
 .glassmorphism {
-  background: rgba(255, 255, 255, 0.12);
+  background: linear-gradient(135deg, rgba(51, 65, 85, 0.92) 0%, rgba(30, 41, 59, 0.9) 100%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 28px 0 rgba(15, 23, 42, 0.24);
 }
 
 .glassmorphism-strong {
-  background: rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.96) 0%, rgba(15, 23, 42, 0.94) 100%);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  box-shadow: 0 14px 32px 0 rgba(15, 23, 42, 0.3);
 }
 
 /* Neomorfismo - Efeito suave de relevo */
 .neomorphic {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.18);
   border-radius: 20px;
   box-shadow: 
-    8px 8px 16px rgba(0, 0, 0, 0.2),
-    -8px -8px 16px rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+    6px 6px 14px rgba(15, 23, 42, 0.25),
+    -6px -6px 14px rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.22);
 }
 
 .neomorphic-inset {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(15, 23, 42, 0.25);
   border-radius: 20px;
   box-shadow: 
-    inset 4px 4px 8px rgba(0, 0, 0, 0.3),
-    inset -4px -4px 8px rgba(255, 255, 255, 0.05);
+    inset 4px 4px 8px rgba(2, 6, 23, 0.4),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.08);
 }
 
 /* Cores pastéis para valores */

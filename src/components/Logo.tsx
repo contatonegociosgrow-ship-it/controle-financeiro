@@ -22,10 +22,12 @@ export function Logo({
   useImgTag = false,
   imgClassName = '',
 }: LogoProps) {
+  const logoSrc = '/logo.png';
+
   if (useImgTag) {
     return (
       <img
-        src="/logonovo.png"
+        src={logoSrc}
         alt={alt}
         className={imgClassName || className}
         width={width}
@@ -36,7 +38,7 @@ export function Logo({
 
   return (
     <Image
-      src="/logonovo.png"
+      src={logoSrc}
       alt={alt}
       width={width}
       height={height}

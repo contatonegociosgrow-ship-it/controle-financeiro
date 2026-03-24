@@ -338,7 +338,7 @@ export default function GeraisPage() {
       ) : (
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {/* Banner Superior - Planejamento */}
-        <div className="mb-6 glassmorphism rounded-2xl p-6 relative overflow-hidden">
+        <div className="mb-6 rounded-2xl p-6 relative overflow-hidden bg-gradient-to-r from-slate-800 to-slate-700 border border-slate-600/40 shadow-xl">
           <div className="relative z-10 flex items-center justify-between flex-wrap gap-4">
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl sm:text-3xl font-bold text-white">
@@ -351,7 +351,7 @@ export default function GeraisPage() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handleMonthChange('prev')}
-                className="p-2.5 glassmorphism rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
+                className="p-2.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 bg-white/10 border border-white/20"
                 aria-label="Mês anterior"
               >
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
@@ -360,7 +360,7 @@ export default function GeraisPage() {
               </button>
               <button
                 onClick={() => handleMonthChange('next')}
-                className="p-2.5 glassmorphism rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
+                className="p-2.5 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 bg-white/10 border border-white/20"
                 aria-label="Próximo mês"
               >
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
@@ -379,7 +379,7 @@ export default function GeraisPage() {
           </div>
 
           {/* Ganhos */}
-          <div className="glassmorphism rounded-2xl p-4 sm:p-5 relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-[0.98]">
+          <div className="rounded-2xl p-4 sm:p-5 relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-br from-emerald-500 to-green-600 border border-emerald-300/40 shadow-xl shadow-emerald-900/20">
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg">
@@ -387,14 +387,14 @@ export default function GeraisPage() {
                 </div>
                 <h4 className="text-xs sm:text-sm font-bold text-white tracking-wide">Ganhos</h4>
               </div>
-              <p className="text-xl sm:text-2xl font-extrabold text-pastel-green tracking-tight">
+              <p className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
                 {formatCurrency(totals.income)}
               </p>
             </div>
           </div>
 
           {/* Despesas Fixas */}
-          <div className="glassmorphism rounded-2xl p-4 sm:p-5 relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-[0.98]">
+          <div className="rounded-2xl p-4 sm:p-5 relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-br from-rose-500 to-red-600 border border-rose-300/40 shadow-xl shadow-rose-900/20">
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg">
@@ -402,14 +402,14 @@ export default function GeraisPage() {
                 </div>
                 <h4 className="text-xs sm:text-sm font-bold text-white tracking-wide">Fixas</h4>
               </div>
-              <p className="text-xl sm:text-2xl font-extrabold text-pastel-red tracking-tight">
+              <p className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
                 {formatCurrency(totals.expenseFixed)}
               </p>
             </div>
           </div>
 
           {/* Despesas Variáveis */}
-          <div className="glassmorphism rounded-2xl p-4 sm:p-5 relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-[0.98]">
+          <div className="rounded-2xl p-4 sm:p-5 relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-br from-amber-500 to-orange-600 border border-amber-300/40 shadow-xl shadow-orange-900/20">
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg">
@@ -417,14 +417,14 @@ export default function GeraisPage() {
                 </div>
                 <h4 className="text-xs sm:text-sm font-bold text-white tracking-wide">Variáveis</h4>
               </div>
-              <p className="text-xl sm:text-2xl font-extrabold text-pastel-red tracking-tight">
+              <p className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
                 {formatCurrency(totals.expenseVariable)}
               </p>
             </div>
           </div>
 
           {/* Dívidas */}
-          <div className="glassmorphism rounded-2xl p-4 sm:p-5 relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-[0.98]">
+          <div className="rounded-2xl p-4 sm:p-5 relative overflow-hidden group cursor-pointer hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-br from-violet-500 to-purple-700 border border-violet-300/40 shadow-xl shadow-purple-900/20">
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg">
@@ -432,7 +432,7 @@ export default function GeraisPage() {
                 </div>
                 <h4 className="text-xs sm:text-sm font-bold text-white tracking-wide">Dívidas</h4>
               </div>
-              <p className="text-xl sm:text-2xl font-extrabold text-pastel-red tracking-tight">
+              <p className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
                 {formatCurrency(totals.debt)}
               </p>
             </div>
@@ -443,19 +443,19 @@ export default function GeraisPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           {/* Coluna Esquerda: Gráfico de Pizza */}
           <div className="lg:col-span-2 space-y-6">
-            <CardUI className="p-6">
+            <div className="rounded-3xl p-6 bg-white border border-gray-200 shadow-lg transition-all duration-300 hover:shadow-xl">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg">
-                    <PieChart size={28} className="text-white" strokeWidth={2} />
+                  <div className="w-12 h-12 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center shadow-sm">
+                    <PieChart size={28} className="text-blue-600" strokeWidth={2} />
                   </div>
-                  <h2 className="text-xl font-bold text-white">
+                  <h2 className="text-xl font-bold text-slate-800">
                     Despesas por categoria
                   </h2>
                 </div>
                 <button
                   onClick={() => setIsFilterOpen(true)}
-                  className="flex items-center gap-2 px-4 py-2.5 glassmorphism text-white rounded-xl transition-all duration-200 hover:scale-105 active:scale-95"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 shadow-md"
                   aria-label="Abrir filtros"
                 >
                   <Filter className="w-4 h-4" strokeWidth={2.5} />
@@ -467,15 +467,15 @@ export default function GeraisPage() {
                 categories={state.categories}
                 type="expense"
               />
-            </CardUI>
+            </div>
 
             {/* Lista de Transações */}
-            <CardUI className="p-6">
+            <div className="rounded-3xl p-6 bg-white border border-gray-200 shadow-lg transition-all duration-300 hover:shadow-xl">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg">
-                  <List size={28} className="text-white" strokeWidth={2} />
+                <div className="w-12 h-12 rounded-full bg-indigo-50 border border-indigo-200 flex items-center justify-center shadow-sm">
+                  <List size={28} className="text-indigo-600" strokeWidth={2} />
                 </div>
-                <h2 className="text-xl font-bold text-white">
+                <h2 className="text-xl font-bold text-slate-800">
                   Transações
                 </h2>
               </div>
@@ -488,18 +488,18 @@ export default function GeraisPage() {
                 showCategory={true} 
                 columns={5} 
               />
-            </CardUI>
+            </div>
           </div>
 
           {/* Coluna Direita: Cards de Bancos */}
           <div className="space-y-6">
             {/* Cards de Bancos */}
-            <CardUI className="p-6">
+            <div className="rounded-3xl p-6 bg-white border border-gray-200 shadow-lg transition-all duration-300 hover:shadow-xl">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg">
-                  <LayoutDashboard size={28} className="text-white" strokeWidth={2} />
+                <div className="w-12 h-12 rounded-full bg-violet-50 border border-violet-200 flex items-center justify-center shadow-sm">
+                  <LayoutDashboard size={28} className="text-violet-600" strokeWidth={2} />
                 </div>
-                <h3 className="text-lg font-bold text-white">
+                <h3 className="text-lg font-bold text-slate-800">
                   Cartões
                 </h3>
               </div>
@@ -539,7 +539,7 @@ export default function GeraisPage() {
                   Nenhum cartão cadastrado
                 </p>
               )}
-            </CardUI>
+            </div>
           </div>
         </div>
 

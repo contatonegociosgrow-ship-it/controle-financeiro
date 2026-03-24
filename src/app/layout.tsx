@@ -8,11 +8,11 @@ export const metadata: Metadata = {
   title: 'Meu Salário em dia',
   description: 'PWA de controle financeiro offline-first',
   manifest: '/manifest.json',
-  themeColor: '#f5f7fa',
+  themeColor: '#ffffff',
   viewport: 'width=device-width, initial-scale=1, maximum-scale=5',
   icons: {
-    icon: '/logonovo.png',
-    apple: '/logonovo.png',
+    icon: '/logo.png',
+    apple: '/logo.png',
   },
   appleWebApp: {
     capable: true,
@@ -36,8 +36,8 @@ export default function RootLayout({
           rel="stylesheet"
         />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/logonovo.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/logonovo.png" />
+        <link rel="icon" href="/logo.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/logo.png" />
       </head>
       <body>
         <FinanceProvider>
